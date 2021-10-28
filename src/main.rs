@@ -1,6 +1,10 @@
 use clap::Parser;
 use tracing::metadata::LevelFilter;
 
+#[allow(dead_code, unused_imports)]
+#[path = "./WorldQLFB_generated.rs"]
+mod worldql_flatbuffers;
+
 mod structures;
 
 #[derive(Debug, Parser)]
