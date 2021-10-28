@@ -174,6 +174,29 @@ impl<'a> Vec3d {
     }
   }
 
+  pub fn unpack(&self) -> Vec3dT {
+    Vec3dT {
+      x: self.x(),
+      y: self.y(),
+      z: self.z(),
+    }
+  }
+}
+
+#[derive(Debug, Clone, PartialEq, Default)]
+pub struct Vec3dT {
+  pub x: f64,
+  pub y: f64,
+  pub z: f64,
+}
+impl Vec3dT {
+  pub fn pack(&self) -> Vec3d {
+    Vec3d::new(
+      self.x,
+      self.y,
+      self.z,
+    )
+  }
 }
 
 pub enum RecordOffset {}
@@ -209,6 +232,30 @@ impl<'a> Record<'a> {
       builder.finish()
     }
 
+    pub fn unpack(&self) -> RecordT {
+      let uuid = self.uuid().map(|x| {
+        x.to_string()
+      });
+      let position = self.position().map(|x| {
+        x.unpack()
+      });
+      let world_name = self.world_name().map(|x| {
+        x.to_string()
+      });
+      let data = self.data().map(|x| {
+        x.to_string()
+      });
+      let flex = self.flex().map(|x| {
+        x.to_vec()
+      });
+      RecordT {
+        uuid,
+        position,
+        world_name,
+        data,
+        flex,
+      }
+    }
     pub const VT_UUID: flatbuffers::VOffsetT = 4;
     pub const VT_POSITION: flatbuffers::VOffsetT = 6;
     pub const VT_WORLD_NAME: flatbuffers::VOffsetT = 8;
@@ -323,6 +370,54 @@ impl std::fmt::Debug for Record<'_> {
       ds.finish()
   }
 }
+#[non_exhaustive]
+#[derive(Debug, Clone, PartialEq)]
+pub struct RecordT {
+  pub uuid: Option<String>,
+  pub position: Option<Vec3dT>,
+  pub world_name: Option<String>,
+  pub data: Option<String>,
+  pub flex: Option<Vec<u8>>,
+}
+impl Default for RecordT {
+  fn default() -> Self {
+    Self {
+      uuid: None,
+      position: None,
+      world_name: None,
+      data: None,
+      flex: None,
+    }
+  }
+}
+impl RecordT {
+  pub fn pack<'b>(
+    &self,
+    _fbb: &mut flatbuffers::FlatBufferBuilder<'b>
+  ) -> flatbuffers::WIPOffset<Record<'b>> {
+    let uuid = self.uuid.as_ref().map(|x|{
+      _fbb.create_string(x)
+    });
+    let position_tmp = self.position.as_ref().map(|x| x.pack());
+    let position = position_tmp.as_ref();
+    let world_name = self.world_name.as_ref().map(|x|{
+      _fbb.create_string(x)
+    });
+    let data = self.data.as_ref().map(|x|{
+      _fbb.create_string(x)
+    });
+    let flex = self.flex.as_ref().map(|x|{
+      _fbb.create_vector(x)
+    });
+    Record::create(_fbb, &RecordArgs{
+      uuid,
+      position,
+      world_name,
+      data,
+      flex,
+    })
+  }
+}
 pub enum EntityOffset {}
 #[derive(Copy, Clone, PartialEq)]
 
@@ -356,6 +451,30 @@ impl<'a> Entity<'a> {
       builder.finish()
     }
 
+    pub fn unpack(&self) -> EntityT {
+      let uuid = self.uuid().map(|x| {
+        x.to_string()
+      });
+      let position = self.position().map(|x| {
+        x.unpack()
+      });
+      let world_name = self.world_name().map(|x| {
+        x.to_string()
+      });
+      let data = self.data().map(|x| {
+        x.to_string()
+      });
+      let flex = self.flex().map(|x| {
+        x.to_vec()
+      });
+      EntityT {
+        uuid,
+        position,
+        world_name,
+        data,
+        flex,
+      }
+    }
     pub const VT_UUID: flatbuffers::VOffsetT = 4;
     pub const VT_POSITION: flatbuffers::VOffsetT = 6;
     pub const VT_WORLD_NAME: flatbuffers::VOffsetT = 8;
@@ -470,6 +589,54 @@ impl std::fmt::Debug for Entity<'_> {
       ds.finish()
   }
 }
+#[non_exhaustive]
+#[derive(Debug, Clone, PartialEq)]
+pub struct EntityT {
+  pub uuid: Option<String>,
+  pub position: Option<Vec3dT>,
+  pub world_name: Option<String>,
+  pub data: Option<String>,
+  pub flex: Option<Vec<u8>>,
+}
+impl Default for EntityT {
+  fn default() -> Self {
+    Self {
+      uuid: None,
+      position: None,
+      world_name: None,
+      data: None,
+      flex: None,
+    }
+  }
+}
+impl EntityT {
+  pub fn pack<'b>(
+    &self,
+    _fbb: &mut flatbuffers::FlatBufferBuilder<'b>
+  ) -> flatbuffers::WIPOffset<Entity<'b>> {
+    let uuid = self.uuid.as_ref().map(|x|{
+      _fbb.create_string(x)
+    });
+    let position_tmp = self.position.as_ref().map(|x| x.pack());
+    let position = position_tmp.as_ref();
+    let world_name = self.world_name.as_ref().map(|x|{
+      _fbb.create_string(x)
+    });
+    let data = self.data.as_ref().map(|x|{
+      _fbb.create_string(x)
+    });
+    let flex = self.flex.as_ref().map(|x|{
+      _fbb.create_vector(x)
+    });
+    Entity::create(_fbb, &EntityArgs{
+      uuid,
+      position,
+      world_name,
+      data,
+      flex,
+    })
+  }
+}
 pub enum MessageOffset {}
 #[derive(Copy, Clone, PartialEq)]
 
@@ -506,6 +673,42 @@ impl<'a> Message<'a> {
       builder.finish()
     }
 
+    pub fn unpack(&self) -> MessageT {
+      let instruction = self.instruction().map(|x| {
+        x.to_string()
+      });
+      let sender_uuid = self.sender_uuid().map(|x| {
+        x.to_string()
+      });
+      let world_name = self.world_name().map(|x| {
+        x.to_string()
+      });
+      let data = self.data().map(|x| {
+        x.to_string()
+      });
+      let records = self.records().map(|x| {
+        x.iter().map(|t| t.unpack()).collect()
+      });
+      let entities = self.entities().map(|x| {
+        x.iter().map(|t| t.unpack()).collect()
+      });
+      let position = self.position().map(|x| {
+        x.unpack()
+      });
+      let flex = self.flex().map(|x| {
+        x.to_vec()
+      });
+      MessageT {
+        instruction,
+        sender_uuid,
+        world_name,
+        data,
+        records,
+        entities,
+        position,
+        flex,
+      }
+    }
     pub const VT_INSTRUCTION: flatbuffers::VOffsetT = 4;
     pub const VT_SENDER_UUID: flatbuffers::VOffsetT = 6;
     pub const VT_WORLD_NAME: flatbuffers::VOffsetT = 8;
@@ -657,6 +860,72 @@ impl std::fmt::Debug for Message<'_> {
       ds.field("position", &self.position());
       ds.field("flex", &self.flex());
       ds.finish()
+  }
+}
+#[non_exhaustive]
+#[derive(Debug, Clone, PartialEq)]
+pub struct MessageT {
+  pub instruction: Option<String>,
+  pub sender_uuid: Option<String>,
+  pub world_name: Option<String>,
+  pub data: Option<String>,
+  pub records: Option<Vec<RecordT>>,
+  pub entities: Option<Vec<EntityT>>,
+  pub position: Option<Vec3dT>,
+  pub flex: Option<Vec<u8>>,
+}
+impl Default for MessageT {
+  fn default() -> Self {
+    Self {
+      instruction: None,
+      sender_uuid: None,
+      world_name: None,
+      data: None,
+      records: None,
+      entities: None,
+      position: None,
+      flex: None,
+    }
+  }
+}
+impl MessageT {
+  pub fn pack<'b>(
+    &self,
+    _fbb: &mut flatbuffers::FlatBufferBuilder<'b>
+  ) -> flatbuffers::WIPOffset<Message<'b>> {
+    let instruction = self.instruction.as_ref().map(|x|{
+      _fbb.create_string(x)
+    });
+    let sender_uuid = self.sender_uuid.as_ref().map(|x|{
+      _fbb.create_string(x)
+    });
+    let world_name = self.world_name.as_ref().map(|x|{
+      _fbb.create_string(x)
+    });
+    let data = self.data.as_ref().map(|x|{
+      _fbb.create_string(x)
+    });
+    let records = self.records.as_ref().map(|x|{
+      let w: Vec<_> = x.iter().map(|t| t.pack(_fbb)).collect();_fbb.create_vector(&w)
+    });
+    let entities = self.entities.as_ref().map(|x|{
+      let w: Vec<_> = x.iter().map(|t| t.pack(_fbb)).collect();_fbb.create_vector(&w)
+    });
+    let position_tmp = self.position.as_ref().map(|x| x.pack());
+    let position = position_tmp.as_ref();
+    let flex = self.flex.as_ref().map(|x|{
+      _fbb.create_vector(x)
+    });
+    Message::create(_fbb, &MessageArgs{
+      instruction,
+      sender_uuid,
+      world_name,
+      data,
+      records,
+      entities,
+      position,
+      flex,
+    })
   }
 }
 #[inline]
