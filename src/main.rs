@@ -1,6 +1,8 @@
 use clap::Parser;
 use tracing::metadata::LevelFilter;
 
+mod structures;
+
 #[derive(Debug, Parser)]
 struct Args {
     /// PostgreSQL Connection String
