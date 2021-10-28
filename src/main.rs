@@ -12,7 +12,8 @@ struct Args {
     debug: bool,
 }
 
-fn main() {
+#[tokio::main]
+async fn main() {
     let args = Args::parse();
 
     // Always enable TRACE level logging on debug builds
