@@ -1,7 +1,8 @@
+use flatbuffers::{FlatBufferBuilder, InvalidFlatbuffer};
 use thiserror::Error;
 
 use super::{Decode, DecodeError, Encode, Entity, Record, Vec3D};
-use crate::flatbuffers::MessageT;
+use crate::flatbuffers::{root_as_message, MessageT};
 
 #[derive(Debug, Default)]
 pub struct Message {
@@ -61,16 +62,39 @@ impl Decode<MessageT> for Message {
             Some(pos) => Some(Vec3D::decode(pos)?),
         };
 
+        let records = match encoded.records {
+            None => vec![],
+            Some(records) => {
+                let mut vec = vec![];
+                for record in records {
+                    let decoded = Record::decode(record)?;
+                    vec.push(decoded);
+                }
+
+                vec
+            }
+        };
+
+        let entities = match encoded.entities {
+            None => vec![],
+            Some(entities) => {
+                let mut vec = vec![];
+                for entity in entities {
+                    let decoded = Entity::decode(entity)?;
+                    vec.push(decoded);
+                }
+
+                vec
+            }
+        };
+
         let message = Message {
             instruction,
             sender_uuid,
             world_name,
             data: encoded.data,
-
-            // TODO
-            records: vec![],
-            entities: vec![],
-
+            records,
+            entities,
             position,
             flex: encoded.flex,
         };
@@ -80,16 +104,32 @@ impl Decode<MessageT> for Message {
 }
 
 impl Message {
-    pub fn serialize(&self) -> Vec<u8> {
-        // TODO
-        todo!()
+    pub fn serialize(self) -> Vec<u8> {
+        let mut builder = FlatBufferBuilder::with_capacity(1024);
+
+        let encoded = self.encode();
+        let offset = encoded.pack(&mut builder);
+
+        builder.finish(offset, None);
+        let buf = builder.finished_data();
+
+        buf.to_vec()
     }
 
     pub fn deserialize(buf: &[u8]) -> Result<Self, DeserializeError> {
-        // TODO
-        todo!()
+        let raw = root_as_message(buf)?;
+        let message_t = raw.unpack();
+
+        let message = Message::decode(message_t)?;
+        Ok(message)
     }
 }
 
 #[derive(Debug, Error)]
-pub enum DeserializeError {}
+pub enum DeserializeError {
+    #[error(transparent)]
+    InvalidFlatbuffer(#[from] InvalidFlatbuffer),
+
+    #[error(transparent)]
+    DecodeError(#[from] DecodeError),
+}
