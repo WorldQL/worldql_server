@@ -1,87 +1,95 @@
-use flatbuffers::{FlatBufferBuilder, InvalidFlatbuffer};
 use thiserror::Error;
 
-use super::{Entity, Record, Vec3D};
-use crate::flatbuffers::{Message as MessageFB, MessageArgs, root_as_message};
+use super::{Decode, DecodeError, Encode, Entity, Record, Vec3D};
+use crate::flatbuffers::MessageT;
 
 #[derive(Debug, Default)]
 pub struct Message {
-    instruction: String,
-    sender_uuid: String,
-    world_name: String,
-    data: Option<String>,
-    records: Vec<Record>,
-    entities: Vec<Entity>,
-    position: Option<Vec3D>,
-    flex: Option<Vec<u8>>,
+    pub instruction: String,
+    pub sender_uuid: String,
+    pub world_name: String,
+    pub data: Option<String>,
+    pub records: Vec<Record>,
+    pub entities: Vec<Entity>,
+    pub position: Option<Vec3D>,
+    pub flex: Option<Vec<u8>>,
 }
 
-impl Message {
-    pub fn serialize(&self) -> Vec<u8> {
-        let mut builder = FlatBufferBuilder::with_capacity(1024);
+impl Encode<MessageT> for Message {
+    fn encode(self) -> MessageT {
+        let records = self
+            .records
+            .into_iter()
+            .map(|r| r.encode())
+            .collect::<Vec<_>>();
 
-        let instruction = Some(builder.create_string(&self.instruction));
-        let sender_uuid = Some(builder.create_string(&self.sender_uuid));
-        let world_name = Some(builder.create_string(&self.world_name));
+        let entities = self
+            .entities
+            .into_iter()
+            .map(|e| e.encode())
+            .collect::<Vec<_>>();
 
-        let flex = match &self.flex {
-            None => None,
-            Some(flex) => Some(builder.create_vector(flex))
-        };
-
-        let offset = MessageFB::create(
-            &mut builder,
-            &MessageArgs {
-                instruction,
-                sender_uuid,
-                world_name,
-
-                flex,
-                ..Default::default()
-            },
-        );
-
-        builder.finish(offset, None);
-        let bytes = builder.finished_data();
-
-        bytes.to_vec()
+        MessageT {
+            instruction: Some(self.instruction),
+            sender_uuid: Some(self.sender_uuid),
+            world_name: Some(self.world_name),
+            data: self.data,
+            records: Some(records),
+            entities: Some(entities),
+            position: self.position.map(|p| p.encode()),
+            flex: self.flex,
+        }
     }
+}
 
-    pub fn deserialize(buf: &[u8]) -> Result<Self, DeserializeError> {
-        let raw_message = root_as_message(buf)?;
+impl Decode<MessageT> for Message {
+    fn decode(encoded: MessageT) -> Result<Self, DecodeError> {
+        let instruction = encoded
+            .instruction
+            .ok_or(DecodeError::MissingRequiredField("instruction".into()))?;
 
-        // Validate required fields
-        let instruction = raw_message
-            .instruction()
-            .ok_or(DeserializeError::MissingRequiredField("instruction".into()))?
-            .into();
-        let sender_uuid = raw_message
-            .sender_uuid()
-            .ok_or(DeserializeError::MissingRequiredField("sender_uuid".into()))?
-            .into();
-        let world_name = raw_message
-            .world_name()
-            .ok_or(DeserializeError::MissingRequiredField("world_name".into()))?
-            .into();
+        let sender_uuid = encoded
+            .sender_uuid
+            .ok_or(DecodeError::MissingRequiredField("sender_uuid".into()))?;
+
+        let world_name = encoded
+            .world_name
+            .ok_or(DecodeError::MissingRequiredField("world_name".into()))?;
+
+        let position = match encoded.position {
+            None => None,
+            Some(pos) => Some(Vec3D::decode(pos)?),
+        };
 
         let message = Message {
             instruction,
             sender_uuid,
             world_name,
+            data: encoded.data,
 
-            // TODO: Rest of the fields
-            ..Default::default()
+            // TODO
+            records: vec![],
+            entities: vec![],
+
+            position,
+            flex: encoded.flex,
         };
 
         Ok(message)
     }
 }
 
-#[derive(Debug, Error)]
-pub enum DeserializeError {
-    #[error("missing required field: {0}")]
-    MissingRequiredField(String),
+impl Message {
+    pub fn serialize(&self) -> Vec<u8> {
+        // TODO
+        todo!()
+    }
 
-    #[error(transparent)]
-    InvalidFlatbuffer(#[from] InvalidFlatbuffer),
+    pub fn deserialize(buf: &[u8]) -> Result<Self, DeserializeError> {
+        // TODO
+        todo!()
+    }
 }
+
+#[derive(Debug, Error)]
+pub enum DeserializeError {}
