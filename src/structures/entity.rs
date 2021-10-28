@@ -1,6 +1,6 @@
 use super::Vec3D;
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct Entity {
     uuid: String,
     position: Vec3D,

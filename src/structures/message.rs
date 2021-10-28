@@ -1,6 +1,6 @@
 use super::{Entity, Record, Vec3D};
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct Message {
     instruction: String,
     sender_uuid: String,
