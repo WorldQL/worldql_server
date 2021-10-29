@@ -10,6 +10,10 @@ mod flatbuffers;
 mod structures;
 mod transport;
 
+// Fail to compile if no transport features are enabled
+#[cfg(not(any(feature = "websocket", feature = "zeromq")))]
+compile_error!("at least one of `websocket` or `zeromq` features must be enabled!");
+
 #[derive(Debug, Parser)]
 struct Args {
     /// PostgreSQL Connection String
