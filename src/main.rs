@@ -8,6 +8,7 @@ use tracing::{debug, error, info};
 
 mod flatbuffers;
 mod structures;
+mod transport;
 
 #[derive(Debug, Parser)]
 struct Args {
