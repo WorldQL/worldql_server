@@ -1,5 +1,10 @@
+use std::sync::Arc;
+
 use clap::Parser;
+use color_eyre::Result;
+use tokio_postgres::NoTls;
 use tracing::metadata::LevelFilter;
+use tracing::{debug, error, info};
 
 mod flatbuffers;
 mod structures;
@@ -8,7 +13,7 @@ mod structures;
 struct Args {
     /// PostgreSQL Connection String
     #[clap(short, long = "psql", env = "WQL_POSTGRES_CONNECTION_STRING")]
-    postgres_connection_string: String,
+    psql_conn: String,
 
     /// Enable Debug Logs
     #[clap(long, env = "WQL_DEBUG")]
@@ -16,7 +21,8 @@ struct Args {
 }
 
 #[tokio::main]
-async fn main() {
+async fn main() -> Result<()> {
+    color_eyre::install()?;
     let args = Args::parse();
 
     // Always enable TRACE level logging on debug builds
@@ -30,4 +36,21 @@ async fn main() {
     };
 
     tracing_subscriber::fmt().with_max_level(filter).init();
+
+    info!(
+        "Connecting to PostgreSQL with connection string: {}",
+        &args.psql_conn
+    );
+
+    let (psql, psql_conn) = tokio_postgres::connect(&args.psql_conn, NoTls).await?;
+    tokio::spawn(async move {
+        if let Err(e) = psql_conn.await {
+            error!("postgres connection error: {}", e);
+        }
+    });
+
+    let client = Arc::new(psql);
+    debug!("connected to postgres");
+
+    Ok(())
 }
