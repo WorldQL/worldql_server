@@ -3,7 +3,6 @@ use std::sync::Arc;
 use clap::Parser;
 use color_eyre::Result;
 use tokio_postgres::NoTls;
-use tracing::metadata::LevelFilter;
 use tracing::{debug, error, info};
 
 mod flatbuffers;
@@ -23,6 +22,11 @@ struct Args {
     /// Enable Debug Logs
     #[clap(long, env = "WQL_DEBUG")]
     debug: bool,
+
+    /// Enable Verbose Logging
+    #[cfg(debug_assertions)]
+    #[clap(long)]
+    verbose: bool,
 }
 
 #[tokio::main]
@@ -30,17 +34,31 @@ async fn main() -> Result<()> {
     color_eyre::install()?;
     let args = Args::parse();
 
-    // Always enable TRACE level logging on debug builds
+    // Logger on debug builds
     #[cfg(debug_assertions)]
-    let filter = LevelFilter::TRACE;
-    // Conditionally enable DEBUG/INFO logging on release builds
-    #[cfg(not(debug_assertions))]
-    let filter = match args.debug {
-        true => LevelFilter::DEBUG,
-        false => LevelFilter::INFO,
+    let logger = {
+        let filter = match args.verbose {
+            true => "trace".into(),
+            false => format!("{}=trace", env!("CARGO_PKG_NAME")),
+        };
+
+        tracing_subscriber::fmt().with_target(args.verbose).with_env_filter(filter)
     };
 
-    tracing_subscriber::fmt().with_max_level(filter).init();
+    // Logger on release builds
+    #[cfg(not(debug_assertions))]
+    let logger = {
+        let level = match args.debug {
+            true => "debug",
+            false => "info",
+        };
+
+        let filter = format!("{}={}", env!("CARGO_PKG_NAME"), level);
+        tracing_subscriber::fmt().with_target(false).with_env_filter(filter)
+    };
+
+    // Init logger for all builds
+    logger.init();
 
     info!(
         "Connecting to PostgreSQL with connection string: {}",
