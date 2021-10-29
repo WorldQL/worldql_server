@@ -1,4 +1,4 @@
 #[cfg(feature = "websocket")]
-mod websocket;
+pub mod websocket;
 #[cfg(feature = "zeromq")]
-mod zeromq;
+pub mod zeromq;

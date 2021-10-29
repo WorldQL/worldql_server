@@ -5,6 +5,8 @@ use color_eyre::Result;
 use tokio_postgres::NoTls;
 use tracing::{debug, error, info};
 
+use crate::transport::websocket::start_websocket_server;
+
 mod flatbuffers;
 mod structures;
 mod transport;
@@ -27,6 +29,11 @@ struct Args {
     #[cfg(debug_assertions)]
     #[clap(long)]
     verbose: bool,
+
+    /// WebSocket Server Port
+    #[cfg(feature = "websocket")]
+    #[clap(short, long, default_value = "8080", env = "WQL_WEBSOCKET_PORT")]
+    ws_port: u16,
 }
 
 #[tokio::main]
@@ -74,6 +81,10 @@ async fn main() -> Result<()> {
 
     let client = Arc::new(psql);
     debug!("connected to postgres");
+
+    let ws_handle = tokio::spawn(start_websocket_server(args.ws_port));
+
+    let _ = futures_util::join!(ws_handle);
 
     Ok(())
 }
