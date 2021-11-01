@@ -49,10 +49,9 @@ async fn handle_connection(
     }
 
     let uuid = Uuid::new_v4();
-    trace!("peer {} assigned uuid: {}", &addr, &uuid);
-
     let (outgoing, mut incoming) = stream.split();
-    let mut peer = Peer::new_ws(outgoing);
+    let mut peer = Peer::new_ws(addr, uuid, outgoing);
+    trace!("new peer: {}", &peer);
 
     // Send client-bound handshake message
     peer.send(Message {
@@ -83,8 +82,6 @@ async fn handle_connection(
                 let mut map = peer_map.write().await;
                 map.insert(uuid, peer);
             }
-
-            trace!("peer {} inserted into map", &addr);
         }
     }
 

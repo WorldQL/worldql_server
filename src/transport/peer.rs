@@ -1,9 +1,13 @@
+use std::fmt::Display;
+use std::net::SocketAddr;
+
 use futures_util::stream::SplitSink;
 use futures_util::SinkExt;
 use thiserror::Error;
 use tokio::net::TcpStream;
 use tokio_tungstenite::tungstenite::Message as WsMessage;
 use tokio_tungstenite::WebSocketStream;
+use uuid::Uuid;
 
 use crate::structures::Message;
 
@@ -12,13 +16,17 @@ type WebSocketConnection = SplitSink<WebSocketStream<TcpStream>, WsMessage>;
 
 #[derive(Debug)]
 pub struct Peer {
+    addr: SocketAddr,
+    uuid: Uuid,
     connection: PeerConnection,
 }
 
 impl Peer {
     #[cfg(feature = "websocket")]
-    pub fn new_ws(ws_conn: WebSocketConnection) -> Self {
+    pub fn new_ws(addr: SocketAddr, uuid: Uuid, ws_conn: WebSocketConnection) -> Self {
         Self {
+            addr,
+            uuid,
             connection: PeerConnection::WebSocket(ws_conn),
         }
     }
@@ -29,6 +37,16 @@ impl Peer {
 
     pub async fn send_raw(&mut self, bytes: Vec<u8>) -> Result<(), SendError> {
         self.connection.send_raw(bytes).await
+    }
+}
+
+impl Display for Peer {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{{type={}, addr={}, uuid={}}}",
+            self.connection, self.addr, self.uuid
+        )
     }
 }
 
@@ -62,6 +80,15 @@ impl PeerConnection {
                 // TODO
                 todo!()
             }
+        }
+    }
+}
+
+impl Display for PeerConnection {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            PeerConnection::WebSocket(_) => write!(f, "WebSocket"),
+            PeerConnection::ZeroMQ => write!(f, "ZeroMQ"),
         }
     }
 }

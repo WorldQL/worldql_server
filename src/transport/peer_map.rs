@@ -2,6 +2,7 @@ use std::collections::HashMap;
 use std::sync::Arc;
 
 use tokio::sync::RwLock;
+use tracing::trace;
 use uuid::Uuid;
 
 use super::peer::Peer;
@@ -23,6 +24,7 @@ impl PeerMap {
     }
 
     pub fn insert(&mut self, uuid: Uuid, peer: Peer) -> Option<Peer> {
+        trace!("inserting peer {} into map", &peer);
         self.0.insert(uuid, peer)
     }
 
