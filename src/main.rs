@@ -19,19 +19,21 @@ mod transport;
 compile_error!("at least one of `websocket` or `zeromq` features must be enabled!");
 
 #[derive(Debug, Parser)]
+#[clap(version)]
 struct Args {
     /// PostgreSQL Connection String
     #[clap(short, long = "psql", env = "WQL_POSTGRES_CONNECTION_STRING")]
     psql_conn: String,
 
     /// Enable Debug Logs
+    #[cfg(not(debug_assertions))]
     #[clap(long, env = "WQL_DEBUG")]
     debug: bool,
 
     /// Enable Verbose Logging
     #[cfg(debug_assertions)]
-    #[clap(long)]
-    verbose: bool,
+    #[clap(short, long, parse(from_occurrences))]
+    verbose: u8,
 
     /// WebSocket Server Port
     #[cfg(feature = "websocket")]
@@ -48,12 +50,13 @@ async fn main() -> Result<()> {
     #[cfg(debug_assertions)]
     let logger = {
         let filter = match args.verbose {
-            true => "trace".into(),
-            false => format!("{}=trace", env!("CARGO_PKG_NAME")),
+            0 => format!("{}=debug", env!("CARGO_PKG_NAME")),
+            1 | 2 => format!("{}=trace", env!("CARGO_PKG_NAME")),
+            _ => "trace".into(),
         };
 
         tracing_subscriber::fmt()
-            .with_target(args.verbose)
+            .with_target(args.verbose >= 2)
             .with_env_filter(filter)
     };
 
