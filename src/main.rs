@@ -6,6 +6,7 @@ use tokio_postgres::NoTls;
 use tracing::{debug, error, info};
 
 use crate::transport::websocket::start_websocket_server;
+use crate::transport::zeromq::start_zeromq_server;
 
 mod flatbuffers;
 mod structures;
@@ -49,7 +50,9 @@ async fn main() -> Result<()> {
             false => format!("{}=trace", env!("CARGO_PKG_NAME")),
         };
 
-        tracing_subscriber::fmt().with_target(args.verbose).with_env_filter(filter)
+        tracing_subscriber::fmt()
+            .with_target(args.verbose)
+            .with_env_filter(filter)
     };
 
     // Logger on release builds
@@ -61,7 +64,9 @@ async fn main() -> Result<()> {
         };
 
         let filter = format!("{}={}", env!("CARGO_PKG_NAME"), level);
-        tracing_subscriber::fmt().with_target(false).with_env_filter(filter)
+        tracing_subscriber::fmt()
+            .with_target(false)
+            .with_env_filter(filter)
     };
 
     // Init logger for all builds
@@ -83,8 +88,9 @@ async fn main() -> Result<()> {
     debug!("connected to postgres");
 
     let ws_handle = tokio::spawn(start_websocket_server(args.ws_port));
+    let zmq_handle = tokio::spawn(start_zeromq_server());
 
-    let _ = futures_util::join!(ws_handle);
+    let _ = futures_util::join!(ws_handle, zmq_handle);
 
     Ok(())
 }
