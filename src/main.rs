@@ -1,3 +1,4 @@
+use std::collections::HashSet;
 use std::sync::Arc;
 
 use clap::Parser;
@@ -5,6 +6,7 @@ use color_eyre::Result;
 use tokio::sync::RwLock;
 use tokio_postgres::NoTls;
 use tracing::{debug, error, info};
+use utils::PortRange;
 
 use crate::processing::start_processing_thread;
 use crate::transport::{start_websocket_server, start_zeromq_server, PeerMap, ThreadPeerMap};
@@ -13,6 +15,7 @@ mod flatbuffers;
 mod processing;
 mod structures;
 mod transport;
+mod utils;
 
 // Fail to compile if no transport features are enabled
 #[cfg(not(any(feature = "websocket", feature = "zeromq")))]
@@ -39,6 +42,28 @@ struct Args {
     #[cfg(feature = "websocket")]
     #[clap(short, long, default_value = "8080", env = "WQL_WEBSOCKET_PORT")]
     ws_port: u16,
+
+    /// ZeroMQ Server Port
+    #[cfg(feature = "zeromq")]
+    #[clap(
+        name = "PORT",
+        short = 'z',
+        long = "zmq-server-port",
+        default_value = "5555",
+        env = "WQL_ZMQ_SERVER_PORT"
+    )]
+    zmq_server_port: u16,
+
+    /// ZeroMQ Client Port Range
+    #[cfg(feature = "zeromq")]
+    #[clap(
+        name = "PORT_RANGE",
+        short = 'Z',
+        long = "zmq-client-ports",
+        default_value = "22000..23000",
+        env = "WQL_ZMQ_CLIENT_PORTS"
+    )]
+    zmq_client_ports: PortRange,
 }
 
 #[tokio::main]
@@ -77,12 +102,34 @@ async fn main() -> Result<()> {
     // Init logger for all builds
     logger.init();
 
-    info!(
-        "Connecting to PostgreSQL with connection string: {}",
-        &args.psql_conn
-    );
+    {
+        // Check for port clashes
+        let mut used_ports = vec![];
 
+        #[cfg(feature = "websocket")]
+        used_ports.push(args.ws_port);
+
+        #[cfg(feature = "zeromq")]
+        {
+            used_ports.push(args.zmq_server_port);
+            for client_port in args.zmq_client_ports.inner() {
+                used_ports.push(client_port);
+            }
+        }
+
+        let mut uniq = HashSet::new();
+        let unique = used_ports.into_iter().all(move |x| uniq.insert(x));
+
+        if !unique {
+            // TODO: Work out which port(s) clash
+            error!("configured ports must be unique");
+            std::process::exit(1);
+        }
+    }
+
+    info!("Connecting to PostgreSQL");
     let (psql, psql_conn) = tokio_postgres::connect(&args.psql_conn, NoTls).await?;
+
     tokio::spawn(async move {
         if let Err(e) = psql_conn.await {
             error!("postgres connection error: {}", e);
