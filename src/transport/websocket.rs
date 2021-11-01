@@ -7,12 +7,13 @@ use tokio::sync::mpsc::UnboundedSender;
 use tracing::{debug, info};
 
 use super::ThreadPeerMap;
+use crate::processing::MessagePair;
 use crate::structures::Message;
 use crate::transport::Peer;
 
 pub async fn start_websocket_server(
     peer_map: ThreadPeerMap,
-    msg_tx: UnboundedSender<Message>,
+    msg_tx: UnboundedSender<MessagePair>,
     ws_port: u16,
 ) -> Result<()> {
     let addr = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), ws_port);

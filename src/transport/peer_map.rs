@@ -2,6 +2,7 @@ use std::collections::HashMap;
 use std::sync::Arc;
 
 use tokio::sync::RwLock;
+use uuid::Uuid;
 
 use super::peer::Peer;
 use super::SendError;
@@ -10,7 +11,7 @@ use crate::structures::Message;
 pub type ThreadPeerMap = Arc<RwLock<PeerMap>>;
 
 #[derive(Debug)]
-pub struct PeerMap(HashMap<String, Peer>);
+pub struct PeerMap(HashMap<Uuid, Peer>);
 
 impl PeerMap {
     pub fn new() -> Self {
