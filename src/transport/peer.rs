@@ -26,6 +26,10 @@ impl Peer {
     pub async fn send(&mut self, message: Message) -> Result<(), SendError> {
         self.connection.send(message).await
     }
+
+    pub async fn send_raw(&mut self, bytes: Vec<u8>) -> Result<(), SendError> {
+        self.connection.send_raw(bytes).await
+    }
 }
 
 #[derive(Debug)]
@@ -37,7 +41,7 @@ pub enum PeerConnection {
 }
 
 impl PeerConnection {
-    pub async fn send(&mut self, message: Message) -> Result<(), SendError> {
+    async fn send(&mut self, message: Message) -> Result<(), SendError> {
         let bytes = message.serialize();
         self.send_raw(bytes).await?;
 

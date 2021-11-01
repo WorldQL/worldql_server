@@ -1,5 +1,13 @@
-pub mod peer;
+mod peer;
+mod peer_map;
 #[cfg(feature = "websocket")]
-pub mod websocket;
+mod websocket;
 #[cfg(feature = "zeromq")]
-pub mod zeromq;
+mod zeromq;
+
+pub use peer::{Peer, PeerConnection, SendError};
+pub use peer_map::{PeerMap, ThreadPeerMap};
+#[cfg(feature = "websocket")]
+pub use websocket::start_websocket_server;
+#[cfg(feature = "zeromq")]
+pub use zeromq::start_zeromq_server;

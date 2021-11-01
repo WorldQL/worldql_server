@@ -2,11 +2,11 @@ use std::sync::Arc;
 
 use clap::Parser;
 use color_eyre::Result;
+use tokio::sync::RwLock;
 use tokio_postgres::NoTls;
 use tracing::{debug, error, info};
 
-use crate::transport::websocket::start_websocket_server;
-use crate::transport::zeromq::start_zeromq_server;
+use crate::transport::{start_websocket_server, start_zeromq_server, PeerMap, ThreadPeerMap};
 
 mod flatbuffers;
 mod structures;
@@ -86,6 +86,8 @@ async fn main() -> Result<()> {
 
     let client = Arc::new(psql);
     debug!("connected to postgres");
+
+    let peer_map: ThreadPeerMap = Arc::new(RwLock::new(PeerMap::new()));
 
     let ws_handle = tokio::spawn(start_websocket_server(args.ws_port));
     let zmq_handle = tokio::spawn(start_zeromq_server());
