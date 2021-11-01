@@ -18,6 +18,18 @@ impl PeerMap {
         Self(HashMap::new())
     }
 
+    pub fn contains_key(&self, uuid: &Uuid) -> bool {
+        self.0.contains_key(uuid)
+    }
+
+    pub fn insert(&mut self, uuid: Uuid, peer: Peer) -> Option<Peer> {
+        self.0.insert(uuid, peer)
+    }
+
+    pub fn remove(&mut self, uuid: &Uuid) -> Option<Peer> {
+        self.0.remove(uuid)
+    }
+
     pub async fn broadcast(&mut self, message: Message) -> Result<(), SendError> {
         let bytes = message.serialize();
 
