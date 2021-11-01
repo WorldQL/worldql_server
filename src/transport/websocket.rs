@@ -7,13 +7,12 @@ use tokio::sync::mpsc::UnboundedSender;
 use tracing::{debug, info};
 
 use super::ThreadPeerMap;
-use crate::processing::MessagePair;
 use crate::structures::Message;
 use crate::transport::Peer;
 
 pub async fn start_websocket_server(
     peer_map: ThreadPeerMap,
-    msg_tx: UnboundedSender<MessagePair>,
+    msg_tx: UnboundedSender<Message>,
     ws_port: u16,
 ) -> Result<()> {
     let addr = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), ws_port);
@@ -24,13 +23,23 @@ pub async fn start_websocket_server(
         let addr = stream.peer_addr()?;
         debug!("peer address: {}", addr);
 
-        tokio::spawn(handle_connection(addr, stream));
+        tokio::spawn(handle_connection(
+            peer_map.clone(),
+            msg_tx.clone(),
+            addr,
+            stream,
+        ));
     }
 
     Ok(())
 }
 
-async fn handle_connection(addr: SocketAddr, raw_stream: TcpStream) -> Result<()> {
+async fn handle_connection(
+    peer_map: ThreadPeerMap,
+    msg_tx: UnboundedSender<Message>,
+    addr: SocketAddr,
+    raw_stream: TcpStream,
+) -> Result<()> {
     let stream = tokio_tungstenite::accept_async(raw_stream).await?;
     debug!("websocket connection established: {}", &addr);
 
@@ -63,9 +72,9 @@ async fn handle_connection(addr: SocketAddr, raw_stream: TcpStream) -> Result<()
                     continue;
                 }
 
-                // TODO: Handle messages
+                // Send message to processing thread
                 let message = message_result.unwrap();
-                peer.send(message).await.unwrap();
+                msg_tx.send(message)?;
             }
         }
     }
