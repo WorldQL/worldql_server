@@ -6,7 +6,9 @@ use tokio::sync::RwLock;
 use tokio_postgres::NoTls;
 use tracing::{debug, error, info};
 
-use crate::transport::{start_websocket_server, start_zeromq_server, PeerMap, ThreadPeerMap};
+use crate::transport::{
+    start_processing_thread, start_websocket_server, start_zeromq_server, PeerMap, ThreadPeerMap,
+};
 
 mod flatbuffers;
 mod structures;
@@ -88,11 +90,17 @@ async fn main() -> Result<()> {
     debug!("connected to postgres");
 
     let peer_map: ThreadPeerMap = Arc::new(RwLock::new(PeerMap::new()));
+    let (msg_tx, msg_rx) = tokio::sync::mpsc::unbounded_channel();
 
-    let ws_handle = tokio::spawn(start_websocket_server(args.ws_port));
-    let zmq_handle = tokio::spawn(start_zeromq_server());
+    let ws_handle = tokio::spawn(start_websocket_server(
+        peer_map.clone(),
+        msg_tx.clone(),
+        args.ws_port,
+    ));
+    let zmq_handle = tokio::spawn(start_zeromq_server(peer_map.clone(), msg_tx));
+    let proc_handle = tokio::spawn(start_processing_thread(peer_map, msg_rx));
 
-    let _ = futures_util::join!(ws_handle, zmq_handle);
+    let _ = futures_util::join!(ws_handle, zmq_handle, proc_handle);
 
     Ok(())
 }
