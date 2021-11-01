@@ -28,13 +28,8 @@ struct Args {
     #[clap(short, long = "psql", env = "WQL_POSTGRES_CONNECTION_STRING")]
     psql_conn: String,
 
-    /// Enable Debug Logs
-    #[cfg(not(debug_assertions))]
-    #[clap(long, env = "WQL_DEBUG")]
-    debug: bool,
-
-    /// Enable Verbose Logging
-    #[cfg(debug_assertions)]
+    /// Set Verbosity Level.
+    /// eg: -vvv to enable very verbose logs
     #[clap(short, long, parse(from_occurrences))]
     verbose: u8,
 
@@ -71,36 +66,16 @@ async fn main() -> Result<()> {
     color_eyre::install()?;
     let args = Args::parse();
 
-    // Logger on debug builds
-    #[cfg(debug_assertions)]
-    let logger = {
-        let filter = match args.verbose {
-            0 => format!("{}=debug", env!("CARGO_PKG_NAME")),
-            1 | 2 => format!("{}=trace", env!("CARGO_PKG_NAME")),
-            _ => "trace".into(),
-        };
-
-        tracing_subscriber::fmt()
-            .with_target(args.verbose >= 2)
-            .with_env_filter(filter)
+    let filter = match args.verbose {
+        0 => format!("{}=debug", env!("CARGO_PKG_NAME")),
+        1 | 2 => format!("{}=trace", env!("CARGO_PKG_NAME")),
+        _ => "trace".into(),
     };
 
-    // Logger on release builds
-    #[cfg(not(debug_assertions))]
-    let logger = {
-        let level = match args.debug {
-            true => "debug",
-            false => "info",
-        };
-
-        let filter = format!("{}={}", env!("CARGO_PKG_NAME"), level);
-        tracing_subscriber::fmt()
-            .with_target(false)
-            .with_env_filter(filter)
-    };
-
-    // Init logger for all builds
-    logger.init();
+    tracing_subscriber::fmt()
+        .with_target(args.verbose >= 2)
+        .with_env_filter(filter)
+        .init();
 
     {
         // Check for port clashes
