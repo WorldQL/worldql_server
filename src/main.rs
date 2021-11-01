@@ -127,17 +127,16 @@ async fn main() -> Result<()> {
         }
     }
 
-    info!("Connecting to PostgreSQL");
     let (psql, psql_conn) = tokio_postgres::connect(&args.psql_conn, NoTls).await?;
-
     tokio::spawn(async move {
+        debug!("spawned postgres read thread");
         if let Err(e) = psql_conn.await {
-            error!("postgres connection error: {}", e);
+            error!("PostgreSQL Connection Error: {}", e);
         }
     });
 
     let client = Arc::new(psql);
-    debug!("connected to postgres");
+    info!("Connected to PostgreSQL");
 
     let peer_map: ThreadPeerMap = Arc::new(RwLock::new(PeerMap::new()));
     let (msg_tx, msg_rx) = tokio::sync::mpsc::unbounded_channel();
