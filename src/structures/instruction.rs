@@ -4,8 +4,7 @@ use crate::flatbuffers::Instruction as InstructionFB;
 #[derive(Debug)]
 pub enum Instruction {
     Heartbeat,
-    ZeroMQHandshake,
-    ZeroMQPortAssign,
+    Handshake,
     LocalMessage,
     GlobalMessage,
     RecordCreate,
@@ -29,8 +28,7 @@ impl Encode<InstructionFB> for Instruction {
     fn encode(self) -> InstructionFB {
         match self {
             Instruction::Heartbeat => InstructionFB::Heartbeat,
-            Instruction::ZeroMQHandshake => InstructionFB::ZeroMQHandshake,
-            Instruction::ZeroMQPortAssign => InstructionFB::ZeroMQPortAssign,
+            Instruction::Handshake => InstructionFB::Handshake,
             Instruction::LocalMessage => InstructionFB::LocalMessage,
             Instruction::GlobalMessage => InstructionFB::GlobalMessage,
             Instruction::RecordCreate => InstructionFB::RecordCreate,
@@ -49,8 +47,7 @@ impl Decode<InstructionFB> for Instruction {
     fn decode(encoded: InstructionFB) -> Result<Self, DecodeError> {
         let instruction = match encoded {
             InstructionFB::Heartbeat => Instruction::Heartbeat,
-            InstructionFB::ZeroMQHandshake => Instruction::ZeroMQHandshake,
-            InstructionFB::ZeroMQPortAssign => Instruction::ZeroMQPortAssign,
+            InstructionFB::Handshake => Instruction::Handshake,
             InstructionFB::LocalMessage => Instruction::LocalMessage,
             InstructionFB::GlobalMessage => Instruction::GlobalMessage,
             InstructionFB::RecordCreate => Instruction::RecordCreate,

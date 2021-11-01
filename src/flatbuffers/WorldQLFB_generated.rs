@@ -31,10 +31,9 @@ pub const ENUM_MIN_INSTRUCTION: u8 = 0;
 pub const ENUM_MAX_INSTRUCTION: u8 = 255;
 #[deprecated(since = "2.0.0", note = "Use associated constants instead. This will no longer be generated in 2021.")]
 #[allow(non_camel_case_types)]
-pub const ENUM_VALUES_INSTRUCTION: [Instruction; 13] = [
+pub const ENUM_VALUES_INSTRUCTION: [Instruction; 12] = [
   Instruction::Heartbeat,
-  Instruction::ZeroMQHandshake,
-  Instruction::ZeroMQPortAssign,
+  Instruction::Handshake,
   Instruction::LocalMessage,
   Instruction::GlobalMessage,
   Instruction::RecordCreate,
@@ -53,25 +52,23 @@ pub struct Instruction(pub u8);
 #[allow(non_upper_case_globals)]
 impl Instruction {
   pub const Heartbeat: Self = Self(0);
-  pub const ZeroMQHandshake: Self = Self(1);
-  pub const ZeroMQPortAssign: Self = Self(2);
-  pub const LocalMessage: Self = Self(3);
-  pub const GlobalMessage: Self = Self(4);
-  pub const RecordCreate: Self = Self(5);
-  pub const RecordRead: Self = Self(6);
-  pub const RecordUpdate: Self = Self(7);
-  pub const RecordDelete: Self = Self(8);
-  pub const RecordReply: Self = Self(9);
-  pub const AreaSubscribe: Self = Self(10);
-  pub const AreaUnsubscribe: Self = Self(11);
+  pub const Handshake: Self = Self(1);
+  pub const LocalMessage: Self = Self(2);
+  pub const GlobalMessage: Self = Self(3);
+  pub const RecordCreate: Self = Self(4);
+  pub const RecordRead: Self = Self(5);
+  pub const RecordUpdate: Self = Self(6);
+  pub const RecordDelete: Self = Self(7);
+  pub const RecordReply: Self = Self(8);
+  pub const AreaSubscribe: Self = Self(9);
+  pub const AreaUnsubscribe: Self = Self(10);
   pub const Unknown: Self = Self(255);
 
   pub const ENUM_MIN: u8 = 0;
   pub const ENUM_MAX: u8 = 255;
   pub const ENUM_VALUES: &'static [Self] = &[
     Self::Heartbeat,
-    Self::ZeroMQHandshake,
-    Self::ZeroMQPortAssign,
+    Self::Handshake,
     Self::LocalMessage,
     Self::GlobalMessage,
     Self::RecordCreate,
@@ -87,8 +84,7 @@ impl Instruction {
   pub fn variant_name(self) -> Option<&'static str> {
     match self {
       Self::Heartbeat => Some("Heartbeat"),
-      Self::ZeroMQHandshake => Some("ZeroMQHandshake"),
-      Self::ZeroMQPortAssign => Some("ZeroMQPortAssign"),
+      Self::Handshake => Some("Handshake"),
       Self::LocalMessage => Some("LocalMessage"),
       Self::GlobalMessage => Some("GlobalMessage"),
       Self::RecordCreate => Some("RecordCreate"),
