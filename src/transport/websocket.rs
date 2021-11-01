@@ -6,6 +6,7 @@ use tokio::net::{TcpListener, TcpStream};
 use tracing::{debug, info};
 
 use crate::structures::Message;
+use crate::transport::Peer;
 
 pub async fn start_websocket_server(ws_port: u16) -> Result<()> {
     let addr = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), ws_port);
@@ -13,20 +14,21 @@ pub async fn start_websocket_server(ws_port: u16) -> Result<()> {
     info!("WebSocket Server listening on port {}", ws_port);
 
     while let Ok((stream, _)) = listener.accept().await {
-        let peer = stream.peer_addr()?;
-        debug!("peer address: {}", peer);
+        let addr = stream.peer_addr()?;
+        debug!("peer address: {}", addr);
 
-        tokio::spawn(handle_connection(peer, stream));
+        tokio::spawn(handle_connection(addr, stream));
     }
 
     Ok(())
 }
 
-async fn handle_connection(peer: SocketAddr, raw_stream: TcpStream) -> Result<()> {
+async fn handle_connection(addr: SocketAddr, raw_stream: TcpStream) -> Result<()> {
     let stream = tokio_tungstenite::accept_async(raw_stream).await?;
-    debug!("websocket connection established: {}", &peer);
+    debug!("websocket connection established: {}", &addr);
 
-    let (mut outgoing, mut incoming) = stream.split();
+    let (outgoing, mut incoming) = stream.split();
+    let peer = Peer::new_ws(outgoing);
 
     loop {
         tokio::select! {
@@ -47,7 +49,7 @@ async fn handle_connection(peer: SocketAddr, raw_stream: TcpStream) -> Result<()
                         let message_result = Message::deserialize(&data);
 
                         if message_result.is_err() {
-                            debug!("deserialize error from peer: {}", &peer);
+                            debug!("deserialize error from peer: {}", &addr);
                             continue;
                         }
 
@@ -60,6 +62,6 @@ async fn handle_connection(peer: SocketAddr, raw_stream: TcpStream) -> Result<()
         }
     }
 
-    debug!("websocket connection closed: {}", &peer);
+    debug!("websocket connection closed: {}", &addr);
     Ok(())
 }
