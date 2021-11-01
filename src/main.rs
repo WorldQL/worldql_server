@@ -147,9 +147,15 @@ async fn main() -> Result<()> {
         msg_tx.clone(),
         args.ws_port,
     ));
-    let zmq_handle = tokio::spawn(start_zeromq_server(peer_map.clone(), msg_tx));
-    let proc_handle = tokio::spawn(start_processing_thread(peer_map, msg_rx));
 
+    let zmq_handle = tokio::spawn(start_zeromq_server(
+        peer_map.clone(),
+        msg_tx,
+        args.zmq_server_port,
+        args.zmq_client_ports.into(),
+    ));
+
+    let proc_handle = tokio::spawn(start_processing_thread(peer_map, msg_rx));
     let _ = futures_util::join!(ws_handle, zmq_handle, proc_handle);
 
     Ok(())
