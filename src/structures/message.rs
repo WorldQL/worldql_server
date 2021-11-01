@@ -50,11 +50,11 @@ impl Decode<MessageT> for Message {
 
         let sender_uuid = encoded
             .sender_uuid
-            .ok_or(DecodeError::MissingRequiredField("sender_uuid".into()))?;
+            .ok_or_else(|| DecodeError::MissingRequiredField("sender_uuid".into()))?;
 
         let world_name = encoded
             .world_name
-            .ok_or(DecodeError::MissingRequiredField("world_name".into()))?;
+            .ok_or_else(|| DecodeError::MissingRequiredField("world_name".into()))?;
 
         let position = match encoded.position {
             None => None,

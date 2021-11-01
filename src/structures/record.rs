@@ -28,15 +28,15 @@ impl Decode<RecordT> for Record {
     fn decode(encoded: RecordT) -> Result<Self, DecodeError> {
         let uuid = encoded
             .uuid
-            .ok_or(DecodeError::MissingRequiredField("uuid".into()))?;
+            .ok_or_else(|| DecodeError::MissingRequiredField("uuid".into()))?;
 
         let position = encoded
             .position
-            .ok_or(DecodeError::MissingRequiredField("position".into()))?;
+            .ok_or_else(|| DecodeError::MissingRequiredField("position".into()))?;
 
         let world_name = encoded
             .world_name
-            .ok_or(DecodeError::MissingRequiredField("world_name".into()))?;
+            .ok_or_else(|| DecodeError::MissingRequiredField("world_name".into()))?;
 
         let record = Record {
             uuid: Uuid::parse_str(&uuid)?,
