@@ -25,6 +25,137 @@ pub mod messages {
   extern crate flatbuffers;
   use self::flatbuffers::{EndianScalar, Follow};
 
+#[deprecated(since = "2.0.0", note = "Use associated constants instead. This will no longer be generated in 2021.")]
+pub const ENUM_MIN_INSTRUCTION: u8 = 0;
+#[deprecated(since = "2.0.0", note = "Use associated constants instead. This will no longer be generated in 2021.")]
+pub const ENUM_MAX_INSTRUCTION: u8 = 255;
+#[deprecated(since = "2.0.0", note = "Use associated constants instead. This will no longer be generated in 2021.")]
+#[allow(non_camel_case_types)]
+pub const ENUM_VALUES_INSTRUCTION: [Instruction; 13] = [
+  Instruction::Heartbeat,
+  Instruction::ZeroMQHandshake,
+  Instruction::ZeroMQPortAssign,
+  Instruction::LocalMessage,
+  Instruction::GlobalMessage,
+  Instruction::RecordCreate,
+  Instruction::RecordRead,
+  Instruction::RecordUpdate,
+  Instruction::RecordDelete,
+  Instruction::RecordReply,
+  Instruction::AreaSubscribe,
+  Instruction::AreaUnsubscribe,
+  Instruction::Unknown,
+];
+
+#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
+#[repr(transparent)]
+pub struct Instruction(pub u8);
+#[allow(non_upper_case_globals)]
+impl Instruction {
+  pub const Heartbeat: Self = Self(0);
+  pub const ZeroMQHandshake: Self = Self(1);
+  pub const ZeroMQPortAssign: Self = Self(2);
+  pub const LocalMessage: Self = Self(3);
+  pub const GlobalMessage: Self = Self(4);
+  pub const RecordCreate: Self = Self(5);
+  pub const RecordRead: Self = Self(6);
+  pub const RecordUpdate: Self = Self(7);
+  pub const RecordDelete: Self = Self(8);
+  pub const RecordReply: Self = Self(9);
+  pub const AreaSubscribe: Self = Self(10);
+  pub const AreaUnsubscribe: Self = Self(11);
+  pub const Unknown: Self = Self(255);
+
+  pub const ENUM_MIN: u8 = 0;
+  pub const ENUM_MAX: u8 = 255;
+  pub const ENUM_VALUES: &'static [Self] = &[
+    Self::Heartbeat,
+    Self::ZeroMQHandshake,
+    Self::ZeroMQPortAssign,
+    Self::LocalMessage,
+    Self::GlobalMessage,
+    Self::RecordCreate,
+    Self::RecordRead,
+    Self::RecordUpdate,
+    Self::RecordDelete,
+    Self::RecordReply,
+    Self::AreaSubscribe,
+    Self::AreaUnsubscribe,
+    Self::Unknown,
+  ];
+  /// Returns the variant's name or "" if unknown.
+  pub fn variant_name(self) -> Option<&'static str> {
+    match self {
+      Self::Heartbeat => Some("Heartbeat"),
+      Self::ZeroMQHandshake => Some("ZeroMQHandshake"),
+      Self::ZeroMQPortAssign => Some("ZeroMQPortAssign"),
+      Self::LocalMessage => Some("LocalMessage"),
+      Self::GlobalMessage => Some("GlobalMessage"),
+      Self::RecordCreate => Some("RecordCreate"),
+      Self::RecordRead => Some("RecordRead"),
+      Self::RecordUpdate => Some("RecordUpdate"),
+      Self::RecordDelete => Some("RecordDelete"),
+      Self::RecordReply => Some("RecordReply"),
+      Self::AreaSubscribe => Some("AreaSubscribe"),
+      Self::AreaUnsubscribe => Some("AreaUnsubscribe"),
+      Self::Unknown => Some("Unknown"),
+      _ => None,
+    }
+  }
+}
+impl std::fmt::Debug for Instruction {
+  fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+    if let Some(name) = self.variant_name() {
+      f.write_str(name)
+    } else {
+      f.write_fmt(format_args!("<UNKNOWN {:?}>", self.0))
+    }
+  }
+}
+impl<'a> flatbuffers::Follow<'a> for Instruction {
+  type Inner = Self;
+  #[inline]
+  fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
+    let b = unsafe {
+      flatbuffers::read_scalar_at::<u8>(buf, loc)
+    };
+    Self(b)
+  }
+}
+
+impl flatbuffers::Push for Instruction {
+    type Output = Instruction;
+    #[inline]
+    fn push(&self, dst: &mut [u8], _rest: &[u8]) {
+        unsafe { flatbuffers::emplace_scalar::<u8>(dst, self.0); }
+    }
+}
+
+impl flatbuffers::EndianScalar for Instruction {
+  #[inline]
+  fn to_little_endian(self) -> Self {
+    let b = u8::to_le(self.0);
+    Self(b)
+  }
+  #[inline]
+  #[allow(clippy::wrong_self_convention)]
+  fn from_little_endian(self) -> Self {
+    let b = u8::from_le(self.0);
+    Self(b)
+  }
+}
+
+impl<'a> flatbuffers::Verifiable for Instruction {
+  #[inline]
+  fn run_verifier(
+    v: &mut flatbuffers::Verifier, pos: usize
+  ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
+    use self::flatbuffers::Verifiable;
+    u8::run_verifier(v, pos)
+  }
+}
+
+impl flatbuffers::SimpleToVerifyInSlice for Instruction {}
 // struct Vec3d, aligned to 8
 #[repr(transparent)]
 #[derive(Clone, Copy, PartialEq)]
@@ -666,24 +797,22 @@ impl<'a> Message<'a> {
       if let Some(x) = args.position { builder.add_position(x); }
       if let Some(x) = args.entities { builder.add_entities(x); }
       if let Some(x) = args.records { builder.add_records(x); }
-      if let Some(x) = args.data { builder.add_data(x); }
       if let Some(x) = args.world_name { builder.add_world_name(x); }
       if let Some(x) = args.sender_uuid { builder.add_sender_uuid(x); }
-      if let Some(x) = args.instruction { builder.add_instruction(x); }
+      if let Some(x) = args.parameter { builder.add_parameter(x); }
+      builder.add_instruction(args.instruction);
       builder.finish()
     }
 
     pub fn unpack(&self) -> MessageT {
-      let instruction = self.instruction().map(|x| {
+      let instruction = self.instruction();
+      let parameter = self.parameter().map(|x| {
         x.to_string()
       });
       let sender_uuid = self.sender_uuid().map(|x| {
         x.to_string()
       });
       let world_name = self.world_name().map(|x| {
-        x.to_string()
-      });
-      let data = self.data().map(|x| {
         x.to_string()
       });
       let records = self.records().map(|x| {
@@ -700,9 +829,9 @@ impl<'a> Message<'a> {
       });
       MessageT {
         instruction,
+        parameter,
         sender_uuid,
         world_name,
-        data,
         records,
         entities,
         position,
@@ -710,17 +839,21 @@ impl<'a> Message<'a> {
       }
     }
     pub const VT_INSTRUCTION: flatbuffers::VOffsetT = 4;
-    pub const VT_SENDER_UUID: flatbuffers::VOffsetT = 6;
-    pub const VT_WORLD_NAME: flatbuffers::VOffsetT = 8;
-    pub const VT_DATA: flatbuffers::VOffsetT = 10;
+    pub const VT_PARAMETER: flatbuffers::VOffsetT = 6;
+    pub const VT_SENDER_UUID: flatbuffers::VOffsetT = 8;
+    pub const VT_WORLD_NAME: flatbuffers::VOffsetT = 10;
     pub const VT_RECORDS: flatbuffers::VOffsetT = 12;
     pub const VT_ENTITIES: flatbuffers::VOffsetT = 14;
     pub const VT_POSITION: flatbuffers::VOffsetT = 16;
     pub const VT_FLEX: flatbuffers::VOffsetT = 18;
 
   #[inline]
-  pub fn instruction(&self) -> Option<&'a str> {
-    self._tab.get::<flatbuffers::ForwardsUOffset<&str>>(Message::VT_INSTRUCTION, None)
+  pub fn instruction(&self) -> Instruction {
+    self._tab.get::<Instruction>(Message::VT_INSTRUCTION, Some(Instruction::Heartbeat)).unwrap()
+  }
+  #[inline]
+  pub fn parameter(&self) -> Option<&'a str> {
+    self._tab.get::<flatbuffers::ForwardsUOffset<&str>>(Message::VT_PARAMETER, None)
   }
   #[inline]
   pub fn sender_uuid(&self) -> Option<&'a str> {
@@ -729,10 +862,6 @@ impl<'a> Message<'a> {
   #[inline]
   pub fn world_name(&self) -> Option<&'a str> {
     self._tab.get::<flatbuffers::ForwardsUOffset<&str>>(Message::VT_WORLD_NAME, None)
-  }
-  #[inline]
-  pub fn data(&self) -> Option<&'a str> {
-    self._tab.get::<flatbuffers::ForwardsUOffset<&str>>(Message::VT_DATA, None)
   }
   #[inline]
   pub fn records(&self) -> Option<flatbuffers::Vector<'a, flatbuffers::ForwardsUOffset<Record<'a>>>> {
@@ -759,10 +888,10 @@ impl flatbuffers::Verifiable for Message<'_> {
   ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
     use self::flatbuffers::Verifiable;
     v.visit_table(pos)?
-     .visit_field::<flatbuffers::ForwardsUOffset<&str>>(&"instruction", Self::VT_INSTRUCTION, false)?
+     .visit_field::<Instruction>(&"instruction", Self::VT_INSTRUCTION, false)?
+     .visit_field::<flatbuffers::ForwardsUOffset<&str>>(&"parameter", Self::VT_PARAMETER, false)?
      .visit_field::<flatbuffers::ForwardsUOffset<&str>>(&"sender_uuid", Self::VT_SENDER_UUID, false)?
      .visit_field::<flatbuffers::ForwardsUOffset<&str>>(&"world_name", Self::VT_WORLD_NAME, false)?
-     .visit_field::<flatbuffers::ForwardsUOffset<&str>>(&"data", Self::VT_DATA, false)?
      .visit_field::<flatbuffers::ForwardsUOffset<flatbuffers::Vector<'_, flatbuffers::ForwardsUOffset<Record>>>>(&"records", Self::VT_RECORDS, false)?
      .visit_field::<flatbuffers::ForwardsUOffset<flatbuffers::Vector<'_, flatbuffers::ForwardsUOffset<Entity>>>>(&"entities", Self::VT_ENTITIES, false)?
      .visit_field::<Vec3d>(&"position", Self::VT_POSITION, false)?
@@ -772,10 +901,10 @@ impl flatbuffers::Verifiable for Message<'_> {
   }
 }
 pub struct MessageArgs<'a> {
-    pub instruction: Option<flatbuffers::WIPOffset<&'a str>>,
+    pub instruction: Instruction,
+    pub parameter: Option<flatbuffers::WIPOffset<&'a str>>,
     pub sender_uuid: Option<flatbuffers::WIPOffset<&'a str>>,
     pub world_name: Option<flatbuffers::WIPOffset<&'a str>>,
-    pub data: Option<flatbuffers::WIPOffset<&'a str>>,
     pub records: Option<flatbuffers::WIPOffset<flatbuffers::Vector<'a, flatbuffers::ForwardsUOffset<Record<'a>>>>>,
     pub entities: Option<flatbuffers::WIPOffset<flatbuffers::Vector<'a, flatbuffers::ForwardsUOffset<Entity<'a>>>>>,
     pub position: Option<&'a Vec3d>,
@@ -785,10 +914,10 @@ impl<'a> Default for MessageArgs<'a> {
     #[inline]
     fn default() -> Self {
         MessageArgs {
-            instruction: None,
+            instruction: Instruction::Heartbeat,
+            parameter: None,
             sender_uuid: None,
             world_name: None,
-            data: None,
             records: None,
             entities: None,
             position: None,
@@ -802,8 +931,12 @@ pub struct MessageBuilder<'a: 'b, 'b> {
 }
 impl<'a: 'b, 'b> MessageBuilder<'a, 'b> {
   #[inline]
-  pub fn add_instruction(&mut self, instruction: flatbuffers::WIPOffset<&'b  str>) {
-    self.fbb_.push_slot_always::<flatbuffers::WIPOffset<_>>(Message::VT_INSTRUCTION, instruction);
+  pub fn add_instruction(&mut self, instruction: Instruction) {
+    self.fbb_.push_slot::<Instruction>(Message::VT_INSTRUCTION, instruction, Instruction::Heartbeat);
+  }
+  #[inline]
+  pub fn add_parameter(&mut self, parameter: flatbuffers::WIPOffset<&'b  str>) {
+    self.fbb_.push_slot_always::<flatbuffers::WIPOffset<_>>(Message::VT_PARAMETER, parameter);
   }
   #[inline]
   pub fn add_sender_uuid(&mut self, sender_uuid: flatbuffers::WIPOffset<&'b  str>) {
@@ -812,10 +945,6 @@ impl<'a: 'b, 'b> MessageBuilder<'a, 'b> {
   #[inline]
   pub fn add_world_name(&mut self, world_name: flatbuffers::WIPOffset<&'b  str>) {
     self.fbb_.push_slot_always::<flatbuffers::WIPOffset<_>>(Message::VT_WORLD_NAME, world_name);
-  }
-  #[inline]
-  pub fn add_data(&mut self, data: flatbuffers::WIPOffset<&'b  str>) {
-    self.fbb_.push_slot_always::<flatbuffers::WIPOffset<_>>(Message::VT_DATA, data);
   }
   #[inline]
   pub fn add_records(&mut self, records: flatbuffers::WIPOffset<flatbuffers::Vector<'b , flatbuffers::ForwardsUOffset<Record<'b >>>>) {
@@ -852,9 +981,9 @@ impl std::fmt::Debug for Message<'_> {
   fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
     let mut ds = f.debug_struct("Message");
       ds.field("instruction", &self.instruction());
+      ds.field("parameter", &self.parameter());
       ds.field("sender_uuid", &self.sender_uuid());
       ds.field("world_name", &self.world_name());
-      ds.field("data", &self.data());
       ds.field("records", &self.records());
       ds.field("entities", &self.entities());
       ds.field("position", &self.position());
@@ -865,10 +994,10 @@ impl std::fmt::Debug for Message<'_> {
 #[non_exhaustive]
 #[derive(Debug, Clone, PartialEq)]
 pub struct MessageT {
-  pub instruction: Option<String>,
+  pub instruction: Instruction,
+  pub parameter: Option<String>,
   pub sender_uuid: Option<String>,
   pub world_name: Option<String>,
-  pub data: Option<String>,
   pub records: Option<Vec<RecordT>>,
   pub entities: Option<Vec<EntityT>>,
   pub position: Option<Vec3dT>,
@@ -877,10 +1006,10 @@ pub struct MessageT {
 impl Default for MessageT {
   fn default() -> Self {
     Self {
-      instruction: None,
+      instruction: Instruction::Heartbeat,
+      parameter: None,
       sender_uuid: None,
       world_name: None,
-      data: None,
       records: None,
       entities: None,
       position: None,
@@ -893,16 +1022,14 @@ impl MessageT {
     &self,
     _fbb: &mut flatbuffers::FlatBufferBuilder<'b>
   ) -> flatbuffers::WIPOffset<Message<'b>> {
-    let instruction = self.instruction.as_ref().map(|x|{
+    let instruction = self.instruction;
+    let parameter = self.parameter.as_ref().map(|x|{
       _fbb.create_string(x)
     });
     let sender_uuid = self.sender_uuid.as_ref().map(|x|{
       _fbb.create_string(x)
     });
     let world_name = self.world_name.as_ref().map(|x|{
-      _fbb.create_string(x)
-    });
-    let data = self.data.as_ref().map(|x|{
       _fbb.create_string(x)
     });
     let records = self.records.as_ref().map(|x|{
@@ -918,9 +1045,9 @@ impl MessageT {
     });
     Message::create(_fbb, &MessageArgs{
       instruction,
+      parameter,
       sender_uuid,
       world_name,
-      data,
       records,
       entities,
       position,

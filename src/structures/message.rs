@@ -1,15 +1,15 @@
 use flatbuffers::{FlatBufferBuilder, InvalidFlatbuffer};
 use thiserror::Error;
 
-use super::{Decode, DecodeError, Encode, Entity, Record, Vec3D};
+use super::{Decode, DecodeError, Encode, Entity, Instruction, Record, Vec3D};
 use crate::flatbuffers::{root_as_message, MessageT};
 
 #[derive(Debug, Default)]
 pub struct Message {
-    pub instruction: String,
+    pub instruction: Instruction,
+    pub parameter: Option<String>,
     pub sender_uuid: String,
     pub world_name: String,
-    pub data: Option<String>,
     pub records: Vec<Record>,
     pub entities: Vec<Entity>,
     pub position: Option<Vec3D>,
@@ -31,10 +31,10 @@ impl Encode<MessageT> for Message {
             .collect::<Vec<_>>();
 
         MessageT {
-            instruction: Some(self.instruction),
+            instruction: self.instruction.encode(),
+            parameter: self.parameter,
             sender_uuid: Some(self.sender_uuid),
             world_name: Some(self.world_name),
-            data: self.data,
             records: Some(records),
             entities: Some(entities),
             position: self.position.map(|p| p.encode()),
@@ -45,9 +45,7 @@ impl Encode<MessageT> for Message {
 
 impl Decode<MessageT> for Message {
     fn decode(encoded: MessageT) -> Result<Self, DecodeError> {
-        let instruction = encoded
-            .instruction
-            .ok_or(DecodeError::MissingRequiredField("instruction".into()))?;
+        let instruction = Instruction::decode(encoded.instruction)?;
 
         let sender_uuid = encoded
             .sender_uuid
@@ -90,9 +88,9 @@ impl Decode<MessageT> for Message {
 
         let message = Message {
             instruction,
+            parameter: encoded.parameter,
             sender_uuid,
             world_name,
-            data: encoded.data,
             records,
             entities,
             position,
