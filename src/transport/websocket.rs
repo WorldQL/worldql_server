@@ -56,6 +56,10 @@ async fn handle_connection(addr: SocketAddr, raw_stream: TcpStream) -> Result<()
 
                 if message_result.is_err() {
                     debug!("deserialize error from peer: {}", &addr);
+
+                    #[cfg(debug_assertions)]
+                    tracing::error!("{}", message_result.unwrap_err());
+
                     continue;
                 }
 
