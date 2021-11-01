@@ -1,9 +1,11 @@
+use uuid::Uuid;
+
 use super::{Decode, DecodeError, Encode, Vec3D};
 use crate::flatbuffers::EntityT;
 
 #[derive(Debug, Default)]
 pub struct Entity {
-    pub uuid: String,
+    pub uuid: Uuid,
     pub position: Vec3D,
     pub world_name: String,
     pub data: Option<String>,
@@ -13,7 +15,7 @@ pub struct Entity {
 impl Encode<EntityT> for Entity {
     fn encode(self) -> EntityT {
         EntityT {
-            uuid: Some(self.uuid),
+            uuid: Some(self.uuid.to_string()),
             position: Some(self.position.encode()),
             world_name: Some(self.world_name),
             data: self.data,
@@ -37,7 +39,7 @@ impl Decode<EntityT> for Entity {
             .ok_or(DecodeError::MissingRequiredField("world_name".into()))?;
 
         let entity = Entity {
-            uuid,
+            uuid: Uuid::parse_str(&uuid)?,
             position: Vec3D::decode(position)?,
             world_name,
             data: encoded.data,

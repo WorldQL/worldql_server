@@ -1,5 +1,6 @@
 use flatbuffers::{FlatBufferBuilder, InvalidFlatbuffer};
 use thiserror::Error;
+use uuid::Uuid;
 
 use super::{Decode, DecodeError, Encode, Entity, Instruction, Record, Vec3D};
 use crate::flatbuffers::{root_as_message, MessageT};
@@ -8,7 +9,7 @@ use crate::flatbuffers::{root_as_message, MessageT};
 pub struct Message {
     pub instruction: Instruction,
     pub parameter: Option<String>,
-    pub sender_uuid: String,
+    pub sender_uuid: Uuid,
     pub world_name: String,
     pub records: Vec<Record>,
     pub entities: Vec<Entity>,
@@ -33,7 +34,7 @@ impl Encode<MessageT> for Message {
         MessageT {
             instruction: self.instruction.encode(),
             parameter: self.parameter,
-            sender_uuid: Some(self.sender_uuid),
+            sender_uuid: Some(self.sender_uuid.to_string()),
             world_name: Some(self.world_name),
             records: Some(records),
             entities: Some(entities),
@@ -89,7 +90,7 @@ impl Decode<MessageT> for Message {
         let message = Message {
             instruction,
             parameter: encoded.parameter,
-            sender_uuid,
+            sender_uuid: Uuid::parse_str(&sender_uuid)?,
             world_name,
             records,
             entities,

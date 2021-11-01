@@ -1,9 +1,11 @@
+use uuid::Uuid;
+
 use super::{Decode, DecodeError, Encode, Vec3D};
 use crate::flatbuffers::RecordT;
 
 #[derive(Debug, Default)]
 pub struct Record {
-    pub uuid: String,
+    pub uuid: Uuid,
     pub position: Vec3D,
     pub world_name: String,
     pub data: Option<String>,
@@ -13,7 +15,7 @@ pub struct Record {
 impl Encode<RecordT> for Record {
     fn encode(self) -> RecordT {
         RecordT {
-            uuid: Some(self.uuid),
+            uuid: Some(self.uuid.to_string()),
             position: Some(self.position.encode()),
             world_name: Some(self.world_name),
             data: self.data,
@@ -37,7 +39,7 @@ impl Decode<RecordT> for Record {
             .ok_or(DecodeError::MissingRequiredField("world_name".into()))?;
 
         let record = Record {
-            uuid,
+            uuid: Uuid::parse_str(&uuid)?,
             position: Vec3D::decode(position)?,
             world_name,
             data: encoded.data,

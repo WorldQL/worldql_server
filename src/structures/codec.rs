@@ -14,4 +14,7 @@ pub trait Decode<T> {
 pub enum DecodeError {
     #[error("missing required field: {0}")]
     MissingRequiredField(String),
+
+    #[error(transparent)]
+    InvalidUuid(#[from] uuid::Error),
 }
