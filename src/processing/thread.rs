@@ -1,8 +1,8 @@
 use color_eyre::Result;
 use tokio::sync::mpsc::UnboundedReceiver;
 
-use super::ThreadPeerMap;
 use crate::structures::Message;
+use crate::transport::ThreadPeerMap;
 
 pub async fn start_processing_thread(
     peer_map: ThreadPeerMap,

@@ -6,11 +6,11 @@ use tokio::sync::RwLock;
 use tokio_postgres::NoTls;
 use tracing::{debug, error, info};
 
-use crate::transport::{
-    start_processing_thread, start_websocket_server, start_zeromq_server, PeerMap, ThreadPeerMap,
-};
+use crate::processing::start_processing_thread;
+use crate::transport::{start_websocket_server, start_zeromq_server, PeerMap, ThreadPeerMap};
 
 mod flatbuffers;
+mod processing;
 mod structures;
 mod transport;
 
