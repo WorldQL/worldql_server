@@ -34,14 +34,28 @@ pub async fn start_zeromq_server(
                 let data = msg.into_iter().next().unwrap();
                 let message_result = Message::deserialize(&data);
 
-                if message_result.is_err() {
-                    trace!("dropping invalid zmq message");
-                    continue;
+                let message = match message_result {
+                    Ok(m) => m,
+                    Err(error) => {
+                        trace!("dropping invalid zmq message: deserialize error");
+
+                        #[cfg(debug_assertions)]
+                        tracing::error!("{}", error);
+
+                        continue;
+                    }
+                };
+
+                // Forward messages with known UUIDs
+                {
+                    let map = peer_map.read().await;
+                    if map.contains_key(&message.sender_uuid) {
+                        msg_tx.send(message)?;
+                        continue;
+                    }
                 }
 
-                let message = message_result.unwrap();
-
-                // TODO: Handle handshakes and message forwarding
+                // TODO: Handle handshakes
                 dbg!(&message);
             }
         }

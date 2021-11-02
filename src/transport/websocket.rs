@@ -154,18 +154,18 @@ fn parse_message(
     }
 
     let data = msg.into_data();
-    let message_result = Message::deserialize(&data);
+    let message = match Message::deserialize(&data) {
+        Ok(m) => m,
+        Err(error) => {
+            debug!("deserialize error from peer: {}", addr);
 
-    if message_result.is_err() {
-        debug!("deserialize error from peer: {}", addr);
+            #[cfg(debug_assertions)]
+            tracing::error!("{}", error);
 
-        #[cfg(debug_assertions)]
-        tracing::error!("{}", message_result.unwrap_err());
+            return ParseResult::Ignore;
+        }
+    };
 
-        return ParseResult::Ignore;
-    }
-
-    let message = message_result.unwrap();
     if message.sender_uuid != *uuid {
         trace!(
             "peer uuid is incorrect: expected {}, got {}",
