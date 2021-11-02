@@ -14,8 +14,12 @@ pub async fn start_processing_thread(
             break;
         }
 
-        // TODO: Process incoming messages
-        dbg!(message);
+        let message = message.unwrap();
+
+        // Re-broadcast all messages
+        // TODO: Process messages properly
+        let mut map = peer_map.write().await;
+        let _ = map.broadcast(message).await;
     }
 
     Ok(())
