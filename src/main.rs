@@ -137,7 +137,7 @@ async fn main() -> Result<()> {
         peer_map.clone(),
         msg_tx,
         args.zmq_server_port,
-        args.zmq_client_ports.into(),
+        args.zmq_client_ports,
     ));
 
     let proc_handle = tokio::spawn(start_processing_thread(peer_map, msg_rx));
