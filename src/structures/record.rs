@@ -1,12 +1,12 @@
 use uuid::Uuid;
 
-use super::{Decode, DecodeError, Encode, Vec3D};
+use super::{Decode, DecodeError, Encode, Vector3};
 use crate::flatbuffers::RecordT;
 
 #[derive(Debug, Default)]
 pub struct Record {
     pub uuid: Uuid,
-    pub position: Vec3D,
+    pub position: Vector3,
     pub world_name: String,
     pub data: Option<String>,
     pub flex: Option<Vec<u8>>,
@@ -40,7 +40,7 @@ impl Decode<RecordT> for Record {
 
         let record = Record {
             uuid: Uuid::parse_str(&uuid)?,
-            position: Vec3D::decode(position)?,
+            position: Vector3::decode(position)?,
             world_name,
             data: encoded.data,
             flex: encoded.flex,

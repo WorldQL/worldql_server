@@ -2,7 +2,7 @@ use flatbuffers::{FlatBufferBuilder, InvalidFlatbuffer};
 use thiserror::Error;
 use uuid::Uuid;
 
-use super::{Decode, DecodeError, Encode, Entity, Instruction, Record, Vec3D};
+use super::{Decode, DecodeError, Encode, Entity, Instruction, Record, Vector3};
 use crate::flatbuffers::{root_as_message, MessageT};
 
 #[derive(Debug, Default)]
@@ -13,7 +13,7 @@ pub struct Message {
     pub world_name: String,
     pub records: Vec<Record>,
     pub entities: Vec<Entity>,
-    pub position: Option<Vec3D>,
+    pub position: Option<Vector3>,
     pub flex: Option<Vec<u8>>,
 }
 
@@ -58,7 +58,7 @@ impl Decode<MessageT> for Message {
 
         let position = match encoded.position {
             None => None,
-            Some(pos) => Some(Vec3D::decode(pos)?),
+            Some(pos) => Some(Vector3::decode(pos)?),
         };
 
         let records = match encoded.records {
