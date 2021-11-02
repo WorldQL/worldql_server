@@ -1,4 +1,4 @@
-#[allow(dead_code, unused_imports)]
+#[allow(dead_code, unused_imports, clippy::all)]
 #[path = "./WorldQLFB_generated.rs"]
 mod generated;
 
