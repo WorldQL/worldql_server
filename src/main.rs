@@ -67,13 +67,18 @@ async fn main() -> Result<()> {
     let args = Args::parse();
 
     let filter = match args.verbose {
-        0 => format!("{}=debug", env!("CARGO_PKG_NAME")),
-        1 | 2 => format!("{}=trace", env!("CARGO_PKG_NAME")),
+        #[cfg(debug_assertions)]
+        0 | 1 => format!("{}=debug", env!("CARGO_PKG_NAME")),
+        #[cfg(not(debug_assertions))]
+        0 => format!("{}=info", env!("CARGO_PKG_NAME")),
+        #[cfg(not(debug_assertions))]
+        1 => format!("{}=debug", env!("CARGO_PKG_NAME")),
+        2 | 3 => format!("{}=trace", env!("CARGO_PKG_NAME")),
         _ => "trace".into(),
     };
 
     tracing_subscriber::fmt()
-        .with_target(args.verbose >= 2)
+        .with_target(args.verbose >= 3)
         .with_env_filter(filter)
         .init();
 
