@@ -23,6 +23,14 @@ impl PeerMap {
         self.0.contains_key(uuid)
     }
 
+    pub fn get(&self, uuid: &Uuid) -> Option<&Peer> {
+        self.0.get(uuid)
+    }
+
+    pub fn get_mut(&mut self, uuid: &Uuid) -> Option<&mut Peer> {
+        self.0.get_mut(uuid)
+    }
+
     pub fn insert(&mut self, uuid: Uuid, peer: Peer) -> Option<Peer> {
         trace!("inserting peer {} into map", &peer);
         self.0.insert(uuid, peer)
