@@ -102,7 +102,13 @@ async fn main() -> Result<()> {
         }
     }
 
-    let (psql, psql_conn) = tokio_postgres::connect(&args.psql_conn, NoTls).await?;
+    let psql_result = tokio_postgres::connect(&args.psql_conn, NoTls).await;
+    if let Err(err) = psql_result {
+        error!("PostgreSQL Error: {}", err);
+        std::process::exit(1);
+    }
+
+    let (psql, psql_conn) = psql_result.unwrap();
     tokio::spawn(async move {
         debug!("spawned postgres read thread");
         if let Err(e) = psql_conn.await {
