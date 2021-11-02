@@ -29,7 +29,14 @@ impl PeerMap {
     }
 
     pub fn remove(&mut self, uuid: &Uuid) -> Option<Peer> {
-        self.0.remove(uuid)
+        trace!("trying to remove peer id {} from map", &uuid);
+        let result = self.0.remove(uuid);
+
+        if result.is_some() {
+            trace!("removed peer id {} from map", &uuid);
+        }
+
+        result
     }
 
     pub async fn broadcast(&mut self, message: Message) -> Result<(), SendError> {

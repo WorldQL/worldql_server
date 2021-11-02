@@ -109,6 +109,11 @@ async fn handle_connection(
         }
     }
 
+    {
+        let mut map = peer_map.write().await;
+        map.remove(&uuid);
+    }
+
     Ok(())
 }
 
