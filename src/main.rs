@@ -87,28 +87,39 @@ async fn main() -> Result<()> {
         .with_env_filter(filter)
         .init();
 
+    // Check for port clashes
     {
-        // Check for port clashes
-        let mut used_ports = vec![];
+        let mut used_ports = HashSet::new();
 
         #[cfg(feature = "websocket")]
-        used_ports.push(args.ws_port);
+        {
+            if !portpicker::is_free_tcp(args.ws_port) {
+                error!("WebSocket Server port {} is already in use!", args.ws_port);
+                std::process::exit(1);
+            }
+
+            used_ports.insert(args.ws_port);
+        }
 
         #[cfg(feature = "zeromq")]
         {
-            used_ports.push(args.zmq_server_port);
-            for client_port in args.zmq_client_ports.inner() {
-                used_ports.push(client_port);
+            let server_inserted = used_ports.insert(args.zmq_server_port);
+            if !server_inserted || !portpicker::is_free_tcp(args.zmq_server_port) {
+                error!(
+                    "ZeroMQ Server port {} is already in use!",
+                    args.zmq_server_port
+                );
+
+                std::process::exit(1);
             }
-        }
 
-        let mut uniq = HashSet::new();
-        let unique = used_ports.into_iter().all(move |x| uniq.insert(x));
-
-        if !unique {
-            // TODO: Work out which port(s) clash
-            error!("configured ports must be unique");
-            std::process::exit(1);
+            for client_port in args.zmq_client_ports.inner() {
+                let inserted = used_ports.insert(client_port);
+                if !inserted || !portpicker::is_free_tcp(client_port) {
+                    error!("ZeroMQ Client port {} is already in use!", client_port);
+                    std::process::exit(1);
+                }
+            }
         }
     }
 
@@ -161,7 +172,7 @@ async fn main() -> Result<()> {
     handles.push(proc_handle);
 
     // Run all threads
-    let _ = futures_util::future::join_all(handles);
+    let _ = futures_util::future::join_all(handles).await;
 
     Ok(())
 }
