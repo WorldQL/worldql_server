@@ -3,6 +3,7 @@ use std::num::ParseIntError;
 use std::ops::RangeInclusive;
 use std::str::FromStr;
 
+use rand::Rng;
 use thiserror::Error;
 
 pub struct PortRange(RangeInclusive<u16>);
@@ -10,6 +11,20 @@ pub struct PortRange(RangeInclusive<u16>);
 impl PortRange {
     pub fn inner(&self) -> RangeInclusive<u16> {
         self.0.clone()
+    }
+
+    pub fn random_tcp_port(&self) -> Option<u16> {
+        let mut rng = rand::thread_rng();
+
+        for _ in 0..50 {
+            let port = rng.gen_range(self.0.clone());
+            if portpicker::is_free_tcp(port) {
+                return Some(port);
+            }
+        }
+
+        // Give up
+        None
     }
 }
 
