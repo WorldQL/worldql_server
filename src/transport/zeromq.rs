@@ -4,7 +4,7 @@ use tokio::sync::mpsc::UnboundedSender;
 use tracing::{info, trace};
 
 use super::ThreadPeerMap;
-use crate::structures::Message;
+use crate::structures::{Instruction, Message};
 use crate::utils::PortRange;
 
 pub async fn start_zeromq_server(
@@ -50,9 +50,18 @@ pub async fn start_zeromq_server(
                 {
                     let map = peer_map.read().await;
                     if map.contains_key(&message.sender_uuid) {
-                        msg_tx.send(message)?;
+                        // Only forward non-handshake messages
+                        if message.instruction != Instruction::Handshake {
+                            msg_tx.send(message)?;
+                        }
+
                         continue;
                     }
+                }
+
+                // Ignore non-handshake messages from unknown clients
+                if message.instruction != Instruction::Handshake {
+                    continue;
                 }
 
                 // TODO: Handle handshakes
