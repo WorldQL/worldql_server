@@ -6,10 +6,15 @@ use color_eyre::Result;
 use tokio::sync::RwLock;
 use tokio_postgres::NoTls;
 use tracing::{debug, error, info};
+#[cfg(feature = "zeromq")]
 use utils::PortRange;
 
 use crate::processing::start_processing_thread;
-use crate::transport::{start_websocket_server, start_zeromq_server, PeerMap, ThreadPeerMap};
+#[cfg(feature = "websocket")]
+use crate::transport::start_websocket_server;
+#[cfg(feature = "zeromq")]
+use crate::transport::start_zeromq_server;
+use crate::transport::{PeerMap, ThreadPeerMap};
 
 mod flatbuffers;
 mod processing;
@@ -127,21 +132,36 @@ async fn main() -> Result<()> {
     let peer_map: ThreadPeerMap = Arc::new(RwLock::new(PeerMap::new()));
     let (msg_tx, msg_rx) = tokio::sync::mpsc::unbounded_channel();
 
-    let ws_handle = tokio::spawn(start_websocket_server(
-        peer_map.clone(),
-        msg_tx.clone(),
-        args.ws_port,
-    ));
+    let mut handles = vec![];
 
-    let zmq_handle = tokio::spawn(start_zeromq_server(
-        peer_map.clone(),
-        msg_tx,
-        args.zmq_server_port,
-        args.zmq_client_ports,
-    ));
+    #[cfg(feature = "websocket")]
+    {
+        let ws_handle = tokio::spawn(start_websocket_server(
+            peer_map.clone(),
+            msg_tx.clone(),
+            args.ws_port,
+        ));
+
+        handles.push(ws_handle);
+    }
+
+    #[cfg(feature = "zeromq")]
+    {
+        let zmq_handle = tokio::spawn(start_zeromq_server(
+            peer_map.clone(),
+            msg_tx,
+            args.zmq_server_port,
+            args.zmq_client_ports,
+        ));
+
+        handles.push(zmq_handle);
+    }
 
     let proc_handle = tokio::spawn(start_processing_thread(peer_map, msg_rx));
-    let _ = futures_util::join!(ws_handle, zmq_handle, proc_handle);
+    handles.push(proc_handle);
+
+    // Run all threads
+    let _ = futures_util::future::join_all(handles);
 
     Ok(())
 }

@@ -5,7 +5,9 @@ use futures_util::stream::SplitSink;
 use futures_util::SinkExt;
 use thiserror::Error;
 use tokio::net::TcpStream;
+#[cfg(feature = "websocket")]
 use tokio_tungstenite::tungstenite::Message as WsMessage;
+#[cfg(feature = "websocket")]
 use tokio_tungstenite::WebSocketStream;
 use uuid::Uuid;
 
@@ -93,7 +95,9 @@ impl PeerConnection {
 impl Display for PeerConnection {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
+            #[cfg(feature = "websocket")]
             PeerConnection::WebSocket(_) => write!(f, "WebSocket"),
+            #[cfg(feature = "zeromq")]
             PeerConnection::ZeroMQ => write!(f, "ZeroMQ"),
         }
     }
