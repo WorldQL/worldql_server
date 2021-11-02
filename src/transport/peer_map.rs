@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::sync::Arc;
 
 use tokio::sync::RwLock;
-use tracing::trace;
+use tracing::{debug, trace};
 use uuid::Uuid;
 
 use super::peer::Peer;
@@ -50,9 +50,16 @@ impl PeerMap {
     pub async fn broadcast(&mut self, message: Message) -> Result<(), SendError> {
         let bytes = message.serialize();
 
+        let mut jobs = vec![];
         for peer in self.0.values_mut() {
-            // TODO: Run in parallel, don't terminate on single failure
-            peer.send_raw(bytes.clone()).await?;
+            jobs.push(peer.send_raw(bytes.clone()));
+        }
+
+        for result in futures_util::future::join_all(jobs).await {
+            if let Err(error) = result {
+                // TODO: Remove peers that error
+                debug!("broadcast error: {}", error);
+            }
         }
 
         Ok(())
