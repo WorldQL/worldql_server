@@ -48,7 +48,24 @@ async fn handle_connection(
         debug!("websocket connection closed: {}", &addr);
     }
 
-    let uuid = Uuid::new_v4();
+    // Generate non-clashing UUIDs
+    let uuid: Uuid = {
+        let map = peer_map.read().await;
+        let mut i = 0;
+        loop {
+            let uuid = Uuid::new_v4();
+            if !map.contains_key(&uuid) {
+                break uuid;
+            }
+
+            i += 1;
+            if i > 10 {
+                // TODO: Gracefully handle
+                panic!("could not assign uuid")
+            }
+        }
+    };
+
     let (outgoing, mut incoming) = stream.split();
     let mut peer = Peer::new_ws(addr, uuid, outgoing);
     trace!("new peer: {}", &peer);
