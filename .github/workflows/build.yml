@@ -28,10 +28,7 @@ jobs:
           path: target
           key: ${{ runner.os }}-cargo-build-target-${{ hashFiles('**/Cargo.lock') }}
       - name: Build project
-        uses: actions-rs/cargo@v1
-        with:
-          command: build
-          args: --release
+        run: cargo build --release
       - name: Strip binary
         run: strip target/release/worldql_server
       - name: Upload binary
@@ -71,10 +68,7 @@ jobs:
           path: target
           key: checks-cargo-build-target-${{ hashFiles('**/Cargo.lock') }}
       - name: Run Tests
-        uses: actions-rs/cargo@v1
-        with:
-          command: test
-          args: --all
+        run: cargo test --all
       - name: Check for Clippy Warnings
         uses: actions-rs/clippy-check@v1
         with:
