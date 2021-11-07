@@ -58,7 +58,7 @@ impl PeerMap {
         for result in futures_util::future::join_all(jobs).await {
             if let Err(error) = result {
                 // TODO: Remove peers that error
-                debug!("broadcast error: {}", error);
+                debug!("broadcast error: {:?}", error);
             }
         }
 

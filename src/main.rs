@@ -156,6 +156,8 @@ async fn main() -> Result<()> {
         handles.push(ws_handle);
     }
 
+    println!("{:?}", args.zmq_client_ports);
+
     #[cfg(feature = "zeromq")]
     {
         let zmq_handle = tokio::spawn(start_zeromq_server(

@@ -1,9 +1,12 @@
-use std::fmt::Display;
+use std::fmt::{Display, Formatter};
 use std::net::SocketAddr;
+use std::sync::{Arc, Mutex};
 
 use futures_util::stream::SplitSink;
 use futures_util::SinkExt;
 use thiserror::Error;
+#[cfg(feature = "zeromq")]
+use tmq::push::Push;
 use tokio::net::TcpStream;
 #[cfg(feature = "websocket")]
 use tokio_tungstenite::tungstenite::Message as WsMessage;
