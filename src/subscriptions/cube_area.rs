@@ -2,14 +2,26 @@ use crate::structures::Vector3;
 
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct CubeArea {
-    x: u64,
-    y: u64,
-    z: u64,
+    x: i64,
+    y: i64,
+    z: i64,
 }
 
 impl CubeArea {
-    pub fn new(x: u64, y: u64, z: u64) -> Self {
+    pub fn new(x: i64, y: i64, z: i64) -> Self {
         Self { x, y, z }
+    }
+
+    pub fn x(&self) -> i64 {
+        self.x
+    }
+
+    pub fn y(&self) -> i64 {
+        self.y
+    }
+
+    pub fn z(&self) -> i64 {
+        self.z
     }
 
     fn coord_clamp(coord: f64, size: u32) -> i64 {

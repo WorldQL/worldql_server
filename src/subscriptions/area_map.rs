@@ -4,9 +4,9 @@ use uuid::Uuid;
 
 use crate::structures::Vector3;
 
-use super::cube_area::CubeArea;
+use super::CubeArea;
 
-struct AreaMap {
+pub struct AreaMap {
     cube_size: u16,
     map: HashMap<CubeArea, HashSet<Uuid>>
 }
