@@ -1,5 +1,7 @@
 use color_eyre::Result;
-use tokio::sync::mpsc::UnboundedReceiver;
+use tokio::sync::mpsc::{UnboundedReceiver, UnboundedSender};
+
+use tracing::{debug};
 
 use crate::structures::Message;
 use crate::transport::ThreadPeerMap;
@@ -7,6 +9,7 @@ use crate::transport::ThreadPeerMap;
 pub async fn start_processing_thread(
     peer_map: ThreadPeerMap,
     mut msg_rx: UnboundedReceiver<Message>,
+    zeromq_outgoing_tx: UnboundedSender<Message>
 ) -> Result<()> {
     loop {
         let message = msg_rx.recv().await;
@@ -14,7 +17,13 @@ pub async fn start_processing_thread(
             break;
         }
 
+        // TODO: Remove this unwrap.
         let message = message.unwrap();
+
+        debug!("{:?}", message.instruction);
+
+
+
 
         // Re-broadcast all messages
         // TODO: Process messages properly

@@ -2,7 +2,7 @@ use color_eyre::Result;
 use futures_util::StreamExt;
 use tmq::push::Push;
 use tokio::sync::mpsc::UnboundedSender;
-use tracing::{info, trace};
+use tracing::{info, trace, warn};
 
 
 use super::ThreadPeerMap;
@@ -28,7 +28,7 @@ pub async fn start_zeromq_server(
             Some(msg) => {
                 let msg = msg?;
                 if msg.len() != 1 {
-                    trace!("dropping multipart zmq message");
+                    warn!("Dropping multipart zmq message. Clients should not send multipart messages to WorldQL.");
                     continue;
                 }
 

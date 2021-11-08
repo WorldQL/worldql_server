@@ -112,14 +112,6 @@ async fn main() -> Result<()> {
 
                 std::process::exit(1);
             }
-
-            for client_port in args.zmq_client_ports.inner() {
-                let inserted = used_ports.insert(client_port);
-                if !inserted || !portpicker::is_free_tcp(client_port) {
-                    error!("ZeroMQ Client port {} is already in use!", client_port);
-                    std::process::exit(1);
-                }
-            }
         }
     }
 
@@ -143,6 +135,10 @@ async fn main() -> Result<()> {
     let peer_map: ThreadPeerMap = Arc::new(RwLock::new(PeerMap::new()));
     let (msg_tx, msg_rx) = tokio::sync::mpsc::unbounded_channel();
 
+    // This exists because we cannot share the ZeroMQ PUSH sockets across threads.
+    // We transfer ownership of the ZeroMQ threads to a dedicated thread that only sends outgoing messages.
+    let (zeromq_outgoing_tx, zeromq_outgoing_rx) = tokio::sync::mpsc::unbounded_channel();
+
     let mut handles = vec![];
 
     #[cfg(feature = "websocket")]
@@ -156,8 +152,6 @@ async fn main() -> Result<()> {
         handles.push(ws_handle);
     }
 
-    println!("{:?}", args.zmq_client_ports);
-
     #[cfg(feature = "zeromq")]
     {
         let zmq_handle = tokio::spawn(start_zeromq_server(
@@ -170,7 +164,7 @@ async fn main() -> Result<()> {
         handles.push(zmq_handle);
     }
 
-    let proc_handle = tokio::spawn(start_processing_thread(peer_map, msg_rx));
+    let proc_handle = tokio::spawn(start_processing_thread(peer_map, msg_rx, zeromq_outgoing_tx));
     handles.push(proc_handle);
 
     // Run all threads
