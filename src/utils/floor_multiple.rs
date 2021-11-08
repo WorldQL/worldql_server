@@ -1,9 +1,9 @@
-pub fn floor_by_multiple(n: f64, multiple: f64) -> f64 {
-    if n % multiple == 0.0 {
+pub fn floor_by_multiple(n: u32, multiple: u32) -> u32 {
+    if n % multiple == 0 {
         return n
     }
 
-    let floored = (n / multiple).floor();
+    let floored = n / multiple;
     floored * multiple
 }
 
@@ -21,23 +21,23 @@ mod tests {
     #[test]
     fn floor_by_multiple() {
         // Multiples of 10
-        test_floor!((0.0, 10.0), 0.0);
-        test_floor!((0.5, 10.0), 0.0);
-        test_floor!((1.4, 10.0), 0.0);
-        test_floor!((5.8, 10.0), 0.0);
-        test_floor!((9.9, 10.0), 0.0);
-        test_floor!((9.999999, 10.0), 0.0);
-        test_floor!((10.0, 10.0), 10.0);
-        test_floor!((15.0, 10.0), 10.0);
-        test_floor!((20.0, 10.0), 20.0);
+        test_floor!((0, 10), 0);
+        test_floor!((0, 10), 0);
+        test_floor!((1, 10), 0);
+        test_floor!((5, 10), 0);
+        test_floor!((9, 10), 0);
+        test_floor!((9, 10), 0);
+        test_floor!((10, 10), 10);
+        test_floor!((15, 10), 10);
+        test_floor!((20, 10), 20);
 
         // Multiples of 8
-        test_floor!((0.0, 8.0), 0.0);
-        test_floor!((0.7, 8.0), 0.0);
-        test_floor!((2.2, 8.0), 0.0);
-        test_floor!((6.7, 8.0), 0.0);
-        test_floor!((8.0, 8.0), 8.0);
-        test_floor!((15.999999, 8.0), 8.0);
-        test_floor!((16.0, 8.0), 16.0);
+        test_floor!((0, 8), 0);
+        test_floor!((2, 8), 0);
+        test_floor!((5, 8), 0);
+        test_floor!((7, 8), 0);
+        test_floor!((8, 8), 8);
+        test_floor!((15, 8), 8);
+        test_floor!((16, 8), 16);
     }
 }
