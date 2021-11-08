@@ -1,5 +1,10 @@
 pub fn floor_by_multiple(n: f64, multiple: f64) -> f64 {
-    todo!()
+    if n % multiple == 0.0 {
+        return n
+    }
+
+    let floored = (n / multiple).floor();
+    floored * multiple
 }
 
 #[cfg(test)]
