@@ -8,8 +8,7 @@ use crate::transport::ThreadPeerMap;
 
 pub async fn start_processing_thread(
     peer_map: ThreadPeerMap,
-    mut msg_rx: UnboundedReceiver<Message>,
-    zeromq_outgoing_tx: UnboundedSender<Message>
+    mut msg_rx: UnboundedReceiver<Message>
 ) -> Result<()> {
     loop {
         let message = msg_rx.recv().await;

@@ -3,6 +3,7 @@ use futures_util::StreamExt;
 use tmq::push::Push;
 use tokio::sync::mpsc::UnboundedSender;
 use tracing::{info, trace, warn};
+use crate::outgoing_zeromq_owner::MessageAndClientUUID;
 
 
 use super::ThreadPeerMap;
@@ -13,9 +14,9 @@ pub async fn start_zeromq_server(
     peer_map: ThreadPeerMap,
     msg_tx: UnboundedSender<Message>,
     server_port: u16,
-    client_ports: PortRange,
+    zmq_outgoing_tx: UnboundedSender<MessageAndClientUUID>,
+    ctx: tmq::Context,
 ) -> Result<()> {
-    let ctx = tmq::Context::new();
 
     let pull_addr = format!("tcp://127.0.0.1:{}", server_port);
     let mut pull_socket = tmq::pull(&ctx.clone()).bind(&pull_addr)?;
@@ -68,7 +69,17 @@ pub async fn start_zeromq_server(
 
                 // TODO: Handle handshakes
 
-                dbg!(&message);
+
+                if message.instruction == Instruction::Handshake {
+                    // Forward the message to the OutgoingZeroMQOwner
+                    let sender_uuid = message.sender_uuid;
+                    let m = MessageAndClientUUID {
+                        message: message,
+                        // ignored for handshakes
+                        client: sender_uuid,
+                    };
+                    zmq_outgoing_tx.send(m);
+                }
             }
         }
     }

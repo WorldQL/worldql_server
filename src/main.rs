@@ -8,6 +8,7 @@ use tokio_postgres::NoTls;
 use tracing::{debug, error, info};
 #[cfg(feature = "zeromq")]
 use utils::PortRange;
+use crate::outgoing_zeromq_owner::start_outgoing_zeromq_thread;
 
 use crate::processing::start_processing_thread;
 #[cfg(feature = "websocket")]
@@ -21,6 +22,7 @@ mod processing;
 mod structures;
 mod transport;
 mod utils;
+mod outgoing_zeromq_owner;
 
 // Fail to compile if no transport features are enabled
 #[cfg(not(any(feature = "websocket", feature = "zeromq")))]
@@ -152,20 +154,25 @@ async fn main() -> Result<()> {
         handles.push(ws_handle);
     }
 
+    let ctx = tmq::Context::new();
+
     #[cfg(feature = "zeromq")]
     {
         let zmq_handle = tokio::spawn(start_zeromq_server(
             peer_map.clone(),
             msg_tx,
             args.zmq_server_port,
-            args.zmq_client_ports,
+            zeromq_outgoing_tx,
+            ctx.clone()
         ));
 
         handles.push(zmq_handle);
     }
 
-    let proc_handle = tokio::spawn(start_processing_thread(peer_map, msg_rx, zeromq_outgoing_tx));
+    let proc_handle = tokio::spawn(start_processing_thread(peer_map, msg_rx));
     handles.push(proc_handle);
+
+    handles.push(tokio::spawn(start_outgoing_zeromq_thread(zeromq_outgoing_rx, ctx)));
 
     // Run all threads
     let _ = futures_util::future::join_all(handles).await;
