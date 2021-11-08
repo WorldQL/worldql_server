@@ -2,13 +2,12 @@ use std::collections::{HashMap, HashSet};
 
 use uuid::Uuid;
 
-use crate::structures::Vector3;
-
 use super::CubeArea;
+use crate::structures::Vector3;
 
 pub struct AreaMap {
     cube_size: u16,
-    map: HashMap<CubeArea, HashSet<Uuid>>
+    map: HashMap<CubeArea, HashSet<Uuid>>,
 }
 
 impl AreaMap {

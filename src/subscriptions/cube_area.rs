@@ -28,11 +28,7 @@ impl CubeArea {
         let size_i = size as i64;
         let size_f = size as f64;
 
-        let clamped = if coord % size_f == 0.0 {
-            0
-        } else {
-            size_i
-        };
+        let clamped = if coord % size_f == 0.0 { 0 } else { size_i };
 
         let floored = crate::utils::floor_by_multiple(coord as u32, size) as i64;
         let combined = floored + clamped;

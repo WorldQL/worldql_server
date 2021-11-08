@@ -1,7 +1,8 @@
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign};
 
 use super::{Decode, DecodeError, Encode};
-use crate::{flatbuffers::Vec3dT, subscriptions::CubeArea};
+use crate::flatbuffers::Vec3dT;
+use crate::subscriptions::CubeArea;
 
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct Vector3 {
