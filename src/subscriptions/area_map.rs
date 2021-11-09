@@ -42,7 +42,7 @@ impl AreaMap {
     /// If the subscription was already present, `false` is returned
     pub fn add_subscription(&mut self, uuid: Uuid, cube: impl ToCubeArea) -> bool {
         let cube = cube.to_cube_area(self.cube_size);
-        let entry = self.map.entry(cube).or_insert(Default::default());
+        let entry = self.map.entry(cube).or_insert_with(Default::default);
 
         entry.insert(uuid)
     }
@@ -50,13 +50,13 @@ impl AreaMap {
     /// Returns whether the value was registered.
     pub fn remove_subscription(&mut self, uuid: &Uuid, cube: impl ToCubeArea) -> bool {
         let cube = cube.to_cube_area(self.cube_size);
-        let entry = self.map.entry(cube).or_insert(Default::default());
+        let entry = self.map.entry(cube).or_insert_with(Default::default);
 
         // Remove from HashSet
         let removed = entry.remove(uuid);
 
         // Remove HashSet from HashMap if empty
-        if entry.len() == 0 {
+        if entry.is_empty() {
             self.map.remove(&cube);
         }
 
