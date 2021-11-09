@@ -5,11 +5,12 @@ pub struct CubeArea {
     x: i64,
     y: i64,
     z: i64,
+    size: u16,
 }
 
 impl CubeArea {
-    pub fn new(x: i64, y: i64, z: i64) -> Self {
-        Self { x, y, z }
+    pub fn new(x: i64, y: i64, z: i64, size: u16) -> Self {
+        Self { x, y, z, size }
     }
 
     pub fn x(&self) -> i64 {
@@ -22,6 +23,10 @@ impl CubeArea {
 
     pub fn z(&self) -> i64 {
         self.z
+    }
+
+    pub fn size(&self) -> u16 {
+        self.size
     }
 
     fn coord_clamp(coord: f64, size: u32) -> i64 {
@@ -102,7 +107,7 @@ mod tests {
     macro_rules! test_from_vector3 {
         ($input: expr, $expected: expr, $clamp: expr) => {
             let input = Vector3::new($input.0, $input.1, $input.2);
-            let expected = CubeArea::new($expected.0, $expected.1, $expected.2);
+            let expected = CubeArea::new($expected.0, $expected.1, $expected.2, $clamp);
 
             let actual = CubeArea::from_vector3(input, $clamp);
             assert_eq!(actual, expected);

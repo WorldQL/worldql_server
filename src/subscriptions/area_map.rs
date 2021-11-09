@@ -2,8 +2,7 @@ use std::collections::{HashMap, HashSet};
 
 use uuid::Uuid;
 
-use super::CubeArea;
-use crate::structures::Vector3;
+use super::{CubeArea, ToCubeArea};
 
 pub struct AreaMap {
     cube_size: u16,
@@ -18,18 +17,18 @@ impl AreaMap {
         }
     }
 
-    pub fn is_peer_subscribed(&self, uuid: &Uuid, cube: Vector3) -> bool {
-        let cube = CubeArea::from_vector3(cube, self.cube_size);
+    pub fn is_peer_subscribed(&self, uuid: &Uuid, cube: impl ToCubeArea) -> bool {
+        let cube = cube.to_cube_area(self.cube_size);
         let entry = self.map.get(&cube);
 
         match entry {
             None => false,
-            Some(set) => set.contains(uuid)
+            Some(set) => set.contains(uuid),
         }
     }
 
-    pub fn get_subscribed_peers(&self, cube: Vector3) -> Vec<&Uuid> {
-        let cube = CubeArea::from_vector3(cube, self.cube_size);
+    pub fn get_subscribed_peers(&self, cube: impl ToCubeArea) -> Vec<&Uuid> {
+        let cube = cube.to_cube_area(self.cube_size);
         let entry = self.map.get(&cube);
 
         match entry {
@@ -41,16 +40,16 @@ impl AreaMap {
     /// If the subscription was added, `true` is returned.
     ///
     /// If the subscription was already present, `false` is returned
-    pub fn add_subscription(&mut self, uuid: Uuid, cube: Vector3) -> bool {
-        let cube = CubeArea::from_vector3(cube, self.cube_size);
+    pub fn add_subscription(&mut self, uuid: Uuid, cube: impl ToCubeArea) -> bool {
+        let cube = cube.to_cube_area(self.cube_size);
         let entry = self.map.entry(cube).or_insert(Default::default());
 
         entry.insert(uuid)
     }
 
     /// Returns whether the value was registered.
-    pub fn remove_subscription(&mut self, uuid: &Uuid, cube: Vector3) -> bool {
-        let cube = CubeArea::from_vector3(cube, self.cube_size);
+    pub fn remove_subscription(&mut self, uuid: &Uuid, cube: impl ToCubeArea) -> bool {
+        let cube = cube.to_cube_area(self.cube_size);
         let entry = self.map.entry(cube).or_insert(Default::default());
 
         entry.remove(uuid)
