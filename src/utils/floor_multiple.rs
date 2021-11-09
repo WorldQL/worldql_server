@@ -1,4 +1,8 @@
 pub fn floor_by_multiple(n: u32, multiple: u32) -> u32 {
+    if n == 0 {
+        return 0;
+    }
+
     if n % multiple == 0 {
         return n;
     }
