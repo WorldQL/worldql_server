@@ -29,7 +29,7 @@ impl CubeArea {
         self.size
     }
 
-    fn coord_clamp(coord: f64, size: u32) -> i64 {
+    fn coord_clamp(coord: f64, size: u16) -> i64 {
         let size_i = size as i64;
         let size_f = size as f64;
 
@@ -45,7 +45,11 @@ impl CubeArea {
     }
 
     pub fn from_vector3(vec: Vector3, size: u16) -> Self {
-        todo!()
+        let x = Self::coord_clamp(vec.x, size);
+        let y = Self::coord_clamp(vec.y, size);
+        let z = Self::coord_clamp(vec.z, size);
+
+        Self::new(x, y, z, size)
     }
 }
 
