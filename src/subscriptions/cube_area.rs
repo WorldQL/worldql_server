@@ -28,12 +28,15 @@ impl CubeArea {
         let size_i = size as i64;
         let size_f = size as f64;
 
-        let clamped = if coord % size_f == 0.0 { 0 } else { size_i };
+        if coord % size_f == 0.0 {
+            return coord as i64;
+        }
 
-        let floored = crate::utils::floor_by_multiple(coord as u32, size) as i64;
-        let combined = floored + clamped;
-
-        combined
+        let rounded = crate::utils::round_by_multiple(coord, size as f64);
+        match rounded > coord {
+            true => rounded as i64,
+            false => (rounded as i64) + size_i,
+        }
     }
 
     pub fn from_vector3(vec: Vector3, size: u16) -> Self {
@@ -55,7 +58,7 @@ mod tests {
     }
 
     #[test]
-    fn coord_clamp() {
+    fn coord_clamp_10() {
         // Unit Case
         test_coord_clamp!((0.0, 10), 0);
 
@@ -67,10 +70,33 @@ mod tests {
         test_coord_clamp!((10.1, 10), 20);
 
         // Negative Cases
-        test_coord_clamp!((-0.1, 0), 0);
-        test_coord_clamp!((-5.0, 0), 0);
-        test_coord_clamp!((-9.99999, 0), 0);
+        test_coord_clamp!((-0.1, 10), 0);
+        test_coord_clamp!((-5.0, 10), 0);
+        test_coord_clamp!((-9.99999, 10), 0);
         test_coord_clamp!((-10.0, 10), -10);
+        test_coord_clamp!((-10.1, 10), -10);
+        test_coord_clamp!((-20.0, 10), -20);
+    }
+
+    #[test]
+    fn coord_clamp_8() {
+        // Unit Case
+        test_coord_clamp!((0.0, 8), 0);
+
+        // Positive Cases
+        test_coord_clamp!((0.1, 8), 8);
+        test_coord_clamp!((5.0, 8), 8);
+        test_coord_clamp!((9.99999, 8), 16);
+        test_coord_clamp!((10.0, 8), 16);
+        test_coord_clamp!((10.1, 8), 16);
+
+        // Negative Cases
+        test_coord_clamp!((-0.1, 8), 0);
+        test_coord_clamp!((-5.0, 8), 0);
+        test_coord_clamp!((-9.99999, 8), -8);
+        test_coord_clamp!((-10.0, 8), -8);
+        test_coord_clamp!((-10.1, 8), -8);
+        test_coord_clamp!((-20.0, 8), -16);
     }
 
     macro_rules! test_from_vector3 {
