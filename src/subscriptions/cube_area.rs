@@ -16,19 +16,27 @@ impl CubeArea {
         Self { x, y, z, size }
     }
 
+    /// Clamp to largest absolute coordinate value. This allows us to disambiguate positive and negative CubeAreas.
     fn coord_clamp(coord: f64, size: u16) -> i64 {
+        let result_multiplier = match coord < 0.0 {
+            true => -1,
+            false => 1
+        };
+        let abs_coord = coord.abs();
+
         let size_i = size as i64;
         let size_f = size as f64;
 
-        if coord % size_f == 0.0 {
+        if abs_coord % size_f == 0.0 && coord != 0.0 {
             return coord as i64;
         }
 
-        let rounded = crate::utils::round_by_multiple(coord, size as f64);
-        match rounded > coord {
+        let rounded = crate::utils::round_by_multiple(abs_coord, size as f64);
+        let result = match rounded > coord {
             true => rounded as i64,
             false => (rounded as i64) + size_i,
-        }
+        };
+        result * result_multiplier
     }
 
     pub fn from_vector3(vec: Vector3, size: u16) -> Self {
@@ -68,7 +76,6 @@ mod tests {
         ($input: expr, $expected: expr) => {
             let (input, clamp) = $input;
             let actual = CubeArea::coord_clamp(input, clamp);
-
             assert_eq!(actual, $expected)
         };
     }
@@ -76,7 +83,7 @@ mod tests {
     #[test]
     fn coord_clamp_10() {
         // Unit Case
-        test_coord_clamp!((0.0, 10), 0);
+        test_coord_clamp!((0.0, 10), 10);
 
         // Positive Cases
         test_coord_clamp!((0.1, 10), 10);
@@ -86,18 +93,18 @@ mod tests {
         test_coord_clamp!((10.1, 10), 20);
 
         // Negative Cases
-        test_coord_clamp!((-0.1, 10), 0);
-        test_coord_clamp!((-5.0, 10), 0);
-        test_coord_clamp!((-9.99999, 10), 0);
+        test_coord_clamp!((-0.1, 10), -10);
+        test_coord_clamp!((-5.0, 10), -10);
+        test_coord_clamp!((-9.99999, 10), -10);
         test_coord_clamp!((-10.0, 10), -10);
-        test_coord_clamp!((-10.1, 10), -10);
+        test_coord_clamp!((-10.1, 10), -20);
         test_coord_clamp!((-20.0, 10), -20);
     }
 
     #[test]
     fn coord_clamp_8() {
         // Unit Case
-        test_coord_clamp!((0.0, 8), 0);
+        test_coord_clamp!((0.0, 8), 8);
 
         // Positive Cases
         test_coord_clamp!((0.1, 8), 8);
@@ -107,12 +114,12 @@ mod tests {
         test_coord_clamp!((10.1, 8), 16);
 
         // Negative Cases
-        test_coord_clamp!((-0.1, 8), 0);
-        test_coord_clamp!((-5.0, 8), 0);
-        test_coord_clamp!((-9.99999, 8), -8);
-        test_coord_clamp!((-10.0, 8), -8);
-        test_coord_clamp!((-10.1, 8), -8);
-        test_coord_clamp!((-20.0, 8), -16);
+        test_coord_clamp!((-0.1, 8), -8);
+        test_coord_clamp!((-5.0, 8), -8);
+        test_coord_clamp!((-9.99999, 8), -16);
+        test_coord_clamp!((-10.0, 8), -16);
+        test_coord_clamp!((-10.1, 8), -16);
+        test_coord_clamp!((-20.0, 8), -24);
     }
 
     macro_rules! test_from_vector3 {
@@ -128,7 +135,7 @@ mod tests {
     #[test]
     fn from_vector3() {
         // Unit case
-        test_from_vector3!((0.0, 0.0, 0.0), (0, 0, 0), 10);
+        test_from_vector3!((0.0, 0.0, 0.0), (10, 10, 10), 10);
 
         // Positive Cases
         test_from_vector3!((0.1, 0.3, 2.5), (10, 10, 10), 10);
@@ -136,10 +143,14 @@ mod tests {
         test_from_vector3!((9.1, 9.9, 9.9), (10, 10, 10), 10);
         test_from_vector3!((18.0, 12.5, 16.7), (20, 20, 20), 10);
 
-        // TODO: Negative Cases
-        // test_cube_clamp!((-3.0, -8.0, -1.3), (0.0, 0.0, 0.0), 10);
-        // test_cube_clamp!((-6.0, -0.3, -9.9), (0.0, 0.0, 0.0), 10);
-        // test_cube_clamp!((-12.0, -19.9, -13.5), (-10.0, -10.0, -10.0), 10);
+        // Negative Cases
+        test_from_vector3!((-3.0, -8.0, -1.3), (-10, -10, -10), 10);
+        test_from_vector3!((-6.0, -0.3, -9.9), (-10, -10, -10), 10);
+        test_from_vector3!((-12.0, -19.9, -13.5), (-20, -20, -20), 10);
+
+        // Mixed Cases
+        test_from_vector3!((25.0, -13.2, 0.0), (30, -20, 10), 10);
+        test_from_vector3!((25.0, -13.2, -0.1), (30, -20, -10), 10);
     }
 }
 // endregion

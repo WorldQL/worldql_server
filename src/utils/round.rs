@@ -2,6 +2,10 @@ pub fn round_by_multiple(n: f64, multiple: f64) -> f64 {
     if multiple == 0.0 {
         return n;
     }
+    // special case, 0 rounds to 10.
+    if n == 0.0 {
+        return multiple;
+    }
 
     let ceil = (n / multiple).ceil();
     ceil * multiple
@@ -21,7 +25,7 @@ mod tests {
     #[test]
     fn round_positive() {
         // Multiples of 10
-        test_round!((0.0, 10.0), 0.0);
+        test_round!((0.0, 10.0), 10.0);
         test_round!((0.1, 10.0), 10.0);
         test_round!((1.0, 10.0), 10.0);
         test_round!((5.0, 10.0), 10.0);
@@ -34,7 +38,7 @@ mod tests {
         test_round!((20.0, 10.0), 20.0);
 
         // Multiples of 8
-        test_round!((0.0, 8.0), 0.0);
+        test_round!((0.0, 8.0), 8.0);
         test_round!((2.0, 8.0), 8.0);
         test_round!((5.0, 8.0), 8.0);
         test_round!((7.0, 8.0), 8.0);
