@@ -1,7 +1,9 @@
+use derive_getters::Getters;
+
 use crate::structures::Vector3;
 
 // region: CubeArea
-#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Default, Getters, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct CubeArea {
     x: i64,
     y: i64,
@@ -12,22 +14,6 @@ pub struct CubeArea {
 impl CubeArea {
     pub fn new(x: i64, y: i64, z: i64, size: u16) -> Self {
         Self { x, y, z, size }
-    }
-
-    pub fn x(&self) -> i64 {
-        self.x
-    }
-
-    pub fn y(&self) -> i64 {
-        self.y
-    }
-
-    pub fn z(&self) -> i64 {
-        self.z
-    }
-
-    pub fn size(&self) -> u16 {
-        self.size
     }
 
     fn coord_clamp(coord: f64, size: u16) -> i64 {
@@ -46,9 +32,9 @@ impl CubeArea {
     }
 
     pub fn from_vector3(vec: Vector3, size: u16) -> Self {
-        let x = Self::coord_clamp(vec.x, size);
-        let y = Self::coord_clamp(vec.y, size);
-        let z = Self::coord_clamp(vec.z, size);
+        let x = Self::coord_clamp(*vec.x(), size);
+        let y = Self::coord_clamp(*vec.y(), size);
+        let z = Self::coord_clamp(*vec.z(), size);
 
         Self::new(x, y, z, size)
     }

@@ -1,14 +1,16 @@
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign};
 
+use derive_getters::Getters;
+
 use super::{Decode, DecodeError, Encode};
 use crate::flatbuffers::Vec3dT;
 use crate::subscriptions::CubeArea;
 
-#[derive(Debug, Default, Clone, Copy, PartialEq)]
+#[derive(Debug, Default, Getters, Clone, Copy, PartialEq)]
 pub struct Vector3 {
-    pub x: f64,
-    pub y: f64,
-    pub z: f64,
+    x: f64,
+    y: f64,
+    z: f64,
 }
 
 impl Vector3 {
@@ -24,9 +26,9 @@ impl Vector3 {
 // region: Conversion Traits
 impl From<CubeArea> for Vector3 {
     fn from(area: CubeArea) -> Self {
-        let x = area.x() as f64;
-        let y = area.y() as f64;
-        let z = area.z() as f64;
+        let x = *area.x() as f64;
+        let y = *area.y() as f64;
+        let z = *area.z() as f64;
 
         Self::new(x, y, z)
     }
