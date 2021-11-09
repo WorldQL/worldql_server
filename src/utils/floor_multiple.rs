@@ -22,7 +22,6 @@ mod tests {
     fn floor_by_multiple() {
         // Multiples of 10
         test_floor!((0, 10), 0);
-        test_floor!((0, 10), 0);
         test_floor!((1, 10), 0);
         test_floor!((5, 10), 0);
         test_floor!((9, 10), 0);
