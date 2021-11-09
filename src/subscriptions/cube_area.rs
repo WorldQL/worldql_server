@@ -1,5 +1,6 @@
 use crate::structures::Vector3;
 
+// region: CubeArea
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct CubeArea {
     x: i64,
@@ -52,7 +53,27 @@ impl CubeArea {
         Self::new(x, y, z, size)
     }
 }
+// endregion
 
+// region: ToCubeArea Trait
+pub trait ToCubeArea {
+    fn to_cube_area(self, size: u16) -> CubeArea;
+}
+
+impl ToCubeArea for CubeArea {
+    fn to_cube_area(self, _: u16) -> CubeArea {
+        self
+    }
+}
+
+impl ToCubeArea for Vector3 {
+    fn to_cube_area(self, size: u16) -> CubeArea {
+        CubeArea::from_vector3(self, size)
+    }
+}
+// endregion
+
+// region: Tests
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -135,3 +156,4 @@ mod tests {
         // test_cube_clamp!((-12.0, -19.9, -13.5), (-10.0, -10.0, -10.0), 10);
     }
 }
+// endregion
