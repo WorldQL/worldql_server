@@ -67,9 +67,9 @@ mod tests {
         test_coord_clamp!((10.1, 10), 20);
 
         // Negative Cases
-        test_coord_clamp!((-0.1, 10), 0);
-        test_coord_clamp!((-5.0, 10), 0);
-        test_coord_clamp!((-9.99999, 10), 0);
+        test_coord_clamp!((-0.1, 0), 0);
+        test_coord_clamp!((-5.0, 0), 0);
+        test_coord_clamp!((-9.99999, 0), 0);
         test_coord_clamp!((-10.0, 10), -10);
     }
 
