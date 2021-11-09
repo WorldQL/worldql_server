@@ -52,6 +52,14 @@ impl AreaMap {
         let cube = cube.to_cube_area(self.cube_size);
         let entry = self.map.entry(cube).or_insert(Default::default());
 
-        entry.remove(uuid)
+        // Remove from HashSet
+        let removed = entry.remove(uuid);
+
+        // Remove HashSet from HashMap if empty
+        if entry.len() == 0 {
+            self.map.remove(&cube);
+        }
+
+        removed
     }
 }
