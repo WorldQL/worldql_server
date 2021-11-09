@@ -55,17 +55,6 @@ struct Args {
         env = "WQL_ZMQ_SERVER_PORT"
     )]
     zmq_server_port: u16,
-
-    /// ZeroMQ Client Port Range
-    #[cfg(feature = "zeromq")]
-    #[clap(
-        name = "PORT_RANGE",
-        short = 'Z',
-        long = "zmq-client-ports",
-        default_value = "22000..23000",
-        env = "WQL_ZMQ_CLIENT_PORTS"
-    )]
-    zmq_client_ports: PortRange,
 }
 
 #[tokio::main]
