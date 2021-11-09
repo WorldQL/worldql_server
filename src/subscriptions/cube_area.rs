@@ -16,13 +16,15 @@ impl CubeArea {
         Self { x, y, z, size }
     }
 
-    /// Clamp to largest absolute coordinate value. This allows us to disambiguate positive and negative CubeAreas.
+    /// Clamp to largest absolute coordinate value.
+    ///
+    /// This allows us to disambiguate positive and negative areas.
     fn coord_clamp(coord: f64, size: u16) -> i64 {
+        let abs_coord = coord.abs();
         let result_multiplier = match coord < 0.0 {
             true => -1,
             false => 1
         };
-        let abs_coord = coord.abs();
 
         let size_i = size as i64;
         let size_f = size as f64;
@@ -36,9 +38,14 @@ impl CubeArea {
             true => rounded as i64,
             false => (rounded as i64) + size_i,
         };
+
         result * result_multiplier
     }
 
+    /// Convert a [`Vector3`] to a [`CubeArea`]
+    ///
+    /// Vector3 also implements [`ToCubeArea`] which implicitly calls this function.
+    #[inline]
     pub fn from_vector3(vec: Vector3, size: u16) -> Self {
         let x = Self::coord_clamp(*vec.x(), size);
         let y = Self::coord_clamp(*vec.y(), size);
@@ -72,6 +79,7 @@ impl ToCubeArea for Vector3 {
 mod tests {
     use super::*;
 
+    // region: coord_clamp()
     macro_rules! test_coord_clamp {
         ($input: expr, $expected: expr) => {
             let (input, clamp) = $input;
@@ -121,7 +129,9 @@ mod tests {
         test_coord_clamp!((-10.1, 8), -16);
         test_coord_clamp!((-20.0, 8), -24);
     }
+    // endregion
 
+    // region: from_vector3()
     macro_rules! test_from_vector3 {
         ($input: expr, $expected: expr, $clamp: expr) => {
             let input = Vector3::new($input.0, $input.1, $input.2);
@@ -152,5 +162,6 @@ mod tests {
         test_from_vector3!((25.0, -13.2, 0.0), (30, -20, 10), 10);
         test_from_vector3!((25.0, -13.2, -0.1), (30, -20, -10), 10);
     }
+    // endregion
 }
 // endregion

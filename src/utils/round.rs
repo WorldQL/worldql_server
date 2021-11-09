@@ -2,7 +2,8 @@ pub fn round_by_multiple(n: f64, multiple: f64) -> f64 {
     if multiple == 0.0 {
         return n;
     }
-    // special case, 0 rounds to 10.
+
+    // Special case, 0 should round up
     if n == 0.0 {
         return multiple;
     }
