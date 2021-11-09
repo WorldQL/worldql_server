@@ -18,30 +18,41 @@ impl AreaMap {
         }
     }
 
-    pub fn is_peer_subscribed(&self, uuid: Uuid, cube: Vector3) -> bool {
+    pub fn is_peer_subscribed(&self, uuid: &Uuid, cube: Vector3) -> bool {
         let cube = CubeArea::from_vector3(cube, self.cube_size);
+        let entry = self.map.get(&cube);
 
-        // TODO
-        todo!()
+        match entry {
+            None => false,
+            Some(set) => set.contains(uuid)
+        }
     }
 
-    pub fn get_subscribed_peers(&self, cube: Vector3) -> Vec<Uuid> {
+    pub fn get_subscribed_peers(&self, cube: Vector3) -> Vec<&Uuid> {
         let cube = CubeArea::from_vector3(cube, self.cube_size);
+        let entry = self.map.get(&cube);
 
-        todo!()
+        match entry {
+            None => vec![],
+            Some(set) => set.iter().collect::<Vec<_>>(),
+        }
     }
 
-    pub fn add_subscription(&mut self, uuid: Uuid, cube: Vector3) {
+    /// If the subscription was added, `true` is returned.
+    ///
+    /// If the subscription was already present, `false` is returned
+    pub fn add_subscription(&mut self, uuid: Uuid, cube: Vector3) -> bool {
         let cube = CubeArea::from_vector3(cube, self.cube_size);
+        let entry = self.map.entry(cube).or_insert(Default::default());
 
-        // TODO
-        todo!()
+        entry.insert(uuid)
     }
 
-    pub fn remove_subscription(&mut self, uuid: Uuid, cube: Vector3) {
+    /// Returns whether the value was registered.
+    pub fn remove_subscription(&mut self, uuid: &Uuid, cube: Vector3) -> bool {
         let cube = CubeArea::from_vector3(cube, self.cube_size);
+        let entry = self.map.entry(cube).or_insert(Default::default());
 
-        // TODO
-        todo!()
+        entry.remove(uuid)
     }
 }
