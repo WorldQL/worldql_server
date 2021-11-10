@@ -32,6 +32,9 @@ pub async fn start_outgoing_zeromq_thread(
         }
         let mc = message.unwrap();
 
+        //region: Handle incoming handshakes
+        // This is NOT an outgoing message.
+        // This is here because the push sockets need to be created here.
         if mc.message.instruction == Instruction::Handshake && !mc.message.parameter.is_none() {
             let endpoint = "tcp://".to_owned()
                 + &mc.message.parameter.ok_or_else(|| {
@@ -63,6 +66,7 @@ pub async fn start_outgoing_zeromq_thread(
 
             continue;
         }
+        //endregion
     }
 
     Ok(())
