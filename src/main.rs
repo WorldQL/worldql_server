@@ -20,6 +20,7 @@ use crate::transport::{PeerMap, ThreadPeerMap};
 mod flatbuffers;
 mod processing;
 mod structures;
+mod subscriptions;
 mod transport;
 mod utils;
 mod outgoing_zeromq_owner;
@@ -55,6 +56,10 @@ struct Args {
         env = "WQL_ZMQ_SERVER_PORT"
     )]
     zmq_server_port: u16,
+
+    /// Subscription Region Cube Size
+    #[clap(long, default_value = "10", env = "WQL_SUBSCRIPTION_REGION_CUBE_SIZE")]
+    sub_region_cube_size: u16,
 }
 
 #[tokio::main]
