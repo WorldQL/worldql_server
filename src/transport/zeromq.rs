@@ -4,11 +4,10 @@ use tmq::push::Push;
 use tokio::sync::mpsc::UnboundedSender;
 use tracing::{info, trace, warn};
 
+use super::ThreadPeerMap;
 use crate::outgoing_zeromq_owner::MessageAndClientUUID;
 use crate::structures::{Instruction, Message};
 use crate::utils::PortRange;
-
-use super::ThreadPeerMap;
 
 pub async fn start_zeromq_server(
     peer_map: ThreadPeerMap,
@@ -62,7 +61,6 @@ pub async fn start_zeromq_server(
                 }
 
                  */
-
 
                 if message.instruction == Instruction::Handshake {
                     // Forward the message to the OutgoingZeroMQOwner

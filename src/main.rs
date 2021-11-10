@@ -6,7 +6,6 @@ use color_eyre::Result;
 use tokio::sync::RwLock;
 use tokio_postgres::NoTls;
 use tracing::{debug, error, info};
-
 #[cfg(feature = "zeromq")]
 use utils::PortRange;
 
