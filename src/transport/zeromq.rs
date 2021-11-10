@@ -4,10 +4,11 @@ use tmq::push::Push;
 use tokio::sync::mpsc::UnboundedSender;
 use tracing::{info, trace, warn};
 
-use super::ThreadPeerMap;
 use crate::outgoing_zeromq_owner::MessageAndClientUUID;
 use crate::structures::{Instruction, Message};
 use crate::utils::PortRange;
+
+use super::ThreadPeerMap;
 
 pub async fn start_zeromq_server(
     peer_map: ThreadPeerMap,
@@ -47,7 +48,7 @@ pub async fn start_zeromq_server(
                     }
                 };
 
-                // Forward messages with known UUIDs
+                /* Forward messages with known UUIDs
                 {
                     let map = peer_map.read().await;
                     if map.contains_key(&message.sender_uuid) {
@@ -60,22 +61,24 @@ pub async fn start_zeromq_server(
                     }
                 }
 
-                // Ignore non-handshake messages from unknown clients
-                if message.instruction != Instruction::Handshake {
-                    continue;
-                }
+                 */
 
-                // TODO: Handle handshakes
 
                 if message.instruction == Instruction::Handshake {
                     // Forward the message to the OutgoingZeroMQOwner
-                    let sender_uuid = message.sender_uuid;
+                    let sender_uuid = message.clone().sender_uuid;
                     let m = MessageAndClientUUID {
-                        message: message,
+                        message: message.clone(),
                         // ignored for handshakes
                         client: sender_uuid,
                     };
                     zmq_outgoing_tx.send(m);
+                    continue;
+                } else {
+                    zmq_outgoing_tx.send(MessageAndClientUUID {
+                        message: message.clone(),
+                        client: message.clone().sender_uuid,
+                    });
                 }
             }
         }

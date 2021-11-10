@@ -5,7 +5,7 @@ use uuid::Uuid;
 use super::{Decode, DecodeError, Encode, Entity, Instruction, Record, Vector3};
 use crate::flatbuffers::{root_as_message, MessageT};
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct Message {
     pub instruction: Instruction,
     pub parameter: Option<String>,

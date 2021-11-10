@@ -3,7 +3,7 @@ use uuid::Uuid;
 use super::{Decode, DecodeError, Encode, Vector3};
 use crate::flatbuffers::RecordT;
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct Record {
     pub uuid: Uuid,
     pub position: Vector3,

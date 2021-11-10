@@ -23,7 +23,9 @@ pub async fn start_outgoing_zeromq_thread(
     mut msg_rx: UnboundedReceiver<MessageAndClientUUID>,
     ctx: tmq::Context,
 ) -> Result<()> {
+    // TODO: Rework this entire function. This is just a quick and dirty approach. I need to figure out a way to pass this handshakes but also pass it bytes for outgoing messages.
     let mut zeromq_peer_map: HashMap<Uuid, Push> = HashMap::new();
+    let mut connected_uuids = vec![]; // TODO: Remove.
     let zeromq_server_uuid = Uuid::new_v4(); // used for outgoing handshake.
     loop {
         let message = msg_rx.recv().await;
@@ -31,6 +33,8 @@ pub async fn start_outgoing_zeromq_thread(
             continue;
         }
         let mc = message.unwrap();
+
+        println!("{:?}", mc.message.instruction);
 
         //region: Handle incoming handshakes
         // This is NOT an outgoing message.
@@ -54,6 +58,7 @@ pub async fn start_outgoing_zeromq_thread(
             };
 
             zeromq_peer_map.insert(mc.message.sender_uuid, new_push_socket);
+            connected_uuids.push(mc.message.sender_uuid);
             info!("Added new peer at {} to map", endpoint);
 
             let outgoing_socket = zeromq_peer_map.get_mut(&mc.message.sender_uuid);
@@ -67,6 +72,18 @@ pub async fn start_outgoing_zeromq_thread(
             continue;
         }
         //endregion
+
+        // Otherwise, broadcast.
+        // TODO: Remove this and work into PeerConnection into some way that isn't crazy redundant.
+        for connected_uuid in &connected_uuids {
+            if connected_uuid != &mc.message.sender_uuid {
+                let outgoing_socket = zeromq_peer_map.get_mut(&connected_uuid);
+                outgoing_socket
+                    .unwrap()
+                    .send(vec![mc.message.clone().serialize()])
+                    .await;
+            }
+        }
     }
 
     Ok(())

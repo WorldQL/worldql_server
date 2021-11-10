@@ -1,7 +1,7 @@
 use super::{Decode, DecodeError, Encode};
 use crate::flatbuffers::Instruction as InstructionFB;
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub enum Instruction {
     Heartbeat,
     Handshake,

@@ -3,7 +3,7 @@ use uuid::Uuid;
 use super::{Decode, DecodeError, Encode, Vector3};
 use crate::flatbuffers::EntityT;
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct Entity {
     pub uuid: Uuid,
     pub position: Vector3,
