@@ -1,4 +1,3 @@
-use crate::outgoing_zeromq_owner::MessageAndClientUUID;
 use color_eyre::Result;
 use futures_util::StreamExt;
 use tmq::push::Push;
@@ -6,6 +5,7 @@ use tokio::sync::mpsc::UnboundedSender;
 use tracing::{info, trace, warn};
 
 use super::ThreadPeerMap;
+use crate::outgoing_zeromq_owner::MessageAndClientUUID;
 use crate::structures::{Instruction, Message};
 use crate::utils::PortRange;
 

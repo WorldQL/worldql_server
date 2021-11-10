@@ -6,17 +6,16 @@ use color_eyre::Result;
 use tokio::sync::RwLock;
 use tokio_postgres::NoTls;
 use tracing::{debug, error, info};
-
 #[cfg(feature = "zeromq")]
 use utils::PortRange;
 
 use crate::outgoing_zeromq_owner::start_outgoing_zeromq_thread;
 use crate::processing::start_processing_thread;
-use crate::transport::{PeerMap, ThreadPeerMap};
 #[cfg(feature = "websocket")]
 use crate::transport::start_websocket_server;
 #[cfg(feature = "zeromq")]
 use crate::transport::start_zeromq_server;
+use crate::transport::{PeerMap, ThreadPeerMap};
 
 mod flatbuffers;
 mod outgoing_zeromq_owner;

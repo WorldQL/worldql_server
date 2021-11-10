@@ -1,13 +1,14 @@
-use crate::structures::{DecodeError, Instruction, Message};
+use std::collections::HashMap;
+
 use color_eyre::Result;
 use futures_util::SinkExt;
-use std::collections::HashMap;
 use tmq::push;
 use tmq::push::Push;
 use tokio::sync::mpsc::UnboundedReceiver;
+use tracing::info;
 use uuid::Uuid;
 
-use tracing::info;
+use crate::structures::{DecodeError, Instruction, Message};
 
 /// Used to attach the destination of a message in the UnboundedReceiver of Messages
 pub struct MessageAndClientUUID {
