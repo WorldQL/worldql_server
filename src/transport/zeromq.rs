@@ -1,10 +1,9 @@
+use crate::outgoing_zeromq_owner::MessageAndClientUUID;
 use color_eyre::Result;
 use futures_util::StreamExt;
 use tmq::push::Push;
 use tokio::sync::mpsc::UnboundedSender;
 use tracing::{info, trace, warn};
-use crate::outgoing_zeromq_owner::MessageAndClientUUID;
-
 
 use super::ThreadPeerMap;
 use crate::structures::{Instruction, Message};
@@ -17,7 +16,6 @@ pub async fn start_zeromq_server(
     zmq_outgoing_tx: UnboundedSender<MessageAndClientUUID>,
     ctx: tmq::Context,
 ) -> Result<()> {
-
     let pull_addr = format!("tcp://127.0.0.1:{}", server_port);
     let mut pull_socket = tmq::pull(&ctx.clone()).bind(&pull_addr)?;
     info!("ZeroMQ PULL Server listening on port {}", server_port);
@@ -68,7 +66,6 @@ pub async fn start_zeromq_server(
                 }
 
                 // TODO: Handle handshakes
-
 
                 if message.instruction == Instruction::Handshake {
                     // Forward the message to the OutgoingZeroMQOwner

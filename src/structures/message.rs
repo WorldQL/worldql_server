@@ -52,7 +52,6 @@ impl Decode<MessageT> for Message {
             .sender_uuid
             .ok_or_else(|| DecodeError::MissingRequiredField("sender_uuid".into()))?;
 
-
         let position = match encoded.position {
             None => None,
             Some(pos) => Some(Vector3::decode(pos)?),

@@ -6,24 +6,25 @@ use color_eyre::Result;
 use tokio::sync::RwLock;
 use tokio_postgres::NoTls;
 use tracing::{debug, error, info};
+
 #[cfg(feature = "zeromq")]
 use utils::PortRange;
-use crate::outgoing_zeromq_owner::start_outgoing_zeromq_thread;
 
+use crate::outgoing_zeromq_owner::start_outgoing_zeromq_thread;
 use crate::processing::start_processing_thread;
+use crate::transport::{PeerMap, ThreadPeerMap};
 #[cfg(feature = "websocket")]
 use crate::transport::start_websocket_server;
 #[cfg(feature = "zeromq")]
 use crate::transport::start_zeromq_server;
-use crate::transport::{PeerMap, ThreadPeerMap};
 
 mod flatbuffers;
+mod outgoing_zeromq_owner;
 mod processing;
 mod structures;
 mod subscriptions;
 mod transport;
 mod utils;
-mod outgoing_zeromq_owner;
 
 // Fail to compile if no transport features are enabled
 #[cfg(not(any(feature = "websocket", feature = "zeromq")))]
@@ -157,7 +158,7 @@ async fn main() -> Result<()> {
             msg_tx,
             args.zmq_server_port,
             zeromq_outgoing_tx,
-            ctx.clone()
+            ctx.clone(),
         ));
 
         handles.push(zmq_handle);
@@ -166,7 +167,10 @@ async fn main() -> Result<()> {
     let proc_handle = tokio::spawn(start_processing_thread(peer_map, msg_rx));
     handles.push(proc_handle);
 
-    handles.push(tokio::spawn(start_outgoing_zeromq_thread(zeromq_outgoing_rx, ctx)));
+    handles.push(tokio::spawn(start_outgoing_zeromq_thread(
+        zeromq_outgoing_rx,
+        ctx,
+    )));
 
     // Run all threads
     let _ = futures_util::future::join_all(handles).await;

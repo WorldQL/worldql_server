@@ -23,7 +23,7 @@ impl CubeArea {
         let abs_coord = coord.abs();
         let result_multiplier = match coord < 0.0 {
             true => -1,
-            false => 1
+            false => 1,
         };
 
         let size_i = size as i64;
