@@ -6,6 +6,7 @@ use color_eyre::Result;
 use tokio::sync::RwLock;
 use tokio_postgres::NoTls;
 use tracing::{debug, error, info};
+
 #[cfg(feature = "zeromq")]
 use utils::PortRange;
 
@@ -33,7 +34,12 @@ compile_error!("at least one of `websocket` or `zeromq` features must be enabled
 #[clap(version)]
 struct Args {
     /// PostgreSQL Connection String
-    #[clap(short, long = "psql", env = "WQL_POSTGRES_CONNECTION_STRING")]
+    #[clap(
+        short,
+        long = "psql",
+        default_value = "none",
+        env = "WQL_POSTGRES_CONNECTION_STRING"
+    )]
     psql_conn: String,
 
     /// Set Verbosity Level.
@@ -111,22 +117,24 @@ async fn main() -> Result<()> {
         }
     }
 
-    let psql_result = tokio_postgres::connect(&args.psql_conn, NoTls).await;
-    if let Err(err) = psql_result {
-        error!("PostgreSQL Error: {}", err);
-        std::process::exit(1);
-    }
-
-    let (psql, psql_conn) = psql_result.unwrap();
-    tokio::spawn(async move {
-        debug!("spawned postgres read thread");
-        if let Err(e) = psql_conn.await {
-            error!("PostgreSQL Connection Error: {}", e);
+    if (&args.psql_conn != "none") {
+        let psql_result = tokio_postgres::connect(&args.psql_conn, NoTls).await;
+        if let Err(err) = psql_result {
+            error!("PostgreSQL Error: {}", err);
+            std::process::exit(1);
         }
-    });
 
-    let client = Arc::new(psql);
-    info!("Connected to PostgreSQL");
+        let (psql, psql_conn) = psql_result.unwrap();
+        tokio::spawn(async move {
+            debug!("spawned postgres read thread");
+            if let Err(e) = psql_conn.await {
+                error!("PostgreSQL Connection Error: {}", e);
+            }
+        });
+
+        let client = Arc::new(psql);
+        info!("Connected to PostgreSQL");
+    }
 
     let peer_map: ThreadPeerMap = Arc::new(RwLock::new(PeerMap::new()));
     let (msg_tx, msg_rx) = tokio::sync::mpsc::unbounded_channel();
