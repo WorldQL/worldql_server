@@ -1,10 +1,10 @@
 use color_eyre::Result;
-use futures_util::{StreamExt};
+use futures_util::StreamExt;
 use tokio::sync::mpsc::UnboundedSender;
 use tracing::{info, trace, warn};
 
-use super::{ThreadPeerMap};
-use crate::{structures::{Instruction, Message}};
+use super::ThreadPeerMap;
+use crate::structures::{Instruction, Message};
 
 pub async fn start_zeromq_incoming(
     peer_map: ThreadPeerMap,

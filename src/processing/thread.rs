@@ -1,5 +1,5 @@
 use color_eyre::Result;
-use tokio::sync::mpsc::{UnboundedReceiver, UnboundedSender};
+use tokio::sync::mpsc::UnboundedReceiver;
 use tracing::debug;
 
 use crate::structures::Message;

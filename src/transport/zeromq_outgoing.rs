@@ -1,4 +1,4 @@
-use std::{collections::HashMap};
+use std::collections::HashMap;
 
 use color_eyre::Result;
 use futures_util::SinkExt;
@@ -7,9 +7,9 @@ use tokio::sync::mpsc::{UnboundedReceiver, UnboundedSender};
 use tracing::{debug, info};
 use uuid::Uuid;
 
-use crate::{structures::{DecodeError, Instruction, Message}, transport::Peer};
-
 use super::ThreadPeerMap;
+use crate::structures::{Instruction, Message};
+use crate::transport::Peer;
 
 pub type ZmqOutgoingMessagePair = (Vec<u8>, Uuid);
 type SocketMap = HashMap<Uuid, Push>;
@@ -44,18 +44,18 @@ pub async fn start_zeromq_outgoing(
 async fn handle_message(
     peer_map: &ThreadPeerMap,
     sockets: &mut SocketMap,
-    (bytes, uuid): ZmqOutgoingMessagePair
+    (bytes, uuid): ZmqOutgoingMessagePair,
 ) -> Result<()> {
     match sockets.get_mut(&uuid) {
         Some(socket) => {
             let zmq_msg = tmq::Message::from(bytes);
             socket.send(zmq_msg).await?;
-        },
+        }
         None => {
             // Remove sockets from PeerMap if they are not in SocketMap
             let mut map = peer_map.write().await;
             map.remove(&uuid);
-        },
+        }
     }
 
     Ok(())
@@ -66,14 +66,14 @@ async fn handle_handshake(
     msg_tx: UnboundedSender<ZmqOutgoingMessagePair>,
     ctx: &tmq::Context,
     sockets: &mut SocketMap,
-    message: Message
+    message: Message,
 ) -> Result<()> {
     let parameter = message.parameter.unwrap();
     let addr = match parameter.parse() {
         Ok(addr) => addr,
         Err(_) => {
             // Invalid socket address, drop handshake message
-            return Ok(())
+            return Ok(());
         }
     };
 

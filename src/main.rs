@@ -3,7 +3,7 @@ use std::sync::Arc;
 
 use clap::Parser;
 use color_eyre::Result;
-use tokio::sync::{RwLock, mpsc};
+use tokio::sync::{mpsc, RwLock};
 use tokio_postgres::NoTls;
 use tracing::{debug, error, info};
 
@@ -29,11 +29,7 @@ compile_error!("at least one of `websocket` or `zeromq` features must be enabled
 #[clap(version)]
 struct Args {
     /// PostgreSQL Connection String
-    #[clap(
-        short,
-        long = "psql",
-        env = "WQL_POSTGRES_CONNECTION_STRING"
-    )]
+    #[clap(short, long = "psql", env = "WQL_POSTGRES_CONNECTION_STRING")]
     psql_conn: Option<String>,
 
     /// Set Verbosity Level.
@@ -132,7 +128,7 @@ async fn main() -> Result<()> {
             info!("Connected to PostgreSQL");
 
             Some(client)
-        },
+        }
     };
 
     let peer_map: ThreadPeerMap = Arc::new(RwLock::new(PeerMap::new()));

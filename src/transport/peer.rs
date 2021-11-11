@@ -13,10 +13,9 @@ use tokio_tungstenite::tungstenite::Message as WsMessage;
 use tokio_tungstenite::WebSocketStream;
 use uuid::Uuid;
 
-use crate::structures::Message;
-
 #[cfg(feature = "zeromq")]
 use super::ZmqOutgoingMessagePair;
+use crate::structures::Message;
 
 #[cfg(feature = "websocket")]
 type WebSocketConnection = SplitSink<WebSocketStream<TcpStream>, WsMessage>;
@@ -39,7 +38,11 @@ impl Peer {
     }
 
     #[cfg(feature = "websocket")]
-    pub fn new_zmq(addr: SocketAddr, uuid: Uuid, zmq_tx: UnboundedSender<ZmqOutgoingMessagePair>) -> Self {
+    pub fn new_zmq(
+        addr: SocketAddr,
+        uuid: Uuid,
+        zmq_tx: UnboundedSender<ZmqOutgoingMessagePair>,
+    ) -> Self {
         Self {
             addr,
             uuid,
@@ -134,5 +137,5 @@ pub enum SendError {
 
     #[cfg(feature = "zeromq")]
     #[error(transparent)]
-    ZmqError(#[from] tokio::sync::mpsc::error::SendError<ZmqOutgoingMessagePair>)
+    ZmqError(#[from] tokio::sync::mpsc::error::SendError<ZmqOutgoingMessagePair>),
 }

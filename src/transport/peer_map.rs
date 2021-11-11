@@ -15,7 +15,7 @@ pub type ThreadPeerMap = Arc<RwLock<PeerMap>>;
 pub struct PeerMap(HashMap<Uuid, Peer>);
 
 macro_rules! broadcast_to {
-    ($message: expr, $peers: expr) => ({
+    ($message: expr, $peers: expr) => {{
         let bytes = $message.serialize();
 
         let mut jobs = vec![];
@@ -31,7 +31,7 @@ macro_rules! broadcast_to {
         }
 
         Ok(())
-    });
+    }};
 }
 
 impl PeerMap {
@@ -71,14 +71,25 @@ impl PeerMap {
         broadcast_to!(message, self.0.values_mut())
     }
 
-    pub async fn broadcast_to(&mut self, message: Message, peers: impl Iterator<Item = Uuid>) -> Result<(), SendError> {
+    pub async fn broadcast_to(
+        &mut self,
+        message: Message,
+        peers: impl Iterator<Item = Uuid>,
+    ) -> Result<(), SendError> {
         let peers = peers.collect::<HashSet<_>>();
-        let peers = self.0.values_mut().filter(|peer| peers.contains(peer.uuid()));
+        let peers = self
+            .0
+            .values_mut()
+            .filter(|peer| peers.contains(peer.uuid()));
 
         broadcast_to!(message, peers)
     }
 
-    pub async fn broadcast_except(&mut self, message: Message, except: Uuid) -> Result<(), SendError> {
+    pub async fn broadcast_except(
+        &mut self,
+        message: Message,
+        except: Uuid,
+    ) -> Result<(), SendError> {
         let peers = self.0.values_mut().filter(|peer| *peer.uuid() != except);
         broadcast_to!(message, peers)
     }
