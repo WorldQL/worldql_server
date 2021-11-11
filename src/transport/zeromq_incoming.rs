@@ -1,6 +1,6 @@
 use color_eyre::Result;
+use flume::Sender;
 use futures_util::StreamExt;
-use tokio::sync::mpsc::UnboundedSender;
 use tracing::{info, trace, warn};
 
 use super::ThreadPeerMap;
@@ -8,8 +8,8 @@ use crate::structures::{Instruction, Message};
 
 pub async fn start_zeromq_incoming(
     peer_map: ThreadPeerMap,
-    msg_tx: UnboundedSender<Message>,
-    handshake_tx: UnboundedSender<Message>,
+    msg_tx: Sender<Message>,
+    handshake_tx: Sender<Message>,
     server_port: u16,
     ctx: tmq::Context,
 ) -> Result<()> {
@@ -50,7 +50,7 @@ pub async fn start_zeromq_incoming(
                     if map.contains_key(&message.sender_uuid) {
                         // Only forward non-handshake messages
                         if message.instruction != Instruction::Handshake {
-                            msg_tx.send(message)?;
+                            msg_tx.send_async(message).await?;
                         }
 
                         continue;
@@ -64,7 +64,7 @@ pub async fn start_zeromq_incoming(
                 }
 
                 // Send handshake message to ZeroMQ Outgoing Thread
-                handshake_tx.send(message)?;
+                handshake_tx.send_async(message).await?;
             }
         }
     }

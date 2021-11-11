@@ -3,6 +3,8 @@ use std::net::SocketAddr;
 
 use bytes::Bytes;
 use derive_getters::Getters;
+#[cfg(feature = "zeromq")]
+use flume::Sender;
 #[cfg(feature = "websocket")]
 use futures_util::stream::SplitSink;
 #[cfg(feature = "websocket")]
@@ -10,8 +12,6 @@ use futures_util::SinkExt;
 use thiserror::Error;
 #[cfg(feature = "websocket")]
 use tokio::net::TcpStream;
-#[cfg(feature = "zeromq")]
-use tokio::sync::mpsc::UnboundedSender;
 #[cfg(feature = "websocket")]
 use tokio_tungstenite::tungstenite::Message as WsMessage;
 #[cfg(feature = "websocket")]
@@ -26,7 +26,7 @@ type WebSocketConnection = SplitSink<WebSocketStream<TcpStream>, WsMessage>;
 #[cfg(feature = "zeromq")]
 pub type ZmqOutgoingPair = (Bytes, Uuid);
 #[cfg(feature = "zeromq")]
-type ZmqConnection = UnboundedSender<ZmqOutgoingPair>;
+type ZmqConnection = Sender<ZmqOutgoingPair>;
 
 #[derive(Debug, Getters)]
 pub struct Peer {
@@ -112,7 +112,7 @@ impl PeerConnection {
             }
             #[cfg(feature = "zeromq")]
             PeerConnection::ZeroMQ(tx) => {
-                tx.send((bytes, uuid))?;
+                tx.send_async((bytes, uuid)).await?;
 
                 Ok(())
             }
@@ -139,5 +139,5 @@ pub enum SendError {
 
     #[cfg(feature = "zeromq")]
     #[error(transparent)]
-    ZmqError(#[from] tokio::sync::mpsc::error::SendError<ZmqOutgoingPair>),
+    ZmqError(#[from] flume::SendError<ZmqOutgoingPair>),
 }

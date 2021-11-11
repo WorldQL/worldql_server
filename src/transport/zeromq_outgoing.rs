@@ -1,9 +1,9 @@
 use std::collections::HashMap;
 
 use color_eyre::Result;
+use flume::{Receiver, Sender};
 use futures_util::SinkExt;
 use tmq::push::Push;
-use tokio::sync::mpsc::{UnboundedReceiver, UnboundedSender};
 use tracing::{debug, info};
 use uuid::Uuid;
 
@@ -15,9 +15,9 @@ type SocketMap = HashMap<Uuid, Push>;
 
 pub async fn start_zeromq_outgoing(
     peer_map: ThreadPeerMap,
-    msg_tx: UnboundedSender<ZmqOutgoingPair>,
-    mut msg_rx: UnboundedReceiver<ZmqOutgoingPair>,
-    mut handshake_rx: UnboundedReceiver<Message>,
+    msg_tx: Sender<ZmqOutgoingPair>,
+    msg_rx: Receiver<ZmqOutgoingPair>,
+    handshake_rx: Receiver<Message>,
     ctx: tmq::Context,
 ) -> Result<()> {
     let mut sockets: SocketMap = HashMap::new();
@@ -25,10 +25,10 @@ pub async fn start_zeromq_outgoing(
 
     loop {
         tokio::select! {
-            Some(pair) = msg_rx.recv() => {
+            Ok(pair) = msg_rx.recv_async() => {
                 handle_message(&peer_map, &mut sockets, pair).await?
             },
-            Some(message) = handshake_rx.recv() => {
+            Ok(message) = handshake_rx.recv_async() => {
                 handle_handshake(&peer_map, msg_tx.clone(), &ctx, &mut sockets, message).await?
             },
 
@@ -62,7 +62,7 @@ async fn handle_message(
 
 async fn handle_handshake(
     peer_map: &ThreadPeerMap,
-    msg_tx: UnboundedSender<ZmqOutgoingPair>,
+    msg_tx: Sender<ZmqOutgoingPair>,
     ctx: &tmq::Context,
     sockets: &mut SocketMap,
     message: Message,

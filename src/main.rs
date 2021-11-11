@@ -3,7 +3,7 @@ use std::sync::Arc;
 
 use clap::Parser;
 use color_eyre::Result;
-use tokio::sync::{mpsc, RwLock};
+use tokio::sync::RwLock;
 use tokio_postgres::NoTls;
 use tracing::{debug, error, info};
 
@@ -136,7 +136,7 @@ async fn main() -> Result<()> {
     };
 
     let peer_map: ThreadPeerMap = Arc::new(RwLock::new(PeerMap::new()));
-    let (msg_tx, msg_rx) = mpsc::unbounded_channel();
+    let (msg_tx, msg_rx) = flume::unbounded();
 
     let mut handles = vec![];
 
@@ -154,8 +154,8 @@ async fn main() -> Result<()> {
     #[cfg(feature = "zeromq")]
     {
         let ctx = tmq::Context::new();
-        let (zmq_msg_tx, zmq_msg_rx) = mpsc::unbounded_channel();
-        let (zmq_handshake_tx, zmq_handshake_rx) = mpsc::unbounded_channel();
+        let (zmq_msg_tx, zmq_msg_rx) = flume::unbounded();
+        let (zmq_handshake_tx, zmq_handshake_rx) = flume::unbounded();
 
         let zmq_incoming_handle = tokio::spawn(start_zeromq_incoming(
             peer_map.clone(),
