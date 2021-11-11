@@ -32,10 +32,9 @@ struct Args {
     #[clap(
         short,
         long = "psql",
-        default_value = "none",
         env = "WQL_POSTGRES_CONNECTION_STRING"
     )]
-    psql_conn: String,
+    psql_conn: Option<String>,
 
     /// Set Verbosity Level.
     /// eg: -vvv to enable very verbose logs
@@ -112,24 +111,29 @@ async fn main() -> Result<()> {
         }
     }
 
-    if &args.psql_conn != "none" {
-        let psql_result = tokio_postgres::connect(&args.psql_conn, NoTls).await;
-        if let Err(err) = psql_result {
-            error!("PostgreSQL Error: {}", err);
-            std::process::exit(1);
-        }
-
-        let (psql, psql_conn) = psql_result.unwrap();
-        tokio::spawn(async move {
-            debug!("spawned postgres read thread");
-            if let Err(e) = psql_conn.await {
-                error!("PostgreSQL Connection Error: {}", e);
+    let client = match args.psql_conn {
+        None => None,
+        Some(conn) => {
+            let psql_result = tokio_postgres::connect(&conn, NoTls).await;
+            if let Err(err) = psql_result {
+                error!("PostgreSQL Error: {}", err);
+                std::process::exit(1);
             }
-        });
 
-        let client = Arc::new(psql);
-        info!("Connected to PostgreSQL");
-    }
+            let (psql, psql_conn) = psql_result.unwrap();
+            tokio::spawn(async move {
+                debug!("spawned postgres read thread");
+                if let Err(e) = psql_conn.await {
+                    error!("PostgreSQL Connection Error: {}", e);
+                }
+            });
+
+            let client = Arc::new(psql);
+            info!("Connected to PostgreSQL");
+
+            Some(client)
+        },
+    };
 
     let peer_map: ThreadPeerMap = Arc::new(RwLock::new(PeerMap::new()));
     let (msg_tx, msg_rx) = tokio::sync::mpsc::unbounded_channel();
