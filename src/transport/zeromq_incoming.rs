@@ -3,14 +3,14 @@ use futures_util::StreamExt;
 use tokio::sync::mpsc::UnboundedSender;
 use tracing::{info, trace, warn};
 
-use super::{ThreadPeerMap, zeromq_outgoing::MessageClientPair};
+use super::{ThreadPeerMap, ZmqOutgoingMessagePair};
 use crate::structures::{Instruction, Message};
 
 pub async fn start_zeromq_incoming(
     peer_map: ThreadPeerMap,
     msg_tx: UnboundedSender<Message>,
     server_port: u16,
-    zmq_outgoing_tx: UnboundedSender<MessageClientPair>,
+    zmq_outgoing_tx: UnboundedSender<ZmqOutgoingMessagePair>,
     ctx: tmq::Context,
 ) -> Result<()> {
     let pull_addr = format!("tcp://127.0.0.1:{}", server_port);
@@ -60,13 +60,13 @@ pub async fn start_zeromq_incoming(
 
                 // Always forward ZeroMQ Messages
                 // TODO: Handle messages correctly
-                let sender = message.sender_uuid;
-                let result = zmq_outgoing_tx.send((message, sender));
+                // let sender = message.sender_uuid;
+                // let result = zmq_outgoing_tx.send((message, sender));
 
-                if result.is_err() {
-                    // Channel is closed, should exit thread.
-                    break;
-                }
+                // if result.is_err() {
+                //     // Channel is closed, should exit thread.
+                //     break;
+                // }
             }
         }
     }

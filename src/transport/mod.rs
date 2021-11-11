@@ -14,4 +14,4 @@ pub use websocket::start_websocket_server;
 #[cfg(feature = "zeromq")]
 pub use zeromq_incoming::start_zeromq_incoming;
 #[cfg(feature = "zeromq")]
-pub use zeromq_outgoing::start_zeromq_outgoing;
+pub use zeromq_outgoing::{start_zeromq_outgoing, ZmqOutgoingMessagePair};

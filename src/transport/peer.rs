@@ -1,13 +1,12 @@
-use std::fmt::{Display, Formatter};
+use std::fmt::Display;
 use std::net::SocketAddr;
-use std::sync::{Arc, Mutex};
 
 use futures_util::stream::SplitSink;
 use futures_util::SinkExt;
 use thiserror::Error;
-#[cfg(feature = "zeromq")]
-use tmq::push::Push;
 use tokio::net::TcpStream;
+#[cfg(feature = "zeromq")]
+use tokio::sync::mpsc::UnboundedSender;
 #[cfg(feature = "websocket")]
 use tokio_tungstenite::tungstenite::Message as WsMessage;
 #[cfg(feature = "websocket")]
@@ -15,6 +14,9 @@ use tokio_tungstenite::WebSocketStream;
 use uuid::Uuid;
 
 use crate::structures::Message;
+
+#[cfg(feature = "zeromq")]
+use super::ZmqOutgoingMessagePair;
 
 #[cfg(feature = "websocket")]
 type WebSocketConnection = SplitSink<WebSocketStream<TcpStream>, WsMessage>;
@@ -36,12 +38,21 @@ impl Peer {
         }
     }
 
+    #[cfg(feature = "websocket")]
+    pub fn new_zmq(addr: SocketAddr, uuid: Uuid, zmq_tx: UnboundedSender<ZmqOutgoingMessagePair>) -> Self {
+        Self {
+            addr,
+            uuid,
+            connection: PeerConnection::ZeroMQ(zmq_tx),
+        }
+    }
+
     pub async fn send(&mut self, message: Message) -> Result<(), SendError> {
-        self.connection.send(message).await
+        self.connection.send(self.uuid, message).await
     }
 
     pub async fn send_raw(&mut self, bytes: Vec<u8>) -> Result<(), SendError> {
-        self.connection.send_raw(bytes).await
+        self.connection.send_raw(self.uuid, bytes).await
     }
 }
 
@@ -66,18 +77,18 @@ pub enum PeerConnection {
     #[cfg(feature = "websocket")]
     WebSocket(WebSocketConnection),
     #[cfg(feature = "zeromq")]
-    ZeroMQ,
+    ZeroMQ(UnboundedSender<ZmqOutgoingMessagePair>),
 }
 
 impl PeerConnection {
-    async fn send(&mut self, message: Message) -> Result<(), SendError> {
+    async fn send(&mut self, uuid: Uuid, message: Message) -> Result<(), SendError> {
         let bytes = message.serialize();
-        self.send_raw(bytes).await?;
+        self.send_raw(uuid, bytes).await?;
 
         Ok(())
     }
 
-    async fn send_raw(&mut self, bytes: Vec<u8>) -> Result<(), SendError> {
+    async fn send_raw(&mut self, uuid: Uuid, bytes: Vec<u8>) -> Result<(), SendError> {
         match self {
             #[cfg(feature = "websocket")]
             PeerConnection::WebSocket(conn) => {
@@ -87,9 +98,10 @@ impl PeerConnection {
                 Ok(())
             }
             #[cfg(feature = "zeromq")]
-            PeerConnection::ZeroMQ => {
-                // TODO
-                todo!()
+            PeerConnection::ZeroMQ(tx) => {
+                tx.send((bytes, uuid))?;
+
+                Ok(())
             }
         }
     }
@@ -101,7 +113,7 @@ impl Display for PeerConnection {
             #[cfg(feature = "websocket")]
             PeerConnection::WebSocket(_) => write!(f, "WebSocket"),
             #[cfg(feature = "zeromq")]
-            PeerConnection::ZeroMQ => write!(f, "ZeroMQ"),
+            PeerConnection::ZeroMQ(_) => write!(f, "ZeroMQ"),
         }
     }
 }
@@ -111,4 +123,8 @@ pub enum SendError {
     #[cfg(feature = "websocket")]
     #[error(transparent)]
     WsError(#[from] tokio_tungstenite::tungstenite::Error),
+
+    #[cfg(feature = "zeromq")]
+    #[error(transparent)]
+    ZmqError(#[from] tokio::sync::mpsc::error::SendError<ZmqOutgoingMessagePair>)
 }
