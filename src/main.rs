@@ -21,6 +21,10 @@ mod subscriptions;
 mod transport;
 mod utils;
 
+// Fail to compile on non-linux based platforms.
+#[cfg(not(target_os = "linux"))]
+compile_error!("WorldQL only supports Linux!");
+
 // Fail to compile if no transport features are enabled
 #[cfg(not(any(feature = "websocket", feature = "zeromq")))]
 compile_error!("at least one of `websocket` or `zeromq` features must be enabled!");
