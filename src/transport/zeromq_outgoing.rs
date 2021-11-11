@@ -21,7 +21,6 @@ pub async fn start_zeromq_outgoing(
 ) -> Result<()> {
     // TODO: Rework this entire function. This is just a quick and dirty approach. I need to figure out a way to pass this handshakes but also pass it bytes for outgoing messages.
     let mut zeromq_peer_map: HashMap<Uuid, Push> = HashMap::new();
-    let mut connected_uuids = vec![]; // TODO: Remove.
     let zeromq_server_uuid = Uuid::new_v4(); // used for outgoing handshake.
 
 
@@ -72,11 +71,9 @@ pub async fn start_zeromq_outgoing(
 
         // Otherwise, broadcast.
         // TODO: Remove this and work into PeerConnection into some way that isn't crazy redundant.
-        for connected_uuid in &connected_uuids {
+        for (connected_uuid, socket) in zeromq_peer_map.iter_mut() {
             if connected_uuid != &message.sender_uuid {
-                let outgoing_socket = zeromq_peer_map.get_mut(&connected_uuid);
-                outgoing_socket
-                    .unwrap()
+                socket
                     .send(vec![message.clone().serialize()])
                     .await;
             }
