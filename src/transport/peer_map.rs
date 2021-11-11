@@ -39,6 +39,7 @@ impl PeerMap {
         Self(HashMap::new())
     }
 
+    // region: Lookups and Getters
     /// Returns `true` if the map contains a [`Peer`] for the specified [`Uuid`].
     #[inline]
     pub fn contains_key(&self, uuid: &Uuid) -> bool {
@@ -57,6 +58,13 @@ impl PeerMap {
         self.0.get_mut(uuid)
     }
 
+    /// Returns an iterator of [`Uuid`] items for each contained [`Peer`].
+    pub fn peers_iter(&self) -> impl Iterator<Item = Uuid> + '_ {
+        self.0.keys().copied()
+    }
+    // endregion
+
+    // region: Map Modifiers
     /// Inserts a [`Peer`] into the map.
     ///
     /// If the map did not have this key present, [`None`] is returned.
@@ -79,7 +87,9 @@ impl PeerMap {
 
         result
     }
+    // endregion
 
+    // region: Broadcast Functions
     /// Broadcast a [`Message`] to all peers in the map.
     pub async fn broadcast(&mut self, message: Message) -> Result<(), SendError> {
         broadcast_to!(message, self.0.values_mut())
@@ -110,4 +120,5 @@ impl PeerMap {
         let peers = self.0.values_mut().filter(|peer| *peer.uuid() != except);
         broadcast_to!(message, peers)
     }
+    // endregion
 }
