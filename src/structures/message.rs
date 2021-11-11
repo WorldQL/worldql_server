@@ -15,7 +15,7 @@ pub struct Message {
     pub records: Vec<Record>,
     pub entities: Vec<Entity>,
     pub position: Option<Vector3>,
-    pub flex: Option<Vec<u8>>,
+    pub flex: Option<Bytes>,
 }
 
 impl Encode<MessageT> for Message {
@@ -40,7 +40,7 @@ impl Encode<MessageT> for Message {
             records: Some(records),
             entities: Some(entities),
             position: self.position.map(|p| p.encode()),
-            flex: self.flex,
+            flex: self.flex.map(|flex| flex.to_vec()),
         }
     }
 }
@@ -92,7 +92,7 @@ impl Decode<MessageT> for Message {
             records,
             entities,
             position,
-            flex: encoded.flex,
+            flex: encoded.flex.map(Bytes::from),
         };
 
         Ok(message)

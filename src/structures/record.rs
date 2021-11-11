@@ -1,3 +1,4 @@
+use bytes::Bytes;
 use uuid::Uuid;
 
 use super::{Decode, DecodeError, Encode, Vector3};
@@ -9,7 +10,7 @@ pub struct Record {
     pub position: Vector3,
     pub world_name: String,
     pub data: Option<String>,
-    pub flex: Option<Vec<u8>>,
+    pub flex: Option<Bytes>,
 }
 
 impl Encode<RecordT> for Record {
@@ -19,7 +20,7 @@ impl Encode<RecordT> for Record {
             position: Some(self.position.encode()),
             world_name: Some(self.world_name),
             data: self.data,
-            flex: self.flex,
+            flex: self.flex.map(|flex| flex.to_vec()),
         }
     }
 }
@@ -43,7 +44,7 @@ impl Decode<RecordT> for Record {
             position: Vector3::decode(position)?,
             world_name,
             data: encoded.data,
-            flex: encoded.flex,
+            flex: encoded.flex.map(Bytes::from),
         };
 
         Ok(record)
