@@ -91,7 +91,7 @@ impl PeerMap {
 
     // region: Broadcast Functions
     /// Broadcast a [`Message`] to all peers in the map.
-    pub async fn broadcast(&mut self, message: Message) -> Result<(), SendError> {
+    pub async fn broadcast_all(&mut self, message: Message) -> Result<(), SendError> {
         broadcast_to!(message, self.0.values_mut())
     }
 
