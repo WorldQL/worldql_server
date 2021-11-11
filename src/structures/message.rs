@@ -1,3 +1,4 @@
+use bytes::Bytes;
 use flatbuffers::{FlatBufferBuilder, InvalidFlatbuffer};
 use thiserror::Error;
 use uuid::Uuid;
@@ -99,7 +100,7 @@ impl Decode<MessageT> for Message {
 }
 
 impl Message {
-    pub fn serialize(self) -> Vec<u8> {
+    pub fn serialize(self) -> Bytes {
         let mut builder = FlatBufferBuilder::with_capacity(1024);
 
         let encoded = self.encode();
@@ -108,7 +109,7 @@ impl Message {
         builder.finish(offset, None);
         let buf = builder.finished_data();
 
-        buf.to_vec()
+        Bytes::from(buf.to_vec())
     }
 
     pub fn deserialize(buf: &[u8]) -> Result<Self, DeserializeError> {

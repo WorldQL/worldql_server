@@ -1,6 +1,7 @@
 use std::fmt::Display;
 use std::net::SocketAddr;
 
+use bytes::Bytes;
 use futures_util::stream::SplitSink;
 use futures_util::SinkExt;
 use thiserror::Error;
@@ -19,7 +20,7 @@ use crate::structures::Message;
 type WebSocketConnection = SplitSink<WebSocketStream<TcpStream>, WsMessage>;
 
 #[cfg(feature = "zeromq")]
-pub type ZmqOutgoingPair = (Vec<u8>, Uuid);
+pub type ZmqOutgoingPair = (Bytes, Uuid);
 #[cfg(feature = "zeromq")]
 type ZmqConnection = UnboundedSender<ZmqOutgoingPair>;
 
@@ -61,7 +62,7 @@ impl Peer {
         self.connection.send(self.uuid, message).await
     }
 
-    pub async fn send_raw(&mut self, bytes: Vec<u8>) -> Result<(), SendError> {
+    pub async fn send_raw(&mut self, bytes: Bytes) -> Result<(), SendError> {
         self.connection.send_raw(self.uuid, bytes).await
     }
 }
@@ -98,11 +99,11 @@ impl PeerConnection {
         Ok(())
     }
 
-    async fn send_raw(&mut self, uuid: Uuid, bytes: Vec<u8>) -> Result<(), SendError> {
+    async fn send_raw(&mut self, uuid: Uuid, bytes: Bytes) -> Result<(), SendError> {
         match self {
             #[cfg(feature = "websocket")]
             PeerConnection::WebSocket(conn) => {
-                let message = WsMessage::Binary(bytes);
+                let message = WsMessage::Binary(bytes.to_vec());
                 conn.send(message).await?;
 
                 Ok(())

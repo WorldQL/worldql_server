@@ -47,7 +47,7 @@ async fn handle_message(
 ) -> Result<()> {
     match sockets.get_mut(&uuid) {
         Some(socket) => {
-            let zmq_msg = tmq::Message::from(bytes);
+            let zmq_msg = tmq::Message::from(bytes.as_ref());
             socket.send(zmq_msg).await?;
         }
         None => {
@@ -88,7 +88,7 @@ async fn handle_handshake(
 
     // Directly send handshake message back to socket
     let handshake_data = handshake_msg.serialize();
-    let handshake_msg = tmq::Message::from(handshake_data);
+    let handshake_msg = tmq::Message::from(handshake_data.as_ref());
     socket.send(handshake_msg).await?;
 
     // Add peer to PeerMap and SocketMap
