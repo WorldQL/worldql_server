@@ -2,7 +2,6 @@ use std::collections::HashMap;
 
 use color_eyre::Result;
 use futures_util::SinkExt;
-use tmq::push;
 use tmq::push::Push;
 use tokio::sync::mpsc::UnboundedReceiver;
 use tracing::{debug, info, trace};
@@ -34,6 +33,7 @@ pub async fn start_zeromq_outgoing(
         }
 
         let (message, uuid) = message.unwrap();
+
         //region: Handle incoming handshakes
         // This is NOT an outgoing message.
         // This is here because the push sockets need to be created here.
@@ -41,15 +41,13 @@ pub async fn start_zeromq_outgoing(
             let parameter = message.parameter.ok_or_else(|| DecodeError::MissingRequiredField("parameter".into()))?;
             let endpoint = format!("tcp://{}", parameter);
             trace!("endpoint = {}", endpoint);
+
+            let mut new_push_socket = tmq::push(&ctx).connect(&endpoint).unwrap();
             let outgoing_message = Message {
                 instruction: Instruction::Handshake,
-                parameter: Some("It worked!".parse()?),
+                parameter: Some("It worked!".into()),
                 sender_uuid: zeromq_server_uuid,
-                world_name: None,
-                records: vec![],
-                entities: vec![],
-                position: None,
-                flex: None,
+                ..Default::default()
             };
 
             zeromq_peer_map.insert(message.sender_uuid, new_push_socket);
