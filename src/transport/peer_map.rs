@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 
 use tokio::sync::RwLock;
@@ -13,6 +13,26 @@ pub type ThreadPeerMap = Arc<RwLock<PeerMap>>;
 
 #[derive(Debug)]
 pub struct PeerMap(HashMap<Uuid, Peer>);
+
+macro_rules! broadcast_to {
+    ($message: expr, $peers: expr) => ({
+        let bytes = $message.serialize();
+
+        let mut jobs = vec![];
+        for peer in $peers {
+            jobs.push(peer.send_raw(bytes.clone()));
+        }
+
+        for result in futures_util::future::join_all(jobs).await {
+            if let Err(error) = result {
+                // TODO: Remove peers that error
+                debug!("broadcast error: {:?}", error);
+            }
+        }
+
+        Ok(())
+    });
+}
 
 impl PeerMap {
     pub fn new() -> Self {
@@ -48,20 +68,18 @@ impl PeerMap {
     }
 
     pub async fn broadcast(&mut self, message: Message) -> Result<(), SendError> {
-        let bytes = message.serialize();
+        broadcast_to!(message, self.0.values_mut())
+    }
 
-        let mut jobs = vec![];
-        for peer in self.0.values_mut() {
-            jobs.push(peer.send_raw(bytes.clone()));
-        }
+    pub async fn broadcast_to(&mut self, message: Message, peers: impl Iterator<Item = Uuid>) -> Result<(), SendError> {
+        let peers = peers.collect::<HashSet<_>>();
+        let peers = self.0.values_mut().filter(|peer| peers.contains(peer.uuid()));
 
-        for result in futures_util::future::join_all(jobs).await {
-            if let Err(error) = result {
-                // TODO: Remove peers that error
-                debug!("broadcast error: {:?}", error);
-            }
-        }
+        broadcast_to!(message, peers)
+    }
 
-        Ok(())
+    pub async fn broadcast_except(&mut self, message: Message, except: Uuid) -> Result<(), SendError> {
+        let peers = self.0.values_mut().filter(|peer| *peer.uuid() != except);
+        broadcast_to!(message, peers)
     }
 }

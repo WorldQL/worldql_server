@@ -47,6 +47,14 @@ impl Peer {
         }
     }
 
+    pub fn addr(&self) -> &SocketAddr {
+        &self.addr
+    }
+
+    pub fn uuid(&self) -> &Uuid {
+        &self.uuid
+    }
+
     pub async fn send(&mut self, message: Message) -> Result<(), SendError> {
         self.connection.send(self.uuid, message).await
     }
