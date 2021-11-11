@@ -5,7 +5,7 @@ use futures_util::SinkExt;
 use tmq::push;
 use tmq::push::Push;
 use tokio::sync::mpsc::UnboundedReceiver;
-use tracing::info;
+use tracing::{debug, info, trace};
 use uuid::Uuid;
 
 use crate::structures::{DecodeError, Instruction, Message};
@@ -19,6 +19,8 @@ pub async fn start_zeromq_outgoing(
     mut msg_rx: UnboundedReceiver<MessageClientPair>,
     ctx: tmq::Context,
 ) -> Result<()> {
+    info!("Started ZeroMQ PUSH Manager");
+
     // TODO: Rework this entire function. This is just a quick and dirty approach. I need to figure out a way to pass this handshakes but also pass it bytes for outgoing messages.
     let mut zeromq_peer_map: HashMap<Uuid, Push> = HashMap::new();
     let zeromq_server_uuid = Uuid::new_v4(); // used for outgoing handshake.
@@ -36,12 +38,9 @@ pub async fn start_zeromq_outgoing(
         // This is NOT an outgoing message.
         // This is here because the push sockets need to be created here.
         if message.instruction == Instruction::Handshake && !message.parameter.is_none() {
-            let endpoint = "tcp://".to_owned()
-                + &message.parameter.ok_or_else(|| {
-                    DecodeError::MissingRequiredField("parameter on Handshake".into())
-                })?;
-            println!("{}", endpoint);
-            let mut new_push_socket = push(&ctx).connect(&*endpoint).unwrap();
+            let parameter = message.parameter.ok_or_else(|| DecodeError::MissingRequiredField("parameter".into()))?;
+            let endpoint = format!("tcp://{}", parameter);
+            trace!("endpoint = {}", endpoint);
             let outgoing_message = Message {
                 instruction: Instruction::Handshake,
                 parameter: Some("It worked!".parse()?),
@@ -54,11 +53,10 @@ pub async fn start_zeromq_outgoing(
             };
 
             zeromq_peer_map.insert(message.sender_uuid, new_push_socket);
-            connected_uuids.push(message.sender_uuid);
-            info!("Added new peer at {} to map", endpoint);
+            debug!("Added new peer at {} to map", endpoint);
 
             let outgoing_socket = zeromq_peer_map.get_mut(&message.sender_uuid);
-            info!("attempting to send outgoing message");
+            trace!("attempting to send outgoing message to {}", message.sender_uuid);
             // TODO: Can we avoid waiting for this?? Might slow down the replies.
             outgoing_socket
                 .unwrap()
