@@ -22,7 +22,7 @@ pub async fn start_websocket_server(
 
     while let Ok((stream, _)) = listener.accept().await {
         let addr = stream.peer_addr()?;
-        debug!("peer address: {}", addr);
+        debug!("websocket peer address: {}", addr);
 
         tokio::spawn(handle_connection(
             peer_map.clone(),

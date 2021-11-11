@@ -1,80 +1,104 @@
-use std::collections::HashMap;
+use std::{collections::HashMap};
 
 use color_eyre::Result;
 use futures_util::SinkExt;
 use tmq::push::Push;
-use tokio::sync::mpsc::UnboundedReceiver;
-use tracing::{debug, info, trace};
+use tokio::sync::mpsc::{UnboundedReceiver, UnboundedSender};
+use tracing::{debug, info};
 use uuid::Uuid;
 
-use crate::structures::{DecodeError, Instruction, Message};
+use crate::{structures::{DecodeError, Instruction, Message}, transport::Peer};
+
+use super::ThreadPeerMap;
 
 pub type ZmqOutgoingMessagePair = (Vec<u8>, Uuid);
+type SocketMap = HashMap<Uuid, Push>;
 
-/// This exists because ZeroMQ Push sockets don't exist.
-/// It would be very nice to store them in [PeerConnection] like we do for WebSocket.
-/// Unfortunately, we cannot without wrapping them in a mutex which isn't a good solution.
 pub async fn start_zeromq_outgoing(
+    peer_map: ThreadPeerMap,
+    msg_tx: UnboundedSender<ZmqOutgoingMessagePair>,
     mut msg_rx: UnboundedReceiver<ZmqOutgoingMessagePair>,
+    mut handshake_rx: UnboundedReceiver<Message>,
     ctx: tmq::Context,
 ) -> Result<()> {
+    let mut sockets: SocketMap = HashMap::new();
     info!("Started ZeroMQ PUSH Manager");
 
-    // TODO: Rework this entire function. This is just a quick and dirty approach. I need to figure out a way to pass this handshakes but also pass it bytes for outgoing messages.
-    let mut zeromq_peer_map: HashMap<Uuid, Push> = HashMap::new();
-    let zeromq_server_uuid = Uuid::new_v4(); // used for outgoing handshake.
-
-
     loop {
-        let message = msg_rx.recv().await;
-        if message.is_none() {
-            // Channel is closed, should exit thread.
-            break;
+        tokio::select! {
+            Some(pair) = msg_rx.recv() => {
+                handle_message(&peer_map, &mut sockets, pair).await?
+            },
+            Some(message) = handshake_rx.recv() => {
+                handle_handshake(&peer_map, msg_tx.clone(), &ctx, &mut sockets, message).await?
+            },
+
+            // Both channels have closed, exit thread
+            else => break,
         }
+    }
 
-        let (bytes, uuid) = message.unwrap();
-        // TODO: Handle
+    Ok(())
+}
 
-        // //region: Handle incoming handshakes
-        // // This is NOT an outgoing message.
-        // // This is here because the push sockets need to be created here.
-        // if message.instruction == Instruction::Handshake && !message.parameter.is_none() {
-        //     let parameter = message.parameter.ok_or_else(|| DecodeError::MissingRequiredField("parameter".into()))?;
-        //     let endpoint = format!("tcp://{}", parameter);
-        //     trace!("endpoint = {}", endpoint);
+async fn handle_message(
+    peer_map: &ThreadPeerMap,
+    sockets: &mut SocketMap,
+    (bytes, uuid): ZmqOutgoingMessagePair
+) -> Result<()> {
+    match sockets.get_mut(&uuid) {
+        Some(socket) => {
+            let zmq_msg = tmq::Message::from(bytes);
+            socket.send(zmq_msg).await?;
+        },
+        None => {
+            // Remove sockets from PeerMap if they are not in SocketMap
+            let mut map = peer_map.write().await;
+            map.remove(&uuid);
+        },
+    }
 
-        //     let mut new_push_socket = tmq::push(&ctx).connect(&endpoint).unwrap();
-        //     let outgoing_message = Message {
-        //         instruction: Instruction::Handshake,
-        //         parameter: Some("It worked!".into()),
-        //         sender_uuid: zeromq_server_uuid,
-        //         ..Default::default()
-        //     };
+    Ok(())
+}
 
-        //     zeromq_peer_map.insert(message.sender_uuid, new_push_socket);
-        //     debug!("Added new peer at {} to map", endpoint);
+async fn handle_handshake(
+    peer_map: &ThreadPeerMap,
+    msg_tx: UnboundedSender<ZmqOutgoingMessagePair>,
+    ctx: &tmq::Context,
+    sockets: &mut SocketMap,
+    message: Message
+) -> Result<()> {
+    let parameter = message.parameter.unwrap();
+    let addr = match parameter.parse() {
+        Ok(addr) => addr,
+        Err(_) => {
+            // Invalid socket address, drop handshake message
+            return Ok(())
+        }
+    };
 
-        //     let outgoing_socket = zeromq_peer_map.get_mut(&message.sender_uuid);
-        //     trace!("attempting to send outgoing message to {}", message.sender_uuid);
-        //     // TODO: Can we avoid waiting for this?? Might slow down the replies.
-        //     outgoing_socket
-        //         .unwrap()
-        //         .send(vec![outgoing_message.serialize()])
-        //         .await;
+    let endpoint = format!("tcp://{}", &parameter);
+    debug!("zeromq peer address: {}", endpoint);
 
-        //     continue;
-        // }
-        // //endregion
+    let mut socket = tmq::push(ctx).connect(&endpoint)?;
+    let handshake_msg = Message {
+        instruction: Instruction::Handshake,
+        sender_uuid: Uuid::nil(),
+        ..Default::default()
+    };
 
-        // // Otherwise, broadcast.
-        // // TODO: Remove this and work into PeerConnection into some way that isn't crazy redundant.
-        // for (connected_uuid, socket) in zeromq_peer_map.iter_mut() {
-        //     if connected_uuid != &message.sender_uuid {
-        //         socket
-        //             .send(vec![message.clone().serialize()])
-        //             .await;
-        //     }
-        // }
+    // Directly send handshake message back to socket
+    let handshake_data = handshake_msg.serialize();
+    let handshake_msg = tmq::Message::from(handshake_data);
+    socket.send(handshake_msg).await?;
+
+    // Add peer to PeerMap and SocketMap
+    {
+        let mut map = peer_map.write().await;
+        let peer = Peer::new_zmq(addr, message.sender_uuid, msg_tx);
+
+        sockets.insert(message.sender_uuid, socket);
+        map.insert(message.sender_uuid, peer);
     }
 
     Ok(())

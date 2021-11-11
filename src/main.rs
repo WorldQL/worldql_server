@@ -3,7 +3,7 @@ use std::sync::Arc;
 
 use clap::Parser;
 use color_eyre::Result;
-use tokio::sync::RwLock;
+use tokio::sync::{RwLock, mpsc};
 use tokio_postgres::NoTls;
 use tracing::{debug, error, info};
 
@@ -136,7 +136,7 @@ async fn main() -> Result<()> {
     };
 
     let peer_map: ThreadPeerMap = Arc::new(RwLock::new(PeerMap::new()));
-    let (msg_tx, msg_rx) = tokio::sync::mpsc::unbounded_channel();
+    let (msg_tx, msg_rx) = mpsc::unbounded_channel();
 
     let mut handles = vec![];
 
@@ -153,23 +153,24 @@ async fn main() -> Result<()> {
 
     #[cfg(feature = "zeromq")]
     {
-        // This exists because we cannot share the ZeroMQ PUSH sockets across threads.
-        // We transfer ownership of the ZeroMQ threads to a dedicated thread that only sends outgoing messages.
-        let (zeromq_outgoing_tx, zeromq_outgoing_rx) = tokio::sync::mpsc::unbounded_channel();
-
         let ctx = tmq::Context::new();
+        let (zmq_msg_tx, zmq_msg_rx) = mpsc::unbounded_channel();
+        let (zmq_handshake_tx, zmq_handshake_rx) = mpsc::unbounded_channel();
 
         let zmq_incoming_handle = tokio::spawn(start_zeromq_incoming(
             peer_map.clone(),
             msg_tx,
+            zmq_handshake_tx,
             args.zmq_server_port,
-            zeromq_outgoing_tx,
             ctx.clone(),
         ));
 
         let zmq_outgoing_handle = tokio::spawn(start_zeromq_outgoing(
-            zeromq_outgoing_rx,
-            ctx,
+            peer_map.clone(),
+            zmq_msg_tx.clone(),
+            zmq_msg_rx,
+            zmq_handshake_rx,
+            ctx.clone(),
         ));
 
         handles.push(zmq_incoming_handle);

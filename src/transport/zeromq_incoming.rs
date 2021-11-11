@@ -1,16 +1,16 @@
 use color_eyre::Result;
-use futures_util::StreamExt;
+use futures_util::{StreamExt};
 use tokio::sync::mpsc::UnboundedSender;
 use tracing::{info, trace, warn};
 
-use super::{ThreadPeerMap, ZmqOutgoingMessagePair};
-use crate::structures::{Instruction, Message};
+use super::{ThreadPeerMap};
+use crate::{structures::{Instruction, Message}};
 
 pub async fn start_zeromq_incoming(
     peer_map: ThreadPeerMap,
     msg_tx: UnboundedSender<Message>,
+    handshake_tx: UnboundedSender<Message>,
     server_port: u16,
-    zmq_outgoing_tx: UnboundedSender<ZmqOutgoingMessagePair>,
     ctx: tmq::Context,
 ) -> Result<()> {
     let pull_addr = format!("tcp://127.0.0.1:{}", server_port);
@@ -44,7 +44,7 @@ pub async fn start_zeromq_incoming(
                     }
                 };
 
-                /* Forward messages with known UUIDs
+                // Run in new scope to avoid blocking PeerMap Lock
                 {
                     let map = peer_map.read().await;
                     if map.contains_key(&message.sender_uuid) {
@@ -56,17 +56,15 @@ pub async fn start_zeromq_incoming(
                         continue;
                     }
                 }
-                */
 
-                // Always forward ZeroMQ Messages
-                // TODO: Handle messages correctly
-                // let sender = message.sender_uuid;
-                // let result = zmq_outgoing_tx.send((message, sender));
+                if message.instruction != Instruction::Handshake || message.parameter.is_none() {
+                    // Ignore message
+                    // TODO: Drop connection
+                    continue;
+                }
 
-                // if result.is_err() {
-                //     // Channel is closed, should exit thread.
-                //     break;
-                // }
+                // Send handshake message to ZeroMQ Outgoing Thread
+                handshake_tx.send(message)?;
             }
         }
     }
