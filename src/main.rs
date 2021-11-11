@@ -57,6 +57,18 @@ struct Args {
     )]
     zmq_server_port: u16,
 
+    /// ZeroMQ Timeout Interval (seconds)
+    ///
+    /// It is not recommended to set this to a very large number. Values less than 10 are invalid.
+    #[cfg(feature = "zeromq")]
+    #[clap(
+        short = 'T',
+        long = "zmq-timeout-secs",
+        default_value = "10",
+        env = "WQL_ZMQ_TIMEOUT_SECS"
+    )]
+    zmq_timeout_secs: u8,
+
     /// Subscription Region Cube Size
     #[clap(long, default_value = "10", env = "WQL_SUBSCRIPTION_REGION_CUBE_SIZE")]
     sub_region_cube_size: u16,
@@ -109,6 +121,13 @@ async fn main() -> Result<()> {
                 std::process::exit(1);
             }
         }
+    }
+
+    // Validate ZeroMQ Timeout Arg
+    #[cfg(feature = "zeromq")]
+    if args.zmq_timeout_secs < 10 {
+        error!("A ZeroMQ timeout interval of less than 10 seconds is invalid!");
+        std::process::exit(1);
     }
 
     let client = match args.psql_conn {
@@ -171,6 +190,7 @@ async fn main() -> Result<()> {
             zmq_msg_rx,
             zmq_handshake_rx,
             ctx,
+            args.zmq_timeout_secs,
         ));
 
         handles.push(zmq_incoming_handle);

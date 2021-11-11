@@ -1,9 +1,11 @@
 use std::collections::HashMap;
+use std::time::Duration;
 
 use color_eyre::Result;
 use flume::{Receiver, Sender};
 use futures_util::SinkExt;
 use tmq::push::Push;
+use tokio::time;
 use tracing::{debug, info};
 use uuid::Uuid;
 
@@ -19,17 +21,31 @@ pub async fn start_zeromq_outgoing(
     msg_rx: Receiver<ZmqOutgoingPair>,
     handshake_rx: Receiver<Message>,
     ctx: tmq::Context,
+    timeout_secs: u8,
 ) -> Result<()> {
     let mut sockets: SocketMap = HashMap::new();
     info!("Started ZeroMQ PUSH Manager");
 
+    let interval = Duration::from_secs(timeout_secs as u64);
+    let mut interval = time::interval(interval);
+    interval.set_missed_tick_behavior(time::MissedTickBehavior::Skip);
+
     loop {
         tokio::select! {
+            // Handle outgoing Message Bytes
             Ok(pair) = msg_rx.recv_async() => {
                 handle_message(&peer_map, &mut sockets, pair).await?
             },
+
+            // Handle incoming Handshake Messages
             Ok(message) = handshake_rx.recv_async() => {
                 handle_handshake(&peer_map, msg_tx.clone(), &ctx, &mut sockets, message).await?
+            },
+
+            // Repeating interval, check peers which haven't sent
+            // a heartbeat recently and remove
+            now = interval.tick() => {
+                // TODO
             },
 
             // Both channels have closed, exit thread
