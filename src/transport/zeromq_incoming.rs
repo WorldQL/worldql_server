@@ -56,17 +56,16 @@ pub async fn start_zeromq_incoming(
                         continue;
                     }
                 }
+                */
 
-                 */
+                // Always forward ZeroMQ Messages
+                // TODO: Handle messages correctly
+                let sender = message.sender_uuid;
+                let result = zmq_outgoing_tx.send((message, sender));
 
-                if message.instruction == Instruction::Handshake {
-                    // Forward the message to the OutgoingZeroMQOwner
-                    let sender_uuid = message.sender_uuid;
-                    zmq_outgoing_tx.send((message, sender_uuid));
-                    continue;
-                } else {
-                    let sender_uuid = message.sender_uuid;
-                    zmq_outgoing_tx.send((message, sender_uuid));
+                if result.is_err() {
+                    // Channel is closed, should exit thread.
+                    break;
                 }
             }
         }
