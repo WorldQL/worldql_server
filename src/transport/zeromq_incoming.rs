@@ -1,19 +1,16 @@
 use color_eyre::Result;
 use futures_util::StreamExt;
-use tmq::push::Push;
 use tokio::sync::mpsc::UnboundedSender;
 use tracing::{info, trace, warn};
 
-use super::ThreadPeerMap;
-use crate::outgoing_zeromq_owner::MessageAndClientUUID;
+use super::{ThreadPeerMap, zeromq_outgoing::MessageClientPair};
 use crate::structures::{Instruction, Message};
-use crate::utils::PortRange;
 
-pub async fn start_zeromq_server(
+pub async fn start_zeromq_incoming(
     peer_map: ThreadPeerMap,
     msg_tx: UnboundedSender<Message>,
     server_port: u16,
-    zmq_outgoing_tx: UnboundedSender<MessageAndClientUUID>,
+    zmq_outgoing_tx: UnboundedSender<MessageClientPair>,
     ctx: tmq::Context,
 ) -> Result<()> {
     let pull_addr = format!("tcp://127.0.0.1:{}", server_port);
@@ -64,19 +61,12 @@ pub async fn start_zeromq_server(
 
                 if message.instruction == Instruction::Handshake {
                     // Forward the message to the OutgoingZeroMQOwner
-                    let sender_uuid = message.clone().sender_uuid;
-                    let m = MessageAndClientUUID {
-                        message: message.clone(),
-                        // ignored for handshakes
-                        client: sender_uuid,
-                    };
-                    zmq_outgoing_tx.send(m);
+                    let sender_uuid = message.sender_uuid;
+                    zmq_outgoing_tx.send((message, sender_uuid));
                     continue;
                 } else {
-                    zmq_outgoing_tx.send(MessageAndClientUUID {
-                        message: message.clone(),
-                        client: message.clone().sender_uuid,
-                    });
+                    let sender_uuid = message.sender_uuid;
+                    zmq_outgoing_tx.send((message, sender_uuid));
                 }
             }
         }

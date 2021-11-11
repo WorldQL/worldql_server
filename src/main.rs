@@ -6,19 +6,15 @@ use color_eyre::Result;
 use tokio::sync::RwLock;
 use tokio_postgres::NoTls;
 use tracing::{debug, error, info};
-#[cfg(feature = "zeromq")]
-use utils::PortRange;
 
-use crate::outgoing_zeromq_owner::start_outgoing_zeromq_thread;
 use crate::processing::start_processing_thread;
 #[cfg(feature = "websocket")]
 use crate::transport::start_websocket_server;
 #[cfg(feature = "zeromq")]
-use crate::transport::start_zeromq_server;
+use crate::transport::{start_zeromq_incoming, start_zeromq_outgoing};
 use crate::transport::{PeerMap, ThreadPeerMap};
 
 mod flatbuffers;
-mod outgoing_zeromq_owner;
 mod processing;
 mod structures;
 mod subscriptions;
@@ -116,7 +112,7 @@ async fn main() -> Result<()> {
         }
     }
 
-    if (&args.psql_conn != "none") {
+    if &args.psql_conn != "none" {
         let psql_result = tokio_postgres::connect(&args.psql_conn, NoTls).await;
         if let Err(err) = psql_result {
             error!("PostgreSQL Error: {}", err);
@@ -138,10 +134,6 @@ async fn main() -> Result<()> {
     let peer_map: ThreadPeerMap = Arc::new(RwLock::new(PeerMap::new()));
     let (msg_tx, msg_rx) = tokio::sync::mpsc::unbounded_channel();
 
-    // This exists because we cannot share the ZeroMQ PUSH sockets across threads.
-    // We transfer ownership of the ZeroMQ threads to a dedicated thread that only sends outgoing messages.
-    let (zeromq_outgoing_tx, zeromq_outgoing_rx) = tokio::sync::mpsc::unbounded_channel();
-
     let mut handles = vec![];
 
     #[cfg(feature = "websocket")]
@@ -155,11 +147,15 @@ async fn main() -> Result<()> {
         handles.push(ws_handle);
     }
 
-    let ctx = tmq::Context::new();
-
     #[cfg(feature = "zeromq")]
     {
-        let zmq_handle = tokio::spawn(start_zeromq_server(
+        // This exists because we cannot share the ZeroMQ PUSH sockets across threads.
+        // We transfer ownership of the ZeroMQ threads to a dedicated thread that only sends outgoing messages.
+        let (zeromq_outgoing_tx, zeromq_outgoing_rx) = tokio::sync::mpsc::unbounded_channel();
+
+        let ctx = tmq::Context::new();
+
+        let zmq_incoming_handle = tokio::spawn(start_zeromq_incoming(
             peer_map.clone(),
             msg_tx,
             args.zmq_server_port,
@@ -167,16 +163,17 @@ async fn main() -> Result<()> {
             ctx.clone(),
         ));
 
-        handles.push(zmq_handle);
+        let zmq_outgoing_handle = tokio::spawn(start_zeromq_outgoing(
+            zeromq_outgoing_rx,
+            ctx,
+        ));
+
+        handles.push(zmq_incoming_handle);
+        handles.push(zmq_outgoing_handle);
     }
 
     let proc_handle = tokio::spawn(start_processing_thread(peer_map, msg_rx));
     handles.push(proc_handle);
-
-    handles.push(tokio::spawn(start_outgoing_zeromq_thread(
-        zeromq_outgoing_rx,
-        ctx,
-    )));
 
     // Run all threads
     let _ = futures_util::future::join_all(handles).await;
