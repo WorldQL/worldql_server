@@ -163,10 +163,10 @@ async fn main() -> Result<()> {
 
         let zmq_outgoing_handle = tokio::spawn(start_zeromq_outgoing(
             peer_map.clone(),
-            zmq_msg_tx.clone(),
+            zmq_msg_tx,
             zmq_msg_rx,
             zmq_handshake_rx,
-            ctx.clone(),
+            ctx,
         ));
 
         handles.push(zmq_incoming_handle);

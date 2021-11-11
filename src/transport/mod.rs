@@ -7,7 +7,7 @@ mod zeromq_incoming;
 #[cfg(feature = "zeromq")]
 mod zeromq_outgoing;
 
-#[cfg(feature = "websocket")]
+#[cfg(feature = "zeromq")]
 pub use peer::ZmqOutgoingPair;
 pub use peer::{Peer, PeerConnection, SendError};
 pub use peer_map::{PeerMap, ThreadPeerMap};

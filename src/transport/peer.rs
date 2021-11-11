@@ -3,9 +3,12 @@ use std::net::SocketAddr;
 
 use bytes::Bytes;
 use derive_getters::Getters;
+#[cfg(feature = "websocket")]
 use futures_util::stream::SplitSink;
+#[cfg(feature = "websocket")]
 use futures_util::SinkExt;
 use thiserror::Error;
+#[cfg(feature = "websocket")]
 use tokio::net::TcpStream;
 #[cfg(feature = "zeromq")]
 use tokio::sync::mpsc::UnboundedSender;
