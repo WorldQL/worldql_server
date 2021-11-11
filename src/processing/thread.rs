@@ -22,8 +22,9 @@ pub async fn start_processing_thread(
 
         // Re-broadcast all messages
         // TODO: Process messages properly
+        let uuid = message.sender_uuid;
         let mut map = peer_map.write().await;
-        let _ = map.broadcast(message).await;
+        let _ = map.broadcast_except(message, uuid).await;
     }
 
     Ok(())
