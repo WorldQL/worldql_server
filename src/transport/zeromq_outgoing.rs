@@ -29,9 +29,9 @@ pub async fn start_zeromq_outgoing(
     loop {
         let message = msg_rx.recv().await;
         if message.is_none() {
-            continue;
+            // Channel is closed, should exit thread.
+            break;
         }
-
 
         let (message, uuid) = message.unwrap();
         //region: Handle incoming handshakes
