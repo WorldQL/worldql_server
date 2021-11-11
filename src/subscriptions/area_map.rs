@@ -17,6 +17,8 @@ impl AreaMap {
         }
     }
 
+    /// Returns `true` if the [`crate::transport::Peer`] corresponding to the given UUID
+    /// is subscribed to the given area.
     pub fn is_peer_subscribed(&self, uuid: &Uuid, cube: impl ToCubeArea) -> bool {
         let cube = cube.to_cube_area(self.cube_size);
         let entry = self.map.get(&cube);
@@ -27,6 +29,8 @@ impl AreaMap {
         }
     }
 
+    /// Returns a vector of [`crate::transport::Peer`] structs which are subscribed to the
+    /// given area.
     pub fn get_subscribed_peers(&self, cube: impl ToCubeArea) -> Vec<&Uuid> {
         let cube = cube.to_cube_area(self.cube_size);
         let entry = self.map.get(&cube);
@@ -47,12 +51,17 @@ impl AreaMap {
         entry.insert(uuid)
     }
 
-    /// Returns whether the value was registered.
+    /// Returns whether the subscription was removed.
     pub fn remove_subscription(&mut self, uuid: &Uuid, cube: impl ToCubeArea) -> bool {
         let cube = cube.to_cube_area(self.cube_size);
-        let entry = self.map.entry(cube).or_insert_with(Default::default);
+
+        // Early return if no subscriptions are present
+        if !self.map.contains_key(&cube) {
+            return false;
+        }
 
         // Remove from HashSet
+        let entry = self.map.entry(cube).or_insert_with(Default::default);
         let removed = entry.remove(uuid);
 
         // Remove HashSet from HashMap if empty

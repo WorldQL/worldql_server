@@ -39,23 +39,36 @@ impl PeerMap {
         Self(HashMap::new())
     }
 
+    /// Returns `true` if the map contains a [`Peer`] for the specified [`Uuid`].
+    #[inline]
     pub fn contains_key(&self, uuid: &Uuid) -> bool {
         self.0.contains_key(uuid)
     }
 
+    /// Returns a reference to the [`Peer`] corresponding to the [`Uuid`].
+    #[inline]
     pub fn get(&self, uuid: &Uuid) -> Option<&Peer> {
         self.0.get(uuid)
     }
 
+    /// Returns a mutable reference to the [`Peer`] corresponding to the [`Uuid`].
+    #[inline]
     pub fn get_mut(&mut self, uuid: &Uuid) -> Option<&mut Peer> {
         self.0.get_mut(uuid)
     }
 
+    /// Inserts a [`Peer`] into the map.
+    ///
+    /// If the map did not have this key present, [`None`] is returned.
+    #[inline]
     pub fn insert(&mut self, uuid: Uuid, peer: Peer) -> Option<Peer> {
         trace!("inserting peer {} into map", &peer);
         self.0.insert(uuid, peer)
     }
 
+    /// Removes a [`Peer`] from the map, returning the [`Peer`] at for the
+    /// given [`Uuid`] if the it was previously in the map.
+    #[inline]
     pub fn remove(&mut self, uuid: &Uuid) -> Option<Peer> {
         trace!("trying to remove peer id {} from map", &uuid);
         let result = self.0.remove(uuid);
@@ -67,10 +80,12 @@ impl PeerMap {
         result
     }
 
+    /// Broadcast a [`Message`] to all peers in the map.
     pub async fn broadcast(&mut self, message: Message) -> Result<(), SendError> {
         broadcast_to!(message, self.0.values_mut())
     }
 
+    /// Broadcast a [`Message`] to all peers that correspond to the [`Uuid`] iterator.
     pub async fn broadcast_to(
         &mut self,
         message: Message,
@@ -85,6 +100,8 @@ impl PeerMap {
         broadcast_to!(message, peers)
     }
 
+    /// Broadcast a [`Message`] to every peer except one, usually the one who triggered the
+    /// broadcast.
     pub async fn broadcast_except(
         &mut self,
         message: Message,

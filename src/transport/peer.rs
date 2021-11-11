@@ -41,7 +41,7 @@ impl Peer {
         }
     }
 
-    #[cfg(feature = "websocket")]
+    #[cfg(feature = "zeromq")]
     pub fn new_zmq(addr: SocketAddr, uuid: Uuid, zmq_tx: ZmqConnection) -> Self {
         Self {
             addr,
@@ -58,10 +58,12 @@ impl Peer {
         &self.uuid
     }
 
+    /// Send a [`Message`] to this peer.
     pub async fn send(&mut self, message: Message) -> Result<(), SendError> {
         self.connection.send(self.uuid, message).await
     }
 
+    /// Send a raw byte array to this peer.
     pub async fn send_raw(&mut self, bytes: Bytes) -> Result<(), SendError> {
         self.connection.send_raw(self.uuid, bytes).await
     }
@@ -92,6 +94,7 @@ pub enum PeerConnection {
 }
 
 impl PeerConnection {
+    /// Send a [`Message`] to this connection.
     async fn send(&mut self, uuid: Uuid, message: Message) -> Result<(), SendError> {
         let bytes = message.serialize();
         self.send_raw(uuid, bytes).await?;
@@ -99,6 +102,7 @@ impl PeerConnection {
         Ok(())
     }
 
+    /// Send a raw byte array to this connection.
     async fn send_raw(&mut self, uuid: Uuid, bytes: Bytes) -> Result<(), SendError> {
         match self {
             #[cfg(feature = "websocket")]
