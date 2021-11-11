@@ -2,6 +2,7 @@ use std::fmt::Display;
 use std::net::SocketAddr;
 
 use bytes::Bytes;
+use derive_getters::Getters;
 use futures_util::stream::SplitSink;
 use futures_util::SinkExt;
 use thiserror::Error;
@@ -24,10 +25,12 @@ pub type ZmqOutgoingPair = (Bytes, Uuid);
 #[cfg(feature = "zeromq")]
 type ZmqConnection = UnboundedSender<ZmqOutgoingPair>;
 
-#[derive(Debug)]
+#[derive(Debug, Getters)]
 pub struct Peer {
     addr: SocketAddr,
     uuid: Uuid,
+
+    #[getter(skip)]
     connection: PeerConnection,
 }
 
@@ -48,14 +51,6 @@ impl Peer {
             uuid,
             connection: PeerConnection::ZeroMQ(zmq_tx),
         }
-    }
-
-    pub fn addr(&self) -> &SocketAddr {
-        &self.addr
-    }
-
-    pub fn uuid(&self) -> &Uuid {
-        &self.uuid
     }
 
     /// Send a [`Message`] to this peer.
