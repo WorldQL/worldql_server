@@ -7,17 +7,16 @@ use tokio::sync::mpsc::{UnboundedReceiver, UnboundedSender};
 use tracing::{debug, info};
 use uuid::Uuid;
 
-use super::ThreadPeerMap;
+use super::{ThreadPeerMap, ZmqOutgoingPair};
 use crate::structures::{Instruction, Message};
 use crate::transport::Peer;
 
-pub type ZmqOutgoingMessagePair = (Vec<u8>, Uuid);
 type SocketMap = HashMap<Uuid, Push>;
 
 pub async fn start_zeromq_outgoing(
     peer_map: ThreadPeerMap,
-    msg_tx: UnboundedSender<ZmqOutgoingMessagePair>,
-    mut msg_rx: UnboundedReceiver<ZmqOutgoingMessagePair>,
+    msg_tx: UnboundedSender<ZmqOutgoingPair>,
+    mut msg_rx: UnboundedReceiver<ZmqOutgoingPair>,
     mut handshake_rx: UnboundedReceiver<Message>,
     ctx: tmq::Context,
 ) -> Result<()> {
@@ -44,7 +43,7 @@ pub async fn start_zeromq_outgoing(
 async fn handle_message(
     peer_map: &ThreadPeerMap,
     sockets: &mut SocketMap,
-    (bytes, uuid): ZmqOutgoingMessagePair,
+    (bytes, uuid): ZmqOutgoingPair,
 ) -> Result<()> {
     match sockets.get_mut(&uuid) {
         Some(socket) => {
@@ -63,7 +62,7 @@ async fn handle_message(
 
 async fn handle_handshake(
     peer_map: &ThreadPeerMap,
-    msg_tx: UnboundedSender<ZmqOutgoingMessagePair>,
+    msg_tx: UnboundedSender<ZmqOutgoingPair>,
     ctx: &tmq::Context,
     sockets: &mut SocketMap,
     message: Message,

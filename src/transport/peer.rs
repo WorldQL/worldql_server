@@ -13,12 +13,15 @@ use tokio_tungstenite::tungstenite::Message as WsMessage;
 use tokio_tungstenite::WebSocketStream;
 use uuid::Uuid;
 
-#[cfg(feature = "zeromq")]
-use super::ZmqOutgoingMessagePair;
 use crate::structures::Message;
 
 #[cfg(feature = "websocket")]
 type WebSocketConnection = SplitSink<WebSocketStream<TcpStream>, WsMessage>;
+
+#[cfg(feature = "zeromq")]
+pub type ZmqOutgoingPair = (Vec<u8>, Uuid);
+#[cfg(feature = "zeromq")]
+type ZmqConnection = UnboundedSender<ZmqOutgoingPair>;
 
 #[derive(Debug)]
 pub struct Peer {
@@ -38,11 +41,7 @@ impl Peer {
     }
 
     #[cfg(feature = "websocket")]
-    pub fn new_zmq(
-        addr: SocketAddr,
-        uuid: Uuid,
-        zmq_tx: UnboundedSender<ZmqOutgoingMessagePair>,
-    ) -> Self {
+    pub fn new_zmq(addr: SocketAddr, uuid: Uuid, zmq_tx: ZmqConnection) -> Self {
         Self {
             addr,
             uuid,
@@ -88,7 +87,7 @@ pub enum PeerConnection {
     #[cfg(feature = "websocket")]
     WebSocket(WebSocketConnection),
     #[cfg(feature = "zeromq")]
-    ZeroMQ(UnboundedSender<ZmqOutgoingMessagePair>),
+    ZeroMQ(ZmqConnection),
 }
 
 impl PeerConnection {
@@ -137,5 +136,5 @@ pub enum SendError {
 
     #[cfg(feature = "zeromq")]
     #[error(transparent)]
-    ZmqError(#[from] tokio::sync::mpsc::error::SendError<ZmqOutgoingMessagePair>),
+    ZmqError(#[from] tokio::sync::mpsc::error::SendError<ZmqOutgoingPair>),
 }
