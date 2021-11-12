@@ -197,7 +197,12 @@ async fn main() -> Result<()> {
         handles.push(zmq_outgoing_handle);
     }
 
-    let proc_handle = tokio::spawn(start_processing_thread(peer_map, msg_rx, args.sub_region_cube_size));
+    let proc_handle = tokio::spawn(start_processing_thread(
+        peer_map,
+        msg_rx,
+        args.sub_region_cube_size,
+    ));
+
     handles.push(proc_handle);
 
     // Run all threads
