@@ -42,12 +42,12 @@ async fn handle_message(
     world_map: &mut WorldMap,
 ) -> Result<()> {
     match message.instruction {
-        Instruction::AreaSubscribe => handle_area_subscribe(message, &peer_map, world_map).await?,
+        Instruction::AreaSubscribe => handle_area_subscribe(message, peer_map, world_map).await?,
         Instruction::AreaUnsubscribe => {
-            handle_area_unsubscribe(message, &peer_map, world_map).await?
+            handle_area_unsubscribe(message, peer_map, world_map).await?
         }
-        Instruction::GlobalMessage => handle_global_message(message, &peer_map).await?,
-        Instruction::LocalMessage => handle_local_message(message, &peer_map, world_map).await?,
+        Instruction::GlobalMessage => handle_global_message(message, peer_map).await?,
+        Instruction::LocalMessage => handle_local_message(message, peer_map, world_map).await?,
 
         _ => debug!("unhandled instruction: {:?}", message.instruction),
     }
