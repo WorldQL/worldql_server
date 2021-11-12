@@ -29,7 +29,7 @@ impl WorldMap {
             .entry(world_name.to_string())
             .or_insert_with(|| {
                 trace!("creating new world: {}", world_name);
-                AreaMap::new(self.cube_size)
+                AreaMap::new(self.cube_size, world_name.to_string())
             })
     }
 
