@@ -1,6 +1,7 @@
 use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 
+use flume::Sender;
 use tokio::sync::RwLock;
 use tracing::{debug, trace};
 use uuid::Uuid;
@@ -14,6 +15,7 @@ pub type ThreadPeerMap = Arc<RwLock<PeerMap>>;
 #[derive(Debug)]
 pub struct PeerMap {
     map: HashMap<Uuid, Peer>,
+    on_remove: Sender<Uuid>,
 }
 
 macro_rules! broadcast_to {
@@ -37,9 +39,10 @@ macro_rules! broadcast_to {
 }
 
 impl PeerMap {
-    pub fn new() -> Self {
+    pub fn new(on_remove: Sender<Uuid>) -> Self {
         Self {
             map: HashMap::new(),
+            on_remove,
         }
     }
 
@@ -89,6 +92,7 @@ impl PeerMap {
             trace!("removed peer id {} from map", &uuid);
         }
 
+        let _ = self.on_remove.send(uuid.to_owned());
         result
     }
     // endregion

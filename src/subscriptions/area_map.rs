@@ -98,8 +98,14 @@ impl AreaMap {
     /// Used in the event of a disconnect.
     pub fn remove_peer(&mut self, uuid: &Uuid) -> bool {
         let mut removed = false;
-        for (area, peers) in &mut self.map {
+        for (_, peers) in &mut self.map {
             if peers.remove(uuid) {
+                trace!(
+                    "removed peer {} from world {} area map",
+                    uuid,
+                    &self.world_name
+                );
+
                 removed = true;
             }
         }

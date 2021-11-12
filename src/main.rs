@@ -154,9 +154,10 @@ async fn main() -> Result<()> {
         }
     };
 
-    let peer_map: ThreadPeerMap = Arc::new(RwLock::new(PeerMap::new()));
     let (msg_tx, msg_rx) = flume::unbounded();
+    let (remove_tx, remove_rx) = flume::unbounded();
 
+    let peer_map: ThreadPeerMap = Arc::new(RwLock::new(PeerMap::new(remove_tx)));
     let mut handles = vec![];
 
     #[cfg(feature = "websocket")]
@@ -200,6 +201,7 @@ async fn main() -> Result<()> {
     let proc_handle = tokio::spawn(start_processing_thread(
         peer_map,
         msg_rx,
+        remove_rx,
         args.sub_region_cube_size,
     ));
 
