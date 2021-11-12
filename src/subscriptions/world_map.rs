@@ -25,12 +25,10 @@ impl WorldMap {
 
     /// Gets a mutable [`AreaMap`] for the given world name.
     pub fn get_mut(&mut self, world_name: &str) -> &mut AreaMap {
-        self.map
-            .entry(world_name.to_string())
-            .or_insert_with(|| {
-                trace!("creating new world: {}", world_name);
-                AreaMap::new(self.cube_size, world_name.to_string())
-            })
+        self.map.entry(world_name.to_string()).or_insert_with(|| {
+            trace!("creating new world: {}", world_name);
+            AreaMap::new(self.cube_size, world_name.to_string())
+        })
     }
 
     /// Completely removes a [`crate::transport::Peer`] from the map.

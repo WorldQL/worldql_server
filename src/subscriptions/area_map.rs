@@ -55,7 +55,13 @@ impl AreaMap {
         let cube = cube.to_cube_area(self.cube_size);
         let entry = self.map.entry(cube).or_insert_with(Default::default);
 
-        trace!("peer {} subscribed to region {} in world {}", &uuid, &cube, &self.world_name);
+        trace!(
+            "peer {} subscribed to region {} in world {}",
+            &uuid,
+            &cube,
+            &self.world_name
+        );
+
         entry.insert(uuid)
     }
 
@@ -69,7 +75,13 @@ impl AreaMap {
         }
 
         // Remove from HashSet
-        trace!("peer {} unsubscribed from region {} in world {}", &uuid, &cube, &self.world_name);
+        trace!(
+            "peer {} unsubscribed from region {} in world {}",
+            &uuid,
+            &cube,
+            &self.world_name
+        );
+
         let entry = self.map.entry(cube).or_insert_with(Default::default);
         let removed = entry.remove(uuid);
 
