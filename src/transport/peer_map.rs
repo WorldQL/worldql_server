@@ -12,7 +12,9 @@ use crate::structures::Message;
 pub type ThreadPeerMap = Arc<RwLock<PeerMap>>;
 
 #[derive(Debug)]
-pub struct PeerMap(HashMap<Uuid, Peer>);
+pub struct PeerMap {
+    map: HashMap<Uuid, Peer>,
+}
 
 macro_rules! broadcast_to {
     ($message: expr, $peers: expr) => {{
@@ -36,31 +38,33 @@ macro_rules! broadcast_to {
 
 impl PeerMap {
     pub fn new() -> Self {
-        Self(HashMap::new())
+        Self {
+            map: HashMap::new(),
+        }
     }
 
     // region: Lookups and Getters
     /// Returns `true` if the map contains a [`Peer`] for the specified [`Uuid`].
     #[inline]
     pub fn contains_key(&self, uuid: &Uuid) -> bool {
-        self.0.contains_key(uuid)
+        self.map.contains_key(uuid)
     }
 
     /// Returns a reference to the [`Peer`] corresponding to the [`Uuid`].
     #[inline]
     pub fn get(&self, uuid: &Uuid) -> Option<&Peer> {
-        self.0.get(uuid)
+        self.map.get(uuid)
     }
 
     /// Returns a mutable reference to the [`Peer`] corresponding to the [`Uuid`].
     #[inline]
     pub fn get_mut(&mut self, uuid: &Uuid) -> Option<&mut Peer> {
-        self.0.get_mut(uuid)
+        self.map.get_mut(uuid)
     }
 
     /// Returns an iterator of [`Uuid`] items for each contained [`Peer`].
     pub fn peers_iter(&self) -> impl Iterator<Item = Uuid> + '_ {
-        self.0.keys().copied()
+        self.map.keys().copied()
     }
     // endregion
 
@@ -71,7 +75,7 @@ impl PeerMap {
     #[inline]
     pub fn insert(&mut self, uuid: Uuid, peer: Peer) -> Option<Peer> {
         trace!("inserting peer {} into map", &peer);
-        self.0.insert(uuid, peer)
+        self.map.insert(uuid, peer)
     }
 
     /// Removes a [`Peer`] from the map, returning the [`Peer`] at for the
@@ -79,7 +83,7 @@ impl PeerMap {
     #[inline]
     pub fn remove(&mut self, uuid: &Uuid) -> Option<Peer> {
         trace!("trying to remove peer id {} from map", &uuid);
-        let result = self.0.remove(uuid);
+        let result = self.map.remove(uuid);
 
         if result.is_some() {
             trace!("removed peer id {} from map", &uuid);
@@ -92,7 +96,7 @@ impl PeerMap {
     // region: Broadcast Functions
     /// Broadcast a [`Message`] to all peers in the map.
     pub async fn broadcast_all(&mut self, message: Message) -> Result<(), SendError> {
-        broadcast_to!(message, self.0.values_mut())
+        broadcast_to!(message, self.map.values_mut())
     }
 
     /// Broadcast a [`Message`] to all peers that correspond to the [`Uuid`] iterator.
@@ -103,7 +107,7 @@ impl PeerMap {
     ) -> Result<(), SendError> {
         let peers = peers.collect::<HashSet<_>>();
         let peers = self
-            .0
+            .map
             .values_mut()
             .filter(|peer| peers.contains(peer.uuid()));
 
@@ -117,7 +121,7 @@ impl PeerMap {
         message: Message,
         except: Uuid,
     ) -> Result<(), SendError> {
-        let peers = self.0.values_mut().filter(|peer| *peer.uuid() != except);
+        let peers = self.map.values_mut().filter(|peer| *peer.uuid() != except);
         broadcast_to!(message, peers)
     }
     // endregion
