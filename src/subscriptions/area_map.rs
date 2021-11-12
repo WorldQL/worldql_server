@@ -7,6 +7,8 @@ use super::{CubeArea, ToCubeArea};
 pub struct AreaMap {
     cube_size: u16,
     map: HashMap<CubeArea, HashSet<Uuid>>,
+
+    empty_set: HashSet<Uuid>,
 }
 
 impl AreaMap {
@@ -14,6 +16,8 @@ impl AreaMap {
         Self {
             cube_size,
             map: HashMap::new(),
+
+            empty_set: HashSet::new(),
         }
     }
 
@@ -31,13 +35,13 @@ impl AreaMap {
 
     /// Returns a vector of [`crate::transport::Peer`] structs which are subscribed to the
     /// given area.
-    pub fn get_subscribed_peers(&self, cube: impl ToCubeArea) -> Vec<&Uuid> {
+    pub fn get_subscribed_peers(&self, cube: impl ToCubeArea) -> impl Iterator<Item = Uuid> + '_ {
         let cube = cube.to_cube_area(self.cube_size);
         let entry = self.map.get(&cube);
 
         match entry {
-            None => vec![],
-            Some(set) => set.iter().collect::<Vec<_>>(),
+            None => self.empty_set.iter().copied(),
+            Some(set) => set.iter().copied(),
         }
     }
 
