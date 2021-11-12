@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use derive_getters::Getters;
 
 use crate::structures::Vector3;
@@ -70,6 +72,14 @@ impl ToCubeArea for CubeArea {
 impl ToCubeArea for Vector3 {
     fn to_cube_area(self, size: u16) -> CubeArea {
         CubeArea::from_vector3(self, size)
+    }
+}
+// endregion
+
+// region: Display Trait
+impl Display for CubeArea {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{{ x = {}, y = {}, z = {} }}", self.x, self.y, self.z)
     }
 }
 // endregion
