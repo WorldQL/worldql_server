@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
 use tracing::trace;
+use uuid::Uuid;
 
 use super::AreaMap;
 
@@ -30,5 +31,19 @@ impl WorldMap {
                 trace!("creating new world: {}", world_name);
                 AreaMap::new(self.cube_size)
             })
+    }
+
+    /// Completely removes a [`crate::transport::Peer`] from the map.
+    ///
+    /// Used in the event of a disconnect.
+    pub fn remove_peer(&mut self, uuid: &Uuid) -> bool {
+        let mut removed = false;
+        for (_, peers) in &mut self.map {
+            if peers.remove_peer(uuid) {
+                removed = true;
+            }
+        }
+
+        removed
     }
 }
