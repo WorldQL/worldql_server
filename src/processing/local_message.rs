@@ -24,7 +24,10 @@ pub async fn handle_local_message(
     };
 
     let area_map = world_map.get_mut(&message.world_name);
-    let peers = area_map.get_subscribed_peers(cube);
+    let uuid = message.sender_uuid;
+    let peers = area_map
+        .get_subscribed_peers(cube)
+        .filter(|peer| *peer != uuid);
 
     let mut map = peer_map.write().await;
     let _ = map.broadcast_to(message, peers).await;
