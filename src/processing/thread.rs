@@ -8,7 +8,10 @@ use crate::transport::ThreadPeerMap;
 pub async fn start_processing_thread(
     peer_map: ThreadPeerMap,
     msg_rx: Receiver<Message>,
+    cube_size: u16,
 ) -> Result<()> {
+    let mut area_map = AreaMap::new(cube_size);
+
     while let Ok(message) = msg_rx.recv_async().await {
 
         // TODO: Implement missing instructions
