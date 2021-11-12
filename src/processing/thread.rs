@@ -21,14 +21,17 @@ pub async fn start_processing_thread(
 
     loop {
         tokio::select! {
+            // Handle incoming peer IDs to be removed
             Ok(peer) = remove_rx.recv_async() => {
                 world_map.remove_peer(&peer);
             },
 
+            // Handle incoming messages
             Ok(message) = msg_rx.recv_async() => {
                 handle_message(message, &peer_map, &mut world_map).await?;
             },
 
+            // Both channels have closed, exit thread
             else => break,
         }
     }

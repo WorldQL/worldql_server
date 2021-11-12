@@ -13,6 +13,7 @@ pub async fn handle_local_message(
     let cube = match message.position {
         Some(pos) => pos,
         None => {
+            // TODO: Disconnect peer
             debug!(
                 "invalid LocalMessage from peer {}, missing position",
                 &message.sender_uuid

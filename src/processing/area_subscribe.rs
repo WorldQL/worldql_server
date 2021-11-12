@@ -14,6 +14,7 @@ pub async fn handle_area_subscribe(
     let cube = match message.position {
         Some(pos) => pos,
         None => {
+            // TODO: Disconnect peer
             debug!(
                 "invalid AreaSubscribe from peer {}, missing position",
                 &uuid
