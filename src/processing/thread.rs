@@ -2,7 +2,7 @@ use color_eyre::Result;
 use flume::Receiver;
 use tracing::debug;
 
-use crate::structures::Message;
+use crate::structures::{Instruction, Message};
 use crate::transport::ThreadPeerMap;
 
 pub async fn start_processing_thread(
@@ -10,13 +10,33 @@ pub async fn start_processing_thread(
     msg_rx: Receiver<Message>,
 ) -> Result<()> {
     while let Ok(message) = msg_rx.recv_async().await {
-        debug!("{:?}", message.instruction);
 
-        // Re-broadcast all messages
-        // TODO: Process messages properly
-        let uuid = message.sender_uuid;
-        let mut map = peer_map.write().await;
-        let _ = map.broadcast_except(message, uuid).await;
+        // TODO: Implement missing instructions
+
+        match message.instruction {
+            Instruction::Heartbeat => {continue;}
+            Instruction::Handshake => {continue;}
+            Instruction::LocalMessage => {
+                // TODO: Use the area subscription lookup table.
+                let uuid = message.sender_uuid;
+                let mut map = peer_map.write().await;
+                let _ = map.broadcast_except(message, uuid).await;
+            }
+            Instruction::GlobalMessage => {
+                let uuid = message.sender_uuid;
+                let mut map = peer_map.write().await;
+                let _ = map.broadcast_except(message, uuid).await;
+            }
+            Instruction::RecordCreate => {continue;}
+            Instruction::RecordRead => {continue;}
+            Instruction::RecordUpdate => {continue;}
+            Instruction::RecordDelete => {continue;}
+            Instruction::RecordReply => {continue;}
+            Instruction::AreaSubscribe => {continue;}
+            Instruction::AreaUnsubscribe => {continue;}
+            Instruction::Unknown => {continue;}
+        }
+
     }
 
     Ok(())
