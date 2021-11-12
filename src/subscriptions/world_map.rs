@@ -1,10 +1,11 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, fmt::Display};
 
 use tracing::trace;
 use uuid::Uuid;
 
 use super::AreaMap;
 
+#[derive(Debug)]
 pub struct WorldMap {
     cube_size: u16,
     map: HashMap<String, AreaMap>,
@@ -43,5 +44,21 @@ impl WorldMap {
         }
 
         removed
+    }
+}
+
+impl Display for WorldMap {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "[")?;
+
+        let len = self.map.len();
+        for (i, area_map) in self.map.values().enumerate() {
+            write!(f, "{}", area_map)?;
+            if i + 1 != len {
+                write!(f, ", ")?;
+            }
+        }
+
+        write!(f, "]")
     }
 }

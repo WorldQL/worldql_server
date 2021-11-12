@@ -1,10 +1,11 @@
-use std::collections::{HashMap, HashSet};
+use std::{collections::{HashMap, HashSet}, fmt::Display};
 
 use tracing::trace;
 use uuid::Uuid;
 
 use super::{CubeArea, ToCubeArea};
 
+#[derive(Debug)]
 pub struct AreaMap {
     cube_size: u16,
     world_name: String,
@@ -111,5 +112,11 @@ impl AreaMap {
         }
 
         removed
+    }
+}
+
+impl Display for AreaMap {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{{ world_name = \"{}\", area_count = {} }}", self.world_name, self.map.len())
     }
 }
