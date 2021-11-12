@@ -3,10 +3,10 @@ use flume::Receiver;
 use tracing::debug;
 use uuid::Uuid;
 
-use super::area_subscribe::handle_area_subscribe;
-use super::area_unsubscribe::handle_area_unsubscribe;
-use super::global_message::handle_global_message;
-use super::local_message::handle_local_message;
+use super::area_subscribe::handle_area_subscribe as area_subscribe;
+use super::area_unsubscribe::handle_area_unsubscribe as area_unsubscribe;
+use super::global_message::handle_global_message as global_message;
+use super::local_message::handle_local_message as local_message;
 use crate::structures::{Instruction, Message};
 use crate::subscriptions::WorldMap;
 use crate::transport::ThreadPeerMap;
@@ -42,13 +42,17 @@ async fn handle_message(
     world_map: &mut WorldMap,
 ) -> Result<()> {
     match message.instruction {
-        Instruction::AreaSubscribe => handle_area_subscribe(message, peer_map, world_map).await?,
-        Instruction::AreaUnsubscribe => {
-            handle_area_unsubscribe(message, peer_map, world_map).await?
-        }
-        Instruction::GlobalMessage => handle_global_message(message, peer_map).await?,
-        Instruction::LocalMessage => handle_local_message(message, peer_map, world_map).await?,
+        // Panic on handshakes, they should never be sent to this thread.
+        Instruction::Handshake => panic!("recieved handshake instruction on processing thread"),
 
+        // Handle known instructions
+        Instruction::AreaSubscribe => area_subscribe(message, peer_map, world_map).await?,
+        Instruction::AreaUnsubscribe => area_unsubscribe(message, peer_map, world_map).await?,
+        Instruction::GlobalMessage => global_message(message, peer_map).await?,
+        Instruction::LocalMessage => local_message(message, peer_map, world_map).await?,
+
+        // Warn on unknown or unhandled instructions
+        Instruction::Unknown => debug!("unknown instruction received from {}", message.sender_uuid),
         _ => debug!("unhandled instruction: {:?}", message.instruction),
     }
 
