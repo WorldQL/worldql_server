@@ -11,7 +11,7 @@ pub struct Message {
     pub instruction: Instruction,
     pub parameter: Option<String>,
     pub sender_uuid: Uuid,
-    pub world_name: Option<String>,
+    pub world_name: String,
     pub records: Vec<Record>,
     pub entities: Vec<Entity>,
     pub position: Option<Vector3>,
@@ -36,7 +36,7 @@ impl Encode<MessageT> for Message {
             instruction: self.instruction.encode(),
             parameter: self.parameter,
             sender_uuid: Some(self.sender_uuid.to_string()),
-            world_name: self.world_name,
+            world_name: Some(self.world_name),
             records: Some(records),
             entities: Some(entities),
             position: self.position.map(|p| p.encode()),
@@ -48,6 +48,10 @@ impl Encode<MessageT> for Message {
 impl Decode<MessageT> for Message {
     fn decode(encoded: MessageT) -> Result<Self, DecodeError> {
         let instruction = Instruction::decode(encoded.instruction)?;
+
+        let world_name = encoded
+            .world_name
+            .ok_or_else(|| DecodeError::MissingRequiredField("world_name".into()))?;
 
         let sender_uuid = encoded
             .sender_uuid
@@ -88,7 +92,7 @@ impl Decode<MessageT> for Message {
             instruction,
             parameter: encoded.parameter,
             sender_uuid: Uuid::parse_str(&sender_uuid)?,
-            world_name: encoded.world_name,
+            world_name,
             records,
             entities,
             position,
