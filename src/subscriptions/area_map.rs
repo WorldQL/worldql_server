@@ -1,22 +1,25 @@
 use std::collections::{HashMap, HashSet};
 
+use tracing::trace;
 use uuid::Uuid;
 
 use super::{CubeArea, ToCubeArea};
 
 pub struct AreaMap {
     cube_size: u16,
-    map: HashMap<CubeArea, HashSet<Uuid>>,
+    world_name: String,
 
+    map: HashMap<CubeArea, HashSet<Uuid>>,
     empty_set: HashSet<Uuid>,
 }
 
 impl AreaMap {
-    pub fn new(cube_size: u16) -> Self {
+    pub fn new(cube_size: u16, world_name: String) -> Self {
         Self {
             cube_size,
-            map: HashMap::new(),
+            world_name,
 
+            map: HashMap::new(),
             empty_set: HashSet::new(),
         }
     }
@@ -52,6 +55,7 @@ impl AreaMap {
         let cube = cube.to_cube_area(self.cube_size);
         let entry = self.map.entry(cube).or_insert_with(Default::default);
 
+        trace!("peer {} subscribed to region {:?} in world {}", &uuid, &cube, &self.world_name);
         entry.insert(uuid)
     }
 
@@ -65,6 +69,7 @@ impl AreaMap {
         }
 
         // Remove from HashSet
+        trace!("peer {} unsubscribed from region {:?} in world {}", &uuid, &cube, &self.world_name);
         let entry = self.map.entry(cube).or_insert_with(Default::default);
         let removed = entry.remove(uuid);
 

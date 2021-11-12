@@ -1,5 +1,7 @@
 use std::collections::HashMap;
 
+use tracing::trace;
+
 use super::AreaMap;
 
 pub struct WorldMap {
@@ -16,14 +18,17 @@ impl WorldMap {
     }
 
     /// Gets an [`AreaMap`] for the given world name.
-    pub fn get(&self, world_name: impl Into<String>) -> Option<&AreaMap> {
-        self.map.get(&world_name.into())
+    pub fn get(&self, world_name: &str) -> Option<&AreaMap> {
+        self.map.get(world_name)
     }
 
     /// Gets a mutable [`AreaMap`] for the given world name.
-    pub fn get_mut(&mut self, world_name: impl Into<String>) -> &mut AreaMap {
+    pub fn get_mut(&mut self, world_name: &str) -> &mut AreaMap {
         self.map
-            .entry(world_name.into())
-            .or_insert(AreaMap::new(self.cube_size))
+            .entry(world_name.to_string())
+            .or_insert_with(|| {
+                trace!("creating new world: {}", world_name);
+                AreaMap::new(self.cube_size)
+            })
     }
 }
