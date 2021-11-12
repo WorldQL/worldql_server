@@ -75,4 +75,18 @@ impl AreaMap {
 
         removed
     }
+
+    /// Completely removes a [`crate::transport::Peer`] from the map.
+    ///
+    /// Used in the event of a disconnect.
+    pub fn remove_peer(&mut self, uuid: &Uuid) -> bool {
+        let mut removed = false;
+        for (area, peers) in &mut self.map {
+            if peers.remove(uuid) {
+                removed = true;
+            }
+        }
+
+        removed
+    }
 }
