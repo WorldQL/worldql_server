@@ -1,3 +1,5 @@
+mod area_subscribe;
+mod area_unsubscribe;
 mod global_message;
 mod local_message;
 mod thread;

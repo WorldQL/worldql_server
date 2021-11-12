@@ -2,8 +2,10 @@ use color_eyre::Result;
 use flume::Receiver;
 use tracing::debug;
 
-use super::global_message::handle_global_message as global_message;
-use super::local_message::handle_local_message as local_message;
+use super::area_subscribe::handle_area_subscribe;
+use super::area_unsubscribe::handle_area_unsubscribe;
+use super::global_message::handle_global_message;
+use super::local_message::handle_local_message;
 use crate::structures::{Instruction, Message};
 use crate::subscriptions::AreaMap;
 use crate::transport::ThreadPeerMap;
@@ -17,8 +19,16 @@ pub async fn start_processing_thread(
 
     while let Ok(message) = msg_rx.recv_async().await {
         match message.instruction {
-            Instruction::LocalMessage => local_message(message, &peer_map, &mut area_map).await?,
-            Instruction::GlobalMessage => global_message(message, &peer_map).await?,
+            Instruction::AreaSubscribe => {
+                handle_area_subscribe(message, &peer_map, &mut area_map).await?
+            }
+            Instruction::AreaUnsubscribe => {
+                handle_area_unsubscribe(message, &peer_map, &mut area_map).await?
+            }
+            Instruction::GlobalMessage => handle_global_message(message, &peer_map).await?,
+            Instruction::LocalMessage => {
+                handle_local_message(message, &peer_map, &mut area_map).await?
+            }
 
             _ => debug!("unhandled instruction: {:?}", message.instruction),
         }
