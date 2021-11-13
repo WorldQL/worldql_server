@@ -1,4 +1,5 @@
-use std::{collections::{HashMap, HashSet}, fmt::Display};
+use std::collections::{HashMap, HashSet};
+use std::fmt::Display;
 
 use tracing::trace;
 use uuid::Uuid;
@@ -117,6 +118,11 @@ impl AreaMap {
 
 impl Display for AreaMap {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{{ world_name = \"{}\", area_count = {} }}", self.world_name, self.map.len())
+        write!(
+            f,
+            "{{ world_name = \"{}\", area_count = {} }}",
+            self.world_name,
+            self.map.len()
+        )
     }
 }
