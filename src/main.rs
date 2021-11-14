@@ -36,6 +36,7 @@ compile_error!("at least one of `websocket` or `zeromq` features must be enabled
 struct Args {
     /// PostgreSQL Connection String
     #[clap(short, long = "psql", env = "WQL_POSTGRES_CONNECTION_STRING")]
+    // TODO: Make required
     psql_conn: Option<String>,
 
     /// Set Verbosity Level.
@@ -132,6 +133,7 @@ async fn main() -> Result<()> {
         std::process::exit(1);
     }
 
+    // TODO: Make required
     let client = match args.psql_conn {
         None => None,
         Some(conn) => {
