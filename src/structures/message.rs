@@ -141,6 +141,18 @@ pub enum DeserializeError {
 // endregion
 
 // region: Display Trait
+macro_rules! write_optional {
+    ($f: expr, $self: expr) => {{
+        if let Some(parameter) = &$self.parameter {
+            write!($f, ", parameter = \"{}\"", parameter)?;
+        }
+
+        if let Some(flex) = &$self.flex {
+            write!($f, ", flex = [u8; {}]", flex.len())?;
+        }
+    }};
+}
+
 impl Display for Message {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self.instruction {
@@ -173,14 +185,7 @@ impl Display for Message {
                     self.instruction, self.sender_uuid, self.world_name
                 )?;
 
-                if let Some(parameter) = &self.parameter {
-                    write!(f, ", parameter = \"{}\"", parameter)?;
-                }
-
-                if let Some(flex) = &self.flex {
-                    write!(f, ", flex = [u8; {}]", flex.len())?;
-                }
-
+                write_optional!(f, self);
                 write!(f, " }}")
             }
 
@@ -194,14 +199,7 @@ impl Display for Message {
                     self.position.as_ref().unwrap()
                 )?;
 
-                if let Some(parameter) = &self.parameter {
-                    write!(f, ", parameter = \"{}\"", parameter)?;
-                }
-
-                if let Some(flex) = &self.flex {
-                    write!(f, ", flex = [u8; {}]", flex.len())?;
-                }
-
+                write_optional!(f, self);
                 write!(f, " }}")
             }
 
