@@ -1,7 +1,6 @@
 use std::collections::{HashMap, HashSet};
 use std::fmt::Display;
 
-use tracing::trace;
 use uuid::Uuid;
 
 use super::{CubeArea, ToCubeArea};

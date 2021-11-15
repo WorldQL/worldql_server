@@ -27,14 +27,14 @@ impl CubeArea {
             false => 1,
         };
 
-        let size_i = size as i64;
-        let size_f = size as f64;
+        let size_i = i64::from(size);
+        let size_f = f64::from(size);
 
         if abs_coord % size_f == 0.0 && coord != 0.0 {
             return coord as i64;
         }
 
-        let rounded = crate::utils::round_by_multiple(abs_coord, size as f64);
+        let rounded = crate::utils::round_by_multiple(abs_coord, f64::from(size));
         let result = match rounded > coord {
             true => rounded as i64,
             false => (rounded as i64) + size_i,

@@ -120,13 +120,10 @@ impl PeerConnection {
     #[cfg(feature = "zeromq")]
     #[inline]
     fn update_last_heartbeat(&mut self) {
-        match self {
-            PeerConnection::ZeroMQ((_, last_recv)) => {
-                // Set the last received instant to now
-                *last_recv = Instant::now()
-            }
-
-            _ => (),
+        #[cfg(feature = "zeromq")]
+        if let PeerConnection::ZeroMQ((_, last_recv)) = self {
+            // Set the last received instant to now
+            *last_recv = Instant::now()
         }
     }
 

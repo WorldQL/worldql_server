@@ -127,7 +127,7 @@ impl PeerMap {
             let _ = self.broadcast_all(message).await;
         }
 
-        let _ = self.on_remove.send(uuid.to_owned());
+        let _ = self.on_remove.send(*uuid);
         result
     }
     // endregion

@@ -26,7 +26,7 @@ pub async fn start_zeromq_outgoing(
     let mut sockets: SocketMap = HashMap::new();
     info!("Started ZeroMQ PUSH Manager");
 
-    let duration = Duration::from_secs(timeout_secs as u64);
+    let duration = Duration::from_secs(u64::from(timeout_secs));
     let mut interval = time::interval(duration);
     interval.set_missed_tick_behavior(time::MissedTickBehavior::Skip);
 
@@ -134,7 +134,7 @@ async fn check_stale_peers(peer_map: &ThreadPeerMap, max_duration: Duration) -> 
     };
 
     // Do nothing if no Peers are stale
-    if uuids.len() == 0 {
+    if uuids.is_empty() {
         return Ok(());
     }
 

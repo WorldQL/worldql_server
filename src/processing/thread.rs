@@ -52,8 +52,8 @@ async fn handle_message(
 
         // Handle known instructions
         Instruction::Heartbeat => heartbeat(message, peer_map).await?,
-        Instruction::AreaSubscribe => area_subscribe(message, peer_map, world_map).await?,
-        Instruction::AreaUnsubscribe => area_unsubscribe(message, peer_map, world_map).await?,
+        Instruction::AreaSubscribe => area_subscribe(message, peer_map, world_map)?,
+        Instruction::AreaUnsubscribe => area_unsubscribe(message, peer_map, world_map)?,
         Instruction::LocalMessage => local_message(message, peer_map, world_map).await?,
         Instruction::GlobalMessage => global_message(message, peer_map).await?,
 

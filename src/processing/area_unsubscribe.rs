@@ -5,7 +5,7 @@ use crate::structures::Message;
 use crate::subscriptions::WorldMap;
 use crate::transport::ThreadPeerMap;
 
-pub async fn handle_area_unsubscribe(
+pub fn handle_area_unsubscribe(
     message: Message,
     peer_map: &ThreadPeerMap,
     world_map: &mut WorldMap,
