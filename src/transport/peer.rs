@@ -1,6 +1,6 @@
 use std::fmt::Display;
 use std::net::SocketAddr;
-use std::time::Instant;
+use std::time::{Duration, Instant};
 
 use bytes::Bytes;
 use derive_getters::Getters;
@@ -54,6 +54,19 @@ impl Peer {
             addr,
             uuid,
             connection: PeerConnection::ZeroMQ((zmq_tx, Instant::now())),
+        }
+    }
+
+    /// Returns `true` if the duration between the last recieved heartbeat is greater than `max_duration`
+    pub fn is_stale(&self, now: &Instant, max_duration: &Duration) -> bool {
+        match self.connection {
+            #[cfg(feature = "websocket")]
+            PeerConnection::WebSocket(_) => false,
+            #[cfg(feature = "zeromq")]
+            PeerConnection::ZeroMQ((_, last_heartbeat)) => {
+                let duration = *now - last_heartbeat;
+                duration > *max_duration
+            }
         }
     }
 

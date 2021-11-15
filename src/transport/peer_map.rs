@@ -1,5 +1,6 @@
 use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
+use std::time::{Duration, Instant};
 
 use flume::Sender;
 use tokio::sync::RwLock;
@@ -69,6 +70,18 @@ impl PeerMap {
     #[inline]
     pub fn peers_iter(&self) -> impl Iterator<Item = Uuid> + '_ {
         self.map.keys().copied()
+    }
+
+    /// Returns an iterator of [`Uuid`] items for each [`Peer`] that is considered stale.
+    #[inline]
+    pub fn stale_peers_iter(&self, max_duration: Duration) -> impl Iterator<Item = Uuid> + '_ {
+        let now = Instant::now();
+        self.map.values().filter_map(move |peer| {
+            match peer.is_stale(&now, &max_duration) {
+                false => None,
+                true => Some(peer.uuid())
+            }
+        }).copied()
     }
     // endregion
 
