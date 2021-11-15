@@ -107,7 +107,6 @@ async fn handle_handshake(
     let mut socket = tmq::push(ctx).connect(&endpoint)?;
     let handshake_msg = Message {
         instruction: Instruction::Handshake,
-        sender_uuid: Uuid::nil(),
         ..Default::default()
     };
 
