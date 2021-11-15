@@ -63,12 +63,14 @@ pub trait ToCubeArea {
 }
 
 impl ToCubeArea for CubeArea {
+    #[inline]
     fn to_cube_area(self, _: u16) -> CubeArea {
         self
     }
 }
 
 impl ToCubeArea for Vector3 {
+    #[inline]
     fn to_cube_area(self, size: u16) -> CubeArea {
         CubeArea::from_vector3(self, size)
     }

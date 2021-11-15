@@ -25,6 +25,7 @@ impl Default for Instruction {
 }
 
 impl Encode<InstructionFB> for Instruction {
+    #[inline]
     fn encode(self) -> InstructionFB {
         match self {
             Instruction::Heartbeat => InstructionFB::Heartbeat,
@@ -44,6 +45,7 @@ impl Encode<InstructionFB> for Instruction {
 }
 
 impl Decode<InstructionFB> for Instruction {
+    #[inline]
     fn decode(encoded: InstructionFB) -> Result<Self, DecodeError> {
         let instruction = match encoded {
             InstructionFB::Heartbeat => Instruction::Heartbeat,

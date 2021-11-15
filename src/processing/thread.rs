@@ -39,6 +39,7 @@ pub async fn start_processing_thread(
     Ok(())
 }
 
+#[inline]
 async fn handle_message(
     message: Message,
     peer_map: &ThreadPeerMap,

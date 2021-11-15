@@ -66,6 +66,7 @@ impl PeerMap {
     }
 
     /// Returns an iterator of [`Uuid`] items for each contained [`Peer`].
+    #[inline]
     pub fn peers_iter(&self) -> impl Iterator<Item = Uuid> + '_ {
         self.map.keys().copied()
     }

@@ -14,10 +14,12 @@ pub struct Vector3 {
 }
 
 impl Vector3 {
+    #[inline]
     pub fn new(x: f64, y: f64, z: f64) -> Self {
         Self { x, y, z }
     }
 
+    #[inline]
     pub fn zero() -> Self {
         Self::new(0.0, 0.0, 0.0)
     }
@@ -60,6 +62,8 @@ impl Decode<Vec3dT> for Vector3 {
 // region: Math Traits
 impl Add for Vector3 {
     type Output = Self;
+
+    #[inline]
     fn add(self, rhs: Vector3) -> Self::Output {
         let x = self.x + rhs.x;
         let y = self.y + rhs.y;
@@ -69,6 +73,7 @@ impl Add for Vector3 {
 }
 
 impl AddAssign for Vector3 {
+    #[inline]
     fn add_assign(&mut self, rhs: Self) {
         self.x += rhs.x;
         self.y += rhs.y;
@@ -78,6 +83,8 @@ impl AddAssign for Vector3 {
 
 impl Sub for Vector3 {
     type Output = Self;
+
+    #[inline]
     fn sub(self, rhs: Vector3) -> Self::Output {
         let x = self.x - rhs.x;
         let y = self.y - rhs.y;
@@ -87,6 +94,7 @@ impl Sub for Vector3 {
 }
 
 impl SubAssign for Vector3 {
+    #[inline]
     fn sub_assign(&mut self, rhs: Self) {
         self.x -= rhs.x;
         self.y -= rhs.y;
@@ -96,6 +104,8 @@ impl SubAssign for Vector3 {
 
 impl Div for Vector3 {
     type Output = Self;
+
+    #[inline]
     fn div(self, rhs: Vector3) -> Self::Output {
         let x = self.x / rhs.x;
         let y = self.y / rhs.y;
@@ -105,6 +115,7 @@ impl Div for Vector3 {
 }
 
 impl DivAssign for Vector3 {
+    #[inline]
     fn div_assign(&mut self, rhs: Self) {
         self.x /= rhs.x;
         self.y /= rhs.y;
@@ -114,6 +125,8 @@ impl DivAssign for Vector3 {
 
 impl Div<f64> for Vector3 {
     type Output = Self;
+
+    #[inline]
     fn div(self, rhs: f64) -> Self::Output {
         let x = self.x / rhs;
         let y = self.y / rhs;
@@ -123,6 +136,7 @@ impl Div<f64> for Vector3 {
 }
 
 impl DivAssign<f64> for Vector3 {
+    #[inline]
     fn div_assign(&mut self, rhs: f64) {
         self.x /= rhs;
         self.y /= rhs;
@@ -132,6 +146,8 @@ impl DivAssign<f64> for Vector3 {
 
 impl Mul for Vector3 {
     type Output = Self;
+
+    #[inline]
     fn mul(self, rhs: Vector3) -> Self::Output {
         let x = self.x * rhs.x;
         let y = self.y * rhs.y;
@@ -141,6 +157,7 @@ impl Mul for Vector3 {
 }
 
 impl MulAssign for Vector3 {
+    #[inline]
     fn mul_assign(&mut self, rhs: Self) {
         self.x *= rhs.x;
         self.y *= rhs.y;
@@ -150,6 +167,8 @@ impl MulAssign for Vector3 {
 
 impl Mul<f64> for Vector3 {
     type Output = Self;
+
+    #[inline]
     fn mul(self, rhs: f64) -> Self::Output {
         let x = self.x * rhs;
         let y = self.y * rhs;
@@ -159,6 +178,7 @@ impl Mul<f64> for Vector3 {
 }
 
 impl MulAssign<f64> for Vector3 {
+    #[inline]
     fn mul_assign(&mut self, rhs: f64) {
         self.x *= rhs;
         self.y *= rhs;
@@ -168,6 +188,8 @@ impl MulAssign<f64> for Vector3 {
 
 impl Mul<Vector3> for f64 {
     type Output = Vector3;
+
+    #[inline]
     fn mul(self, rhs: Vector3) -> Self::Output {
         let x = self * rhs.x;
         let y = self * rhs.y;
@@ -178,6 +200,8 @@ impl Mul<Vector3> for f64 {
 
 impl Neg for Vector3 {
     type Output = Self;
+
+    #[inline]
     fn neg(self) -> Self::Output {
         let x = -self.x;
         let y = -self.y;

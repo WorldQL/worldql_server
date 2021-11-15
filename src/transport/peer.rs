@@ -57,17 +57,20 @@ impl Peer {
     }
 
     /// Send a [`Message`] to this peer.
+    #[inline]
     pub async fn send(&mut self, message: Message) -> Result<(), SendError> {
         self.connection.send(self.uuid, message).await
     }
 
     /// Send a raw byte array to this peer.
+    #[inline]
     pub async fn send_raw(&mut self, bytes: Bytes) -> Result<(), SendError> {
         self.connection.send_raw(self.uuid, bytes).await
     }
 }
 
 impl PartialEq for Peer {
+    #[inline]
     fn eq(&self, other: &Self) -> bool {
         self.uuid == other.uuid
     }
@@ -93,6 +96,7 @@ pub enum PeerConnection {
 
 impl PeerConnection {
     /// Send a [`Message`] to this connection.
+    #[inline]
     async fn send(&mut self, uuid: Uuid, message: Message) -> Result<(), SendError> {
         let bytes = message.serialize();
         self.send_raw(uuid, bytes).await?;
@@ -101,6 +105,7 @@ impl PeerConnection {
     }
 
     /// Send a raw byte array to this connection.
+    #[inline]
     async fn send_raw(&mut self, uuid: Uuid, bytes: Bytes) -> Result<(), SendError> {
         match self {
             #[cfg(feature = "websocket")]

@@ -21,11 +21,13 @@ impl WorldMap {
     }
 
     /// Gets an [`AreaMap`] for the given world name.
+    #[inline]
     pub fn get(&self, world_name: &str) -> Option<&AreaMap> {
         self.map.get(world_name)
     }
 
     /// Gets a mutable [`AreaMap`] for the given world name.
+    #[inline]
     pub fn get_mut(&mut self, world_name: &str) -> &mut AreaMap {
         self.map.entry(world_name.to_string()).or_insert_with(|| {
             trace!("creating new world: {}", world_name);
