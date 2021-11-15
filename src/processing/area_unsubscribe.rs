@@ -1,5 +1,6 @@
 use color_eyre::Result;
-use tracing::{debug, trace};
+use tracing::debug;
+use crate::packet_trace;
 
 use crate::structures::Message;
 use crate::subscriptions::WorldMap;
@@ -10,7 +11,7 @@ pub fn handle_area_unsubscribe(
     peer_map: &ThreadPeerMap,
     world_map: &mut WorldMap,
 ) -> Result<()> {
-    trace!("{}", &message);
+    packet_trace!("{}", &message);
 
     let uuid = message.sender_uuid;
     let cube = match message.position {
