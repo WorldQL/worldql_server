@@ -162,6 +162,17 @@ impl Display for Message {
                 self.instruction, self.sender_uuid
             ),
 
+            Instruction::Handshake => {
+                write!(
+                    f,
+                    "{} = {{ sender = \"{}\"",
+                    self.instruction, self.sender_uuid
+                )?;
+
+                write_optional!(f, self);
+                write!(f, " }}")
+            }
+
             Instruction::PeerConnect | Instruction::PeerDisconnect => write!(
                 f,
                 "{} = {{ peer = \"{}\" }}",
@@ -203,7 +214,6 @@ impl Display for Message {
                 write!(f, " }}")
             }
 
-            Instruction::Handshake => todo!(),
             Instruction::RecordCreate => todo!(),
             Instruction::RecordRead => todo!(),
             Instruction::RecordUpdate => todo!(),
