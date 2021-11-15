@@ -1,6 +1,6 @@
 use color_eyre::Result;
 use tracing::debug;
-use crate::packet_trace;
+use crate::trace_packet;
 
 use crate::structures::Message;
 use crate::subscriptions::WorldMap;
@@ -11,7 +11,7 @@ pub async fn handle_local_message(
     peer_map: &ThreadPeerMap,
     world_map: &mut WorldMap,
 ) -> Result<()> {
-    packet_trace!("{}", &message);
+    trace_packet!("{}", &message);
 
     let cube = match message.position {
         Some(pos) => pos,

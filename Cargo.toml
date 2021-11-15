@@ -28,7 +28,7 @@ uuid = { version = "0.8.2", features = ["v4"] }
 default = ["zeromq", "websocket"]
 zeromq = ["tmq"]
 websocket = ["tokio-tungstenite"]
-packet_trace = []
+trace_packets = []
 
 [profile.release]
 opt-level = 3

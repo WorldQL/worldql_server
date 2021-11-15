@@ -1,7 +1,7 @@
 #[macro_export]
-macro_rules! packet_trace {
+macro_rules! trace_packet {
     ($target: expr, $($field:tt)*) => {
-        #[cfg(feature = "packet_trace")]
+        #[cfg(feature = "trace_packets")]
         tracing::trace!($target, $($field)*);
     };
 }
