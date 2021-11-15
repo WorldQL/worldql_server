@@ -69,7 +69,7 @@ async fn handle_message(
         None => {
             // Remove sockets from PeerMap if they are not in SocketMap
             let mut map = peer_map.write().await;
-            map.remove(&uuid);
+            map.remove(&uuid).await;
         }
     }
 
