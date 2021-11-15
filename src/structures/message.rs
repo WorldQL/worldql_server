@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use bytes::Bytes;
 use flatbuffers::{FlatBufferBuilder, InvalidFlatbuffer};
 use thiserror::Error;
@@ -18,6 +20,7 @@ pub struct Message {
     pub flex: Option<Bytes>,
 }
 
+// region: Codec Traits
 impl Encode<MessageT> for Message {
     fn encode(self) -> MessageT {
         let records = self
@@ -102,7 +105,9 @@ impl Decode<MessageT> for Message {
         Ok(message)
     }
 }
+// endregion
 
+// region: (De)serialization
 impl Message {
     pub fn serialize(self) -> Bytes {
         let mut builder = FlatBufferBuilder::with_capacity(1024);
@@ -133,3 +138,57 @@ pub enum DeserializeError {
     #[error(transparent)]
     DecodeError(#[from] DecodeError),
 }
+// endregion
+
+// region: Display Trait
+impl Display for Message {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self.instruction {
+            Instruction::Heartbeat => write!(
+                f,
+                "{} = {{ sender = \"{}\" }}",
+                self.instruction, self.sender_uuid
+            ),
+
+            Instruction::PeerConnect | Instruction::PeerDisconnect => write!(
+                f,
+                "{} = {{ peer = \"{}\" }}",
+                self.instruction,
+                self.parameter.as_ref().unwrap()
+            ),
+
+            Instruction::AreaSubscribe | Instruction::AreaUnsubscribe => write!(
+                f,
+                "{} = {{ sender = \"{}\", world = \"{}\", area = {} }}",
+                self.instruction,
+                self.sender_uuid,
+                self.world_name,
+                self.position.as_ref().unwrap()
+            ),
+
+            Instruction::GlobalMessage => write!(
+                f,
+                "{} = {{ sender = \"{}\", world = \"{}\" }}",
+                self.instruction, self.sender_uuid, self.world_name
+            ),
+
+            Instruction::LocalMessage => write!(
+                f,
+                "{} = {{ sender = \"{}\", world = \"{}\", position = {} }}",
+                self.instruction,
+                self.sender_uuid,
+                self.world_name,
+                self.position.as_ref().unwrap()
+            ),
+
+            Instruction::Handshake => todo!(),
+            Instruction::RecordCreate => todo!(),
+            Instruction::RecordRead => todo!(),
+            Instruction::RecordUpdate => todo!(),
+            Instruction::RecordDelete => todo!(),
+            Instruction::RecordReply => todo!(),
+            Instruction::Unknown => todo!(),
+        }
+    }
+}
+// endregion
