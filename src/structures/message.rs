@@ -156,13 +156,7 @@ macro_rules! write_optional {
 impl Display for Message {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self.instruction {
-            Instruction::Heartbeat => write!(
-                f,
-                "{} = {{ sender = \"{}\" }}",
-                self.instruction, self.sender_uuid
-            ),
-
-            Instruction::Handshake => {
+            Instruction::Heartbeat | Instruction::Handshake => {
                 write!(
                     f,
                     "{} = {{ sender = \"{}\"",
@@ -219,7 +213,12 @@ impl Display for Message {
             Instruction::RecordUpdate => todo!(),
             Instruction::RecordDelete => todo!(),
             Instruction::RecordReply => todo!(),
-            Instruction::Unknown => todo!(),
+
+            Instruction::Unknown => write!(
+                f,
+                "{} = {{ sender = \"{}\" }}",
+                self.instruction, self.sender_uuid
+            ),
         }
     }
 }
