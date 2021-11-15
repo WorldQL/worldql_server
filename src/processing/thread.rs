@@ -10,6 +10,7 @@ use super::heartbeat::handle_heartbeat as heartbeat;
 use super::local_message::handle_local_message as local_message;
 use crate::structures::{Instruction, Message};
 use crate::subscriptions::WorldMap;
+use crate::trace_packet;
 use crate::transport::ThreadPeerMap;
 
 pub async fn start_processing_thread(
@@ -62,7 +63,8 @@ async fn handle_message(
             let map = peer_map.read().await;
             let peer = map.get(&message.sender_uuid).unwrap();
 
-            warn!("Unknown Instruction received from {}", peer)
+            warn!("Unknown Instruction received from {}", peer);
+            trace_packet!("{}", message);
         }
 
         // Emit debug message for unhandled instructions

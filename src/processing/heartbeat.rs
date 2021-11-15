@@ -3,9 +3,12 @@ use tracing::warn;
 use uuid::Uuid;
 
 use crate::structures::Message;
+use crate::trace_packet;
 use crate::transport::ThreadPeerMap;
 
 pub async fn handle_heartbeat(message: Message, peer_map: &ThreadPeerMap) -> Result<()> {
+    trace_packet!("{}", &message);
+
     let uuid = message.sender_uuid;
     let mut map = peer_map.write().await;
     let peer = match map.get_mut(&uuid) {
