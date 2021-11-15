@@ -160,8 +160,7 @@ fn parse_message(
     if message.sender_uuid != *uuid {
         debug!(
             "peer uuid is incorrect: expected {}, got {}",
-            uuid,
-            &message.sender_uuid
+            uuid, &message.sender_uuid
         );
 
         return ParseResult::Close;

@@ -1,9 +1,9 @@
 use color_eyre::Result;
 use tracing::debug;
-use crate::trace_packet;
 
 use crate::structures::Message;
 use crate::subscriptions::WorldMap;
+use crate::trace_packet;
 use crate::transport::ThreadPeerMap;
 
 pub async fn handle_local_message(

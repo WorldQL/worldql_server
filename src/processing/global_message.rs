@@ -1,7 +1,7 @@
 use color_eyre::Result;
 
-use crate::trace_packet;
 use crate::structures::Message;
+use crate::trace_packet;
 use crate::transport::ThreadPeerMap;
 
 pub async fn handle_global_message(message: Message, peer_map: &ThreadPeerMap) -> Result<()> {

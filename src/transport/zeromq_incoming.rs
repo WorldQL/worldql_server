@@ -1,7 +1,7 @@
 use color_eyre::Result;
 use flume::Sender;
 use futures_util::StreamExt;
-use tracing::{info, debug, warn};
+use tracing::{debug, info, warn};
 
 use super::ThreadPeerMap;
 use crate::structures::{Instruction, Message};

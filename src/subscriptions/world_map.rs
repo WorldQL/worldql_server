@@ -50,8 +50,7 @@ impl WorldMap {
             if world_removed {
                 debug!(
                     "removed peer {} from \"{}\" subscriptions",
-                    uuid,
-                    world_name
+                    uuid, world_name
                 );
 
                 removed = true;

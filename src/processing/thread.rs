@@ -63,7 +63,7 @@ async fn handle_message(
             let peer = map.get(&message.sender_uuid).unwrap();
 
             warn!("Unknown Instruction received from {}", peer)
-        },
+        }
 
         // Emit debug message for unhandled instructions
         _ => debug!("unhandled instruction: {:?}", message.instruction),
