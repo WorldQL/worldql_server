@@ -40,8 +40,20 @@ impl WorldMap {
     /// Used in the event of a disconnect.
     pub fn remove_peer(&mut self, uuid: &Uuid) -> bool {
         let mut removed = false;
-        for area_map in self.map.values_mut() {
+        for (world_name, area_map) in self.map.iter_mut() {
+            let mut world_removed = false;
+
             if area_map.remove_peer(uuid) {
+                world_removed = true;
+            }
+
+            if world_removed {
+                trace!(
+                    "removed peer {} from \"{}\" subscriptions",
+                    uuid,
+                    world_name
+                );
+
                 removed = true;
             }
         }

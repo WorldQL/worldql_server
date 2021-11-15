@@ -88,12 +88,6 @@ impl AreaMap {
         let mut removed = false;
         for peers in self.map.values_mut() {
             if peers.remove(uuid) {
-                trace!(
-                    "removed peer {} from world {} area map",
-                    uuid,
-                    &self.world_name
-                );
-
                 removed = true;
             }
         }
