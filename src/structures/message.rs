@@ -166,20 +166,44 @@ impl Display for Message {
                 self.position.as_ref().unwrap()
             ),
 
-            Instruction::GlobalMessage => write!(
-                f,
-                "{} = {{ sender = \"{}\", world = \"{}\" }}",
-                self.instruction, self.sender_uuid, self.world_name
-            ),
+            Instruction::GlobalMessage => {
+                write!(
+                    f,
+                    "{} = {{ sender = \"{}\", world = \"{}\"",
+                    self.instruction, self.sender_uuid, self.world_name
+                )?;
 
-            Instruction::LocalMessage => write!(
-                f,
-                "{} = {{ sender = \"{}\", world = \"{}\", position = {} }}",
-                self.instruction,
-                self.sender_uuid,
-                self.world_name,
-                self.position.as_ref().unwrap()
-            ),
+                if let Some(parameter) = &self.parameter {
+                    write!(f, ", parameter = \"{}\"", parameter)?;
+                }
+
+                if let Some(flex) = &self.flex {
+                    write!(f, ", flex = [u8; {}]", flex.len())?;
+                }
+
+                write!(f, " }}")
+            }
+
+            Instruction::LocalMessage => {
+                write!(
+                    f,
+                    "{} = {{ sender = \"{}\", world = \"{}\", position = {}",
+                    self.instruction,
+                    self.sender_uuid,
+                    self.world_name,
+                    self.position.as_ref().unwrap()
+                )?;
+
+                if let Some(parameter) = &self.parameter {
+                    write!(f, ", parameter = \"{}\"", parameter)?;
+                }
+
+                if let Some(flex) = &self.flex {
+                    write!(f, ", flex = [u8; {}]", flex.len())?;
+                }
+
+                write!(f, " }}")
+            }
 
             Instruction::Handshake => todo!(),
             Instruction::RecordCreate => todo!(),
