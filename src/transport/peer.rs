@@ -1,5 +1,6 @@
 use std::fmt::Display;
 use std::net::SocketAddr;
+use std::time::Instant;
 
 use bytes::Bytes;
 use derive_getters::Getters;
@@ -52,8 +53,15 @@ impl Peer {
         Self {
             addr,
             uuid,
-            connection: PeerConnection::ZeroMQ(zmq_tx),
+            connection: PeerConnection::ZeroMQ((zmq_tx, Instant::now())),
         }
+    }
+
+    /// Update the Last Received [`Instant`] to the current time.
+    #[cfg(feature = "zeromq")]
+    #[inline]
+    pub fn update_last_heartbeat(&mut self) {
+        self.connection.update_last_heartbeat()
     }
 
     /// Send a [`Message`] to this peer.
@@ -91,10 +99,24 @@ pub enum PeerConnection {
     #[cfg(feature = "websocket")]
     WebSocket(WebSocketConnection),
     #[cfg(feature = "zeromq")]
-    ZeroMQ(ZmqConnection),
+    ZeroMQ((ZmqConnection, Instant)),
 }
 
 impl PeerConnection {
+    /// Update the Last Received [`Instant`] to the current time.
+    #[cfg(feature = "zeromq")]
+    #[inline]
+    fn update_last_heartbeat(&mut self) {
+        match self {
+            PeerConnection::ZeroMQ((_, last_recv)) => {
+                // Set the last received instant to now
+                *last_recv = Instant::now()
+            }
+
+            _ => (),
+        }
+    }
+
     /// Send a [`Message`] to this connection.
     #[inline]
     async fn send(&mut self, uuid: Uuid, message: Message) -> Result<(), SendError> {
@@ -116,7 +138,7 @@ impl PeerConnection {
                 Ok(())
             }
             #[cfg(feature = "zeromq")]
-            PeerConnection::ZeroMQ(tx) => {
+            PeerConnection::ZeroMQ((tx, _)) => {
                 tx.send_async((bytes, uuid)).await?;
 
                 Ok(())
