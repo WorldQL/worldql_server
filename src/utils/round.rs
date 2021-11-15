@@ -14,6 +14,8 @@ pub fn round_by_multiple(n: f64, multiple: f64) -> f64 {
 
 #[cfg(test)]
 mod tests {
+    #![allow(clippy::float_cmp)]
+
     macro_rules! test_round {
         ($input: expr, $expected: expr) => {
             let (n, multiple) = $input;
