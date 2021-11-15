@@ -1,6 +1,7 @@
 use std::collections::{HashMap, HashSet};
 use std::fmt::Display;
 
+use tracing::trace;
 use uuid::Uuid;
 
 use super::{CubeArea, ToCubeArea};
@@ -56,6 +57,13 @@ impl AreaMap {
         let cube = cube.to_cube_area(self.cube_size);
         let entry = self.map.entry(cube).or_insert_with(Default::default);
 
+        trace!(
+            "peer {} subscribed to region {} in world \"{}\"",
+            &uuid,
+            &cube,
+            &self.world_name
+        );
+
         entry.insert(uuid)
     }
 
@@ -67,6 +75,13 @@ impl AreaMap {
         if !self.map.contains_key(&cube) {
             return false;
         }
+
+        trace!(
+            "peer {} unsubscribed from region {} in world \"{}\"",
+            &uuid,
+            &cube,
+            &self.world_name
+        );
 
         // Remove from HashSet
         let entry = self.map.entry(cube).or_insert_with(Default::default);
