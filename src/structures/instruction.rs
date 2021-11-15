@@ -5,15 +5,17 @@ use crate::flatbuffers::Instruction as InstructionFB;
 pub enum Instruction {
     Heartbeat,
     Handshake,
-    LocalMessage,
+    PeerConnect,
+    PeerDisconnect,
+    AreaSubscribe,
+    AreaUnsubscribe,
     GlobalMessage,
+    LocalMessage,
     RecordCreate,
     RecordRead,
     RecordUpdate,
     RecordDelete,
     RecordReply,
-    AreaSubscribe,
-    AreaUnsubscribe,
 
     Unknown,
 }
@@ -30,15 +32,18 @@ impl Encode<InstructionFB> for Instruction {
         match self {
             Instruction::Heartbeat => InstructionFB::Heartbeat,
             Instruction::Handshake => InstructionFB::Handshake,
-            Instruction::LocalMessage => InstructionFB::LocalMessage,
+            Instruction::PeerConnect => InstructionFB::PeerConnect,
+            Instruction::PeerDisconnect => InstructionFB::PeerDisconnect,
+            Instruction::AreaSubscribe => InstructionFB::AreaSubscribe,
+            Instruction::AreaUnsubscribe => InstructionFB::AreaUnsubscribe,
             Instruction::GlobalMessage => InstructionFB::GlobalMessage,
+            Instruction::LocalMessage => InstructionFB::LocalMessage,
             Instruction::RecordCreate => InstructionFB::RecordCreate,
             Instruction::RecordRead => InstructionFB::RecordRead,
             Instruction::RecordUpdate => InstructionFB::RecordUpdate,
             Instruction::RecordDelete => InstructionFB::RecordDelete,
             Instruction::RecordReply => InstructionFB::RecordReply,
-            Instruction::AreaSubscribe => InstructionFB::AreaSubscribe,
-            Instruction::AreaUnsubscribe => InstructionFB::AreaUnsubscribe,
+
             Instruction::Unknown => InstructionFB::Unknown,
         }
     }
@@ -50,15 +55,17 @@ impl Decode<InstructionFB> for Instruction {
         let instruction = match encoded {
             InstructionFB::Heartbeat => Instruction::Heartbeat,
             InstructionFB::Handshake => Instruction::Handshake,
-            InstructionFB::LocalMessage => Instruction::LocalMessage,
+            InstructionFB::PeerConnect => Instruction::PeerConnect,
+            InstructionFB::PeerDisconnect => Instruction::PeerDisconnect,
+            InstructionFB::AreaSubscribe => Instruction::AreaSubscribe,
+            InstructionFB::AreaUnsubscribe => Instruction::AreaUnsubscribe,
             InstructionFB::GlobalMessage => Instruction::GlobalMessage,
+            InstructionFB::LocalMessage => Instruction::LocalMessage,
             InstructionFB::RecordCreate => Instruction::RecordCreate,
             InstructionFB::RecordRead => Instruction::RecordRead,
             InstructionFB::RecordUpdate => Instruction::RecordUpdate,
             InstructionFB::RecordDelete => Instruction::RecordDelete,
             InstructionFB::RecordReply => Instruction::RecordReply,
-            InstructionFB::AreaSubscribe => Instruction::AreaSubscribe,
-            InstructionFB::AreaUnsubscribe => Instruction::AreaUnsubscribe,
 
             _ => Instruction::Unknown,
         };

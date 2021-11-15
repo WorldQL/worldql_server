@@ -31,18 +31,20 @@ pub const ENUM_MIN_INSTRUCTION: u8 = 0;
 pub const ENUM_MAX_INSTRUCTION: u8 = 255;
 #[deprecated(since = "2.0.0", note = "Use associated constants instead. This will no longer be generated in 2021.")]
 #[allow(non_camel_case_types)]
-pub const ENUM_VALUES_INSTRUCTION: [Instruction; 12] = [
+pub const ENUM_VALUES_INSTRUCTION: [Instruction; 14] = [
   Instruction::Heartbeat,
   Instruction::Handshake,
-  Instruction::LocalMessage,
+  Instruction::PeerConnect,
+  Instruction::PeerDisconnect,
+  Instruction::AreaSubscribe,
+  Instruction::AreaUnsubscribe,
   Instruction::GlobalMessage,
+  Instruction::LocalMessage,
   Instruction::RecordCreate,
   Instruction::RecordRead,
   Instruction::RecordUpdate,
   Instruction::RecordDelete,
   Instruction::RecordReply,
-  Instruction::AreaSubscribe,
-  Instruction::AreaUnsubscribe,
   Instruction::Unknown,
 ];
 
@@ -53,15 +55,17 @@ pub struct Instruction(pub u8);
 impl Instruction {
   pub const Heartbeat: Self = Self(0);
   pub const Handshake: Self = Self(1);
-  pub const LocalMessage: Self = Self(2);
-  pub const GlobalMessage: Self = Self(3);
-  pub const RecordCreate: Self = Self(4);
-  pub const RecordRead: Self = Self(5);
-  pub const RecordUpdate: Self = Self(6);
-  pub const RecordDelete: Self = Self(7);
-  pub const RecordReply: Self = Self(8);
-  pub const AreaSubscribe: Self = Self(9);
-  pub const AreaUnsubscribe: Self = Self(10);
+  pub const PeerConnect: Self = Self(2);
+  pub const PeerDisconnect: Self = Self(3);
+  pub const AreaSubscribe: Self = Self(4);
+  pub const AreaUnsubscribe: Self = Self(5);
+  pub const GlobalMessage: Self = Self(6);
+  pub const LocalMessage: Self = Self(7);
+  pub const RecordCreate: Self = Self(8);
+  pub const RecordRead: Self = Self(9);
+  pub const RecordUpdate: Self = Self(10);
+  pub const RecordDelete: Self = Self(11);
+  pub const RecordReply: Self = Self(12);
   pub const Unknown: Self = Self(255);
 
   pub const ENUM_MIN: u8 = 0;
@@ -69,15 +73,17 @@ impl Instruction {
   pub const ENUM_VALUES: &'static [Self] = &[
     Self::Heartbeat,
     Self::Handshake,
-    Self::LocalMessage,
+    Self::PeerConnect,
+    Self::PeerDisconnect,
+    Self::AreaSubscribe,
+    Self::AreaUnsubscribe,
     Self::GlobalMessage,
+    Self::LocalMessage,
     Self::RecordCreate,
     Self::RecordRead,
     Self::RecordUpdate,
     Self::RecordDelete,
     Self::RecordReply,
-    Self::AreaSubscribe,
-    Self::AreaUnsubscribe,
     Self::Unknown,
   ];
   /// Returns the variant's name or "" if unknown.
@@ -85,15 +91,17 @@ impl Instruction {
     match self {
       Self::Heartbeat => Some("Heartbeat"),
       Self::Handshake => Some("Handshake"),
-      Self::LocalMessage => Some("LocalMessage"),
+      Self::PeerConnect => Some("PeerConnect"),
+      Self::PeerDisconnect => Some("PeerDisconnect"),
+      Self::AreaSubscribe => Some("AreaSubscribe"),
+      Self::AreaUnsubscribe => Some("AreaUnsubscribe"),
       Self::GlobalMessage => Some("GlobalMessage"),
+      Self::LocalMessage => Some("LocalMessage"),
       Self::RecordCreate => Some("RecordCreate"),
       Self::RecordRead => Some("RecordRead"),
       Self::RecordUpdate => Some("RecordUpdate"),
       Self::RecordDelete => Some("RecordDelete"),
       Self::RecordReply => Some("RecordReply"),
-      Self::AreaSubscribe => Some("AreaSubscribe"),
-      Self::AreaUnsubscribe => Some("AreaUnsubscribe"),
       Self::Unknown => Some("Unknown"),
       _ => None,
     }
