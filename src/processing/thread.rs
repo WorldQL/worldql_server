@@ -1,6 +1,6 @@
 use color_eyre::Result;
 use flume::Receiver;
-use tracing::debug;
+use tracing::{debug, warn};
 use uuid::Uuid;
 
 use super::area_subscribe::handle_area_subscribe as area_subscribe;
@@ -57,8 +57,15 @@ async fn handle_message(
         Instruction::LocalMessage => local_message(message, peer_map, world_map).await?,
         Instruction::GlobalMessage => global_message(message, peer_map).await?,
 
-        // Warn on unknown or unhandled instructions
-        Instruction::Unknown => debug!("unknown instruction received from {}", message.sender_uuid),
+        // Warn on unknown instructions
+        Instruction::Unknown => {
+            let map = peer_map.read().await;
+            let peer = map.get(&message.sender_uuid).unwrap();
+
+            warn!("Unknown Instruction received from {}", peer)
+        },
+
+        // Emit debug message for unhandled instructions
         _ => debug!("unhandled instruction: {:?}", message.instruction),
     }
 
