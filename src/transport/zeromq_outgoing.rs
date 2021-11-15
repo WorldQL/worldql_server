@@ -122,7 +122,7 @@ async fn handle_handshake(
         let peer = Peer::new_zmq(addr, message.sender_uuid, msg_tx);
 
         sockets.insert(message.sender_uuid, socket);
-        map.insert(message.sender_uuid, peer);
+        map.insert(message.sender_uuid, peer).await;
     }
 
     Ok(())

@@ -81,7 +81,7 @@ async fn handle_connection(
             // Only lock for as long as we need
             {
                 let mut map = peer_map.write().await;
-                map.insert(uuid, peer);
+                map.insert(uuid, peer).await;
             }
         }
     }

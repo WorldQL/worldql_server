@@ -8,7 +8,7 @@ use uuid::Uuid;
 
 use super::peer::Peer;
 use super::SendError;
-use crate::structures::Message;
+use crate::structures::{Instruction, Message};
 
 pub type ThreadPeerMap = Arc<RwLock<PeerMap>>;
 
@@ -77,20 +77,40 @@ impl PeerMap {
     ///
     /// If the map did not have this key present, [`None`] is returned.
     #[inline]
-    pub fn insert(&mut self, uuid: Uuid, peer: Peer) -> Option<Peer> {
+    pub async fn insert(&mut self, uuid: Uuid, peer: Peer) -> Option<Peer> {
         trace!("inserting peer {} into map", &peer);
-        self.map.insert(uuid, peer)
+        let existing = self.map.insert(uuid, peer);
+
+        let message = Message {
+            instruction: Instruction::PeerConnect,
+            parameter: Some(uuid.to_string()),
+            ..Default::default()
+        };
+
+        // Broadcast PeerConnect to all except new Peer
+        let _ = self.broadcast_except(message, uuid).await;
+
+        existing
     }
 
     /// Removes a [`Peer`] from the map, returning the [`Peer`] at for the
     /// given [`Uuid`] if the it was previously in the map.
     #[inline]
-    pub fn remove(&mut self, uuid: &Uuid) -> Option<Peer> {
+    pub async fn remove(&mut self, uuid: &Uuid) -> Option<Peer> {
         trace!("trying to remove peer id {} from map", &uuid);
         let result = self.map.remove(uuid);
 
         if result.is_some() {
             trace!("removed peer id {} from map", &uuid);
+
+            let message = Message {
+                instruction: Instruction::PeerDisconnect,
+                parameter: Some(uuid.to_string()),
+                ..Default::default()
+            };
+
+            // Broadcast PeerDisconnect to all
+            let _ = self.broadcast_all(message).await;
         }
 
         let _ = self.on_remove.send(uuid.to_owned());
