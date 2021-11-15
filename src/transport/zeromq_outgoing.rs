@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::time::Duration;
 
 use color_eyre::Result;
@@ -26,8 +26,8 @@ pub async fn start_zeromq_outgoing(
     let mut sockets: SocketMap = HashMap::new();
     info!("Started ZeroMQ PUSH Manager");
 
-    let interval = Duration::from_secs(timeout_secs as u64);
-    let mut interval = time::interval(interval);
+    let duration = Duration::from_secs(timeout_secs as u64);
+    let mut interval = time::interval(duration);
     interval.set_missed_tick_behavior(time::MissedTickBehavior::Skip);
 
     loop {
@@ -44,8 +44,8 @@ pub async fn start_zeromq_outgoing(
 
             // Repeating interval, check peers which haven't sent
             // a heartbeat recently and remove
-            now = interval.tick() => {
-                // TODO
+            _ = interval.tick() => {
+                check_stale_peers(&peer_map, duration).await?;
             },
 
             // Both channels have closed, exit thread
@@ -122,6 +122,26 @@ async fn handle_handshake(
 
         sockets.insert(message.sender_uuid, socket);
         map.insert(message.sender_uuid, peer).await;
+    }
+
+    Ok(())
+}
+
+async fn check_stale_peers(peer_map: &ThreadPeerMap, max_duration: Duration) -> Result<()> {
+    let uuids = {
+        let map = peer_map.read().await;
+        map.stale_peers_iter(max_duration).collect::<HashSet<_>>()
+    };
+
+    // Do nothing if no Peers are stale
+    if uuids.len() == 0 {
+        return Ok(())
+    }
+
+    // Remove stale peers
+    let mut map = peer_map.write().await;
+    for uuid in uuids {
+        map.remove(&uuid).await;
     }
 
     Ok(())

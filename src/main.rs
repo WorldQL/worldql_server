@@ -60,14 +60,14 @@ struct Args {
     )]
     zmq_server_port: u16,
 
-    /// ZeroMQ Timeout Interval (seconds)
+    /// ZeroMQ Connection Timeout Seconds
     ///
-    /// It is not recommended to set this to a very large number. Values less than 10 are invalid.
+    /// It is not recommended to set this to a very large number. Values less than 5 are invalid.
     #[cfg(feature = "zeromq")]
     #[clap(
         short = 'T',
         long = "zmq-timeout-secs",
-        default_value = "10",
+        default_value = "5",
         env = "WQL_ZMQ_TIMEOUT_SECS"
     )]
     zmq_timeout_secs: u8,
@@ -128,8 +128,8 @@ async fn main() -> Result<()> {
 
     // Validate ZeroMQ Timeout Arg
     #[cfg(feature = "zeromq")]
-    if args.zmq_timeout_secs < 10 {
-        error!("A ZeroMQ timeout interval of less than 10 seconds is invalid!");
+    if args.zmq_timeout_secs < 5 {
+        error!("A ZeroMQ timeout of less than 5 seconds is invalid!");
         std::process::exit(1);
     }
 
