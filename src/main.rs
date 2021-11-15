@@ -1,3 +1,5 @@
+#![warn(clippy::cast_lossless, clippy::implicit_clone, clippy::unused_async)]
+
 use std::collections::HashSet;
 use std::sync::Arc;
 
