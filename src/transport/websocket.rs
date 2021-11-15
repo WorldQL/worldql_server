@@ -91,8 +91,11 @@ async fn handle_connection(
         let msg = incoming.next().await;
         match msg {
             None => break,
-            Some(msg) => {
-                let msg = msg?;
+            Some(Err(error)) => {
+                debug!("websocket error: {} = \"{}\"", &addr, error);
+                break;
+            },
+            Some(Ok(msg)) => {
                 let message = match parse_message(msg, &uuid, &addr) {
                     ParseResult::Close => break,
                     ParseResult::Ignore => continue,
@@ -105,11 +108,15 @@ async fn handle_connection(
                 }
 
                 // Send message to processing thread
-                msg_tx.send_async(message).await?;
+                if let Err(error) = msg_tx.send_async(message).await {
+                    debug!("websocket error: {} = \"{}\"", &addr, error);
+                    break;
+                }
             }
         }
     }
 
+    // Thread is ending, remove from peer map
     {
         let mut map = peer_map.write().await;
         map.remove(&uuid).await;
