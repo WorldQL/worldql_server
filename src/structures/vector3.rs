@@ -29,7 +29,11 @@ impl Vector3 {
 // region: Display Trait
 impl Display for Vector3 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{{ x = {}, y = {}, z = {} }}", self.x, self.y, self.z)
+        write!(
+            f,
+            "{{ x = {:.4}, y = {:.4}, z = {:.4} }}",
+            self.x, self.y, self.z
+        )
     }
 }
 // endregion
