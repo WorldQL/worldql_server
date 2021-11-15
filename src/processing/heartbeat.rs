@@ -11,7 +11,11 @@ pub async fn handle_heartbeat(message: Message, peer_map: &ThreadPeerMap) -> Res
     let peer = match map.get_mut(&uuid) {
         Some(peer) => peer,
         None => {
-            warn!("missing peer: {}\nplease report to worldql developers", &uuid);
+            warn!(
+                "missing peer: {}\nplease report to worldql developers",
+                &uuid
+            );
+
             return Ok(());
         }
     };
@@ -20,8 +24,11 @@ pub async fn handle_heartbeat(message: Message, peer_map: &ThreadPeerMap) -> Res
     peer.update_last_heartbeat();
 
     // Echo back heartbeat
-    let message = Message { sender_uuid: Uuid::nil(), ..message };
-    peer.send(message).await?;
+    let message = Message {
+        sender_uuid: Uuid::nil(),
+        ..message
+    };
 
+    peer.send(message).await?;
     Ok(())
 }

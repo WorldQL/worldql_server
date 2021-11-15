@@ -135,7 +135,7 @@ async fn check_stale_peers(peer_map: &ThreadPeerMap, max_duration: Duration) -> 
 
     // Do nothing if no Peers are stale
     if uuids.len() == 0 {
-        return Ok(())
+        return Ok(());
     }
 
     // Remove stale peers

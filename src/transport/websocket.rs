@@ -94,7 +94,7 @@ async fn handle_connection(
             Some(Err(error)) => {
                 debug!("websocket error: {} = \"{}\"", &addr, error);
                 break;
-            },
+            }
             Some(Ok(msg)) => {
                 let message = match parse_message(msg, &uuid, &addr) {
                     ParseResult::Close => break,

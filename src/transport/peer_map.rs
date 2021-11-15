@@ -76,12 +76,13 @@ impl PeerMap {
     #[inline]
     pub fn stale_peers_iter(&self, max_duration: Duration) -> impl Iterator<Item = Uuid> + '_ {
         let now = Instant::now();
-        self.map.values().filter_map(move |peer| {
-            match peer.is_stale(&now, &max_duration) {
+        self.map
+            .values()
+            .filter_map(move |peer| match peer.is_stale(&now, &max_duration) {
                 false => None,
-                true => Some(peer.uuid())
-            }
-        }).copied()
+                true => Some(peer.uuid()),
+            })
+            .copied()
     }
     // endregion
 
