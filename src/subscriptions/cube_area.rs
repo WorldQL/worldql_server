@@ -10,12 +10,11 @@ pub struct CubeArea {
     x: i64,
     y: i64,
     z: i64,
-    size: u16,
 }
 
 impl CubeArea {
-    pub fn new(x: i64, y: i64, z: i64, size: u16) -> Self {
-        Self { x, y, z, size }
+    pub fn new(x: i64, y: i64, z: i64) -> Self {
+        Self { x, y, z }
     }
 
     /// Clamp to largest absolute coordinate value.
@@ -53,7 +52,7 @@ impl CubeArea {
         let y = Self::coord_clamp(*vec.y(), size);
         let z = Self::coord_clamp(*vec.z(), size);
 
-        Self::new(x, y, z, size)
+        Self::new(x, y, z)
     }
 }
 // endregion
@@ -145,7 +144,7 @@ mod tests {
     macro_rules! test_from_vector3 {
         ($input: expr, $expected: expr, $clamp: expr) => {
             let input = Vector3::new($input.0, $input.1, $input.2);
-            let expected = CubeArea::new($expected.0, $expected.1, $expected.2, $clamp);
+            let expected = CubeArea::new($expected.0, $expected.1, $expected.2);
 
             let actual = CubeArea::from_vector3(input, $clamp);
             assert_eq!(actual, expected);
