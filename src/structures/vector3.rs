@@ -1,3 +1,4 @@
+use std::fmt::Display;
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign};
 
 use derive_getters::Getters;
@@ -24,6 +25,14 @@ impl Vector3 {
         Self::new(0.0, 0.0, 0.0)
     }
 }
+
+// region: Display Trait
+impl Display for Vector3 {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{{ x = {}, y = {}, z = {} }}", self.x, self.y, self.z)
+    }
+}
+// endregion
 
 // region: Conversion Traits
 impl From<CubeArea> for Vector3 {
