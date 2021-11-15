@@ -101,7 +101,7 @@ impl Display for Peer {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "{{type={}, addr={}, uuid={}}}",
+            "{{ type = {}, addr = {}, uuid = {} }}",
             self.connection, self.addr, self.uuid
         )
     }
