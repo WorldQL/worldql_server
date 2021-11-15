@@ -83,6 +83,15 @@ async fn handle_handshake(
     sockets: &mut SocketMap,
     message: Message,
 ) -> Result<()> {
+    // Check for clashing UUIDs
+    {
+        let map = peer_map.read().await;
+        if map.contains_key(&message.sender_uuid) {
+            // UUID already exists, drop handshake
+            return Ok(());
+        }
+    }
+
     let parameter = message.parameter.unwrap();
     let addr = match parameter.parse() {
         Ok(addr) => addr,
