@@ -2,12 +2,22 @@
 *Rust implementation of the WorldQL server.*
 
 ## Setup Instructions
-> **:warning: This project can only be built on Linux due to the ZeroMQ library we're using only supporting epoll.** See [this issue](https://github.com/cetra3/tmq/issues/17) for more information.
+> **:warning: This project can only be built on unix-based systems due to the ZeroMQ library we're using only supporting epoll.** See [this issue](https://github.com/cetra3/tmq/issues/17) for more information.
 
-Firstly, ensure you have Rust installed. The easiest way to install Rust is with [Rustup](https://rustup.rs/). WSL2 is supported but you may have issues with Rustup on WSL1.
+These instructions assume you are using a Debian-based Linux (or WSL) distro, such as Ubuntu. If using WSL, make sure you are using WSL2, as WSL1 has compatibility issues and may not work as expected.
+
+First, install dependency packages for the Rust toolchains.
+```sh
+$ sudo apt-get install -y curl build-essential cmake
+```
+
+Next you will need to install Rust, the easiest way is by using [Rustup](https://rustup.rs/).
+
+### Cloning the Project
+**If using WSL, ensure you clone the project inside the WSL filesystem.** If you use the Windows filesystem (any paths starting with `/mnt`) then you may experience slower compile times.
 
 ### Using VSCode
-You will need the [Remote - WSL extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-wsl) to open the project from within WSL, and the [Rust Analyzer extension](https://marketplace.visualstudio.com/items?itemName=matklad.rust-analyzer) for excellent Rust language support. With both of these installed simply open the project using the Remote - WSL extension.
+Ensure you have the [Rust Analyzer](https://marketplace.visualstudio.com/items?itemName=matklad.rust-analyzer) extension for excellent Rust language support. If using WSL, you will also need the [Remote - WSL](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-wsl) extension to be able to open the project from within the WSL filesystem.
 
 ### Using CLion
 Simply open the project after installing the [Rust plugin](https://plugins.jetbrains.com/plugin/8182-rust/docs) and everything should work correctly; you will only need to change one setting. Under `Languages & Frameworks` > `Rust` > `rustfmt` ensure `Use rustfmt instead of built-in formatter` is checked.
