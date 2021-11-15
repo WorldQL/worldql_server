@@ -6,6 +6,7 @@ use uuid::Uuid;
 use super::area_subscribe::handle_area_subscribe as area_subscribe;
 use super::area_unsubscribe::handle_area_unsubscribe as area_unsubscribe;
 use super::global_message::handle_global_message as global_message;
+use super::heartbeat::handle_heartbeat as heartbeat;
 use super::local_message::handle_local_message as local_message;
 use crate::structures::{Instruction, Message};
 use crate::subscriptions::WorldMap;
@@ -50,10 +51,11 @@ async fn handle_message(
         Instruction::Handshake => panic!("recieved handshake instruction on processing thread"),
 
         // Handle known instructions
+        Instruction::Heartbeat => heartbeat(message, peer_map).await?,
         Instruction::AreaSubscribe => area_subscribe(message, peer_map, world_map).await?,
         Instruction::AreaUnsubscribe => area_unsubscribe(message, peer_map, world_map).await?,
-        Instruction::GlobalMessage => global_message(message, peer_map).await?,
         Instruction::LocalMessage => local_message(message, peer_map, world_map).await?,
+        Instruction::GlobalMessage => global_message(message, peer_map).await?,
 
         // Warn on unknown or unhandled instructions
         Instruction::Unknown => debug!("unknown instruction received from {}", message.sender_uuid),
