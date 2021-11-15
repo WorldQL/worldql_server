@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use super::{Decode, DecodeError, Encode};
 use crate::flatbuffers::Instruction as InstructionFB;
 
@@ -26,6 +28,7 @@ impl Default for Instruction {
     }
 }
 
+// region: Codec Traits
 impl Encode<InstructionFB> for Instruction {
     #[inline]
     fn encode(self) -> InstructionFB {
@@ -73,3 +76,30 @@ impl Decode<InstructionFB> for Instruction {
         Ok(instruction)
     }
 }
+// endregion
+
+// region: Display Trait
+impl Display for Instruction {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let name = match self {
+            Self::Heartbeat => "Heartbeat",
+            Self::Handshake => "Handshake",
+            Self::PeerConnect => "PeerConnect",
+            Self::PeerDisconnect => "PeerDisconnect",
+            Self::AreaSubscribe => "AreaSubscribe",
+            Self::AreaUnsubscribe => "AreaUnsubscribe",
+            Self::GlobalMessage => "GlobalMessage",
+            Self::LocalMessage => "LocalMessage",
+            Self::RecordCreate => "RecordCreate",
+            Self::RecordRead => "RecordRead",
+            Self::RecordUpdate => "RecordUpdate",
+            Self::RecordDelete => "RecordDelete",
+            Self::RecordReply => "RecordReply",
+
+            Self::Unknown => "Unknown",
+        };
+
+        write!(f, "{}", name)
+    }
+}
+// endregion
