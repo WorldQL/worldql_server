@@ -92,7 +92,7 @@ impl PeerMap {
     /// If the map did not have this key present, [`None`] is returned.
     #[inline]
     pub async fn insert(&mut self, uuid: Uuid, peer: Peer) -> Option<Peer> {
-        trace!("inserting peer {} into map", &peer);
+        debug!("inserting peer {} into map", &peer);
         let existing = self.map.insert(uuid, peer);
 
         let message = Message {
@@ -115,7 +115,7 @@ impl PeerMap {
         let result = self.map.remove(uuid);
 
         if result.is_some() {
-            trace!("removed peer id {} from map", &uuid);
+            debug!("removed peer id {} from map", &uuid);
 
             let message = Message {
                 instruction: Instruction::PeerDisconnect,

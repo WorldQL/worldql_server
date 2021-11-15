@@ -1,7 +1,7 @@
 use color_eyre::Result;
 use flume::Sender;
 use futures_util::StreamExt;
-use tracing::{info, trace, warn};
+use tracing::{info, debug, warn};
 
 use super::ThreadPeerMap;
 use crate::structures::{Instruction, Message};
@@ -24,7 +24,7 @@ pub async fn start_zeromq_incoming(
             Some(msg) => {
                 let msg = msg?;
                 if msg.len() != 1 {
-                    warn!("Dropping multipart zmq message. Clients should not send multipart messages to WorldQL.");
+                    warn!("Dropping multipart ZeroMQ message. Clients should not send multipart messages to WorldQL.");
                     continue;
                 }
 
@@ -35,7 +35,7 @@ pub async fn start_zeromq_incoming(
                 let message = match message_result {
                     Ok(m) => m,
                     Err(error) => {
-                        trace!("dropping invalid zmq message: deserialize error");
+                        debug!("dropping invalid zmq message: deserialize error");
 
                         #[cfg(debug_assertions)]
                         tracing::error!("{:?}", error);

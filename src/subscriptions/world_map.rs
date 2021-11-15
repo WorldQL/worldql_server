@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::fmt::Display;
 
-use tracing::trace;
+use tracing::debug;
 use uuid::Uuid;
 
 use super::AreaMap;
@@ -30,7 +30,7 @@ impl WorldMap {
     #[inline]
     pub fn get_mut(&mut self, world_name: &str) -> &mut AreaMap {
         self.map.entry(world_name.to_string()).or_insert_with(|| {
-            trace!("creating new world: {}", world_name);
+            debug!("creating new world: {}", world_name);
             AreaMap::new(self.cube_size, world_name.to_string())
         })
     }
@@ -48,7 +48,7 @@ impl WorldMap {
             }
 
             if world_removed {
-                trace!(
+                debug!(
                     "removed peer {} from \"{}\" subscriptions",
                     uuid,
                     world_name

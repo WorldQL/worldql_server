@@ -74,7 +74,7 @@ async fn handle_connection(
             };
 
             if message.instruction != Instruction::Handshake {
-                trace!("peer {} did not send a handshake message", &addr);
+                debug!("peer {} did not send a handshake message", &addr);
                 return Ok(());
             }
 
@@ -158,7 +158,7 @@ fn parse_message(
     };
 
     if message.sender_uuid != *uuid {
-        trace!(
+        debug!(
             "peer uuid is incorrect: expected {}, got {}",
             uuid,
             &message.sender_uuid
