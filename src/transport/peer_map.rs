@@ -68,7 +68,7 @@ impl PeerMap {
 
     /// Returns the number of connected Peers.
     #[inline]
-    pub fn num_clients(&self) -> usize {
+    pub fn size(&self) -> usize {
         self.map.len()
     }
 

@@ -1,5 +1,5 @@
 use color_eyre::Result;
-use tracing::{debug, warn};
+use tracing::{trace, warn};
 use uuid::Uuid;
 
 use crate::structures::Message;
@@ -11,7 +11,12 @@ pub async fn handle_heartbeat(message: Message, peer_map: &ThreadPeerMap) -> Res
 
     let uuid = message.sender_uuid;
     let mut map = peer_map.write().await;
-    debug!("Heartbeat! Total number of clients: {}", map.num_clients());
+
+    trace!(
+        "received heartbeat: total number of clients = {}",
+        map.size()
+    );
+
     let peer = match map.get_mut(&uuid) {
         Some(peer) => peer,
         None => {
