@@ -18,9 +18,9 @@ rand = "0.8.4"
 scopeguard = "1.1.0"
 thiserror = "1.0.30"
 tmq = { version = "0.3.0", optional = true, features = ["zmq-vendored"] }
-tokio = { version = "1.13.0", features = ["full"] }
+tokio = { version = "1.14.0", features = ["full"] }
 tokio-postgres = "0.7.5"
-tokio-tungstenite = { version = "0.15.0", optional = true }
+tokio-tungstenite = { version = "0.16.0", optional = true }
 tracing = "0.1.29"
 tracing-subscriber = { version = "0.3.1", features = ["env-filter"] }
 uuid = { version = "0.8.2", features = ["v4"] }
