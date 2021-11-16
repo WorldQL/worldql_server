@@ -73,7 +73,7 @@ struct Args {
     zmq_timeout_secs: u8,
 
     /// Subscription Region Cube Size
-    #[clap(long, default_value = "10", env = "WQL_SUBSCRIPTION_REGION_CUBE_SIZE")]
+    #[clap(long, default_value = "16", env = "WQL_SUBSCRIPTION_REGION_CUBE_SIZE")]
     sub_region_cube_size: u16,
 }
 
