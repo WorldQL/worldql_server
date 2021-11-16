@@ -1,7 +1,9 @@
 use std::fmt::Display;
+use std::sync::Mutex;
 
 use bytes::Bytes;
 use flatbuffers::{FlatBufferBuilder, InvalidFlatbuffer};
+use once_cell::sync::Lazy;
 use thiserror::Error;
 use uuid::Uuid;
 
@@ -108,17 +110,24 @@ impl Decode<MessageT> for Message {
 // endregion
 
 // region: (De)serialization
+static BUILDER: Lazy<Mutex<FlatBufferBuilder>> =
+    Lazy::new(|| Mutex::new(FlatBufferBuilder::with_capacity(1024)));
+
 impl Message {
     pub fn serialize(self) -> Bytes {
-        let mut builder = FlatBufferBuilder::with_capacity(1024);
+        let buf = {
+            let encoded = self.encode();
 
-        let encoded = self.encode();
-        let offset = encoded.pack(&mut builder);
+            let mut builder = BUILDER.lock().unwrap();
+            builder.reset();
 
-        builder.finish(offset, None);
-        let buf = builder.finished_data();
+            let offset = encoded.pack(&mut builder);
+            builder.finish(offset, None);
 
-        Bytes::from(buf.to_vec())
+            builder.finished_data().to_vec()
+        };
+
+        Bytes::from(buf)
     }
 
     pub fn deserialize(buf: &[u8]) -> Result<Self, DeserializeError> {
