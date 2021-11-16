@@ -7,7 +7,7 @@ use clap::Parser;
 use color_eyre::Result;
 use tokio::sync::RwLock;
 use tokio_postgres::NoTls;
-use tracing::{debug, error, info};
+use tracing::{debug, error, info, warn};
 
 use crate::processing::start_processing_thread;
 #[cfg(feature = "websocket")]
@@ -133,7 +133,15 @@ async fn main() -> Result<()> {
         }
     }
 
-    // Validate ZeroMQ Timeout Arg
+    // Validate region size arg
+    if args.region_size == 0 {
+        error!("A region size of 0 is invalid!");
+        std::process::exit(1);
+    } else if args.region_size < 10 {
+        warn!("Region sizes less than 10 might impact lookup performance")
+    }
+
+    // Validate ZeroMQ Timeout arg
     #[cfg(feature = "zeromq")]
     if args.zmq_timeout_secs < 10 {
         error!("A ZeroMQ timeout of less than 10 seconds is invalid!");
