@@ -32,49 +32,54 @@ compile_error!("the `zeromq` feature is only supported on unix-based systems");
 compile_error!("at least one of `websocket` or `zeromq` features must be enabled!");
 
 #[derive(Debug, Parser)]
-#[clap(version)]
+#[clap(version, global_setting = clap::AppSettings::DeriveDisplayOrder)]
 struct Args {
-    /// PostgreSQL Connection String
-    #[clap(short, long = "psql", env = "WQL_POSTGRES_CONNECTION_STRING")]
+    // region: Global Flags
+    /// PostgreSQL connection string
+    #[clap(short = 'p', long = "psql", env = "WQL_POSTGRES_CONNECTION_STRING")]
     // TODO: Make required
     psql_conn: Option<String>,
 
-    /// Set Verbosity Level.
-    /// eg: -vvv to enable very verbose logs
-    #[clap(short, long, parse(from_occurrences))]
-    verbose: u8,
-
-    /// WebSocket Server Port
-    #[cfg(feature = "websocket")]
-    #[clap(short, long, default_value = "8080", env = "WQL_WEBSOCKET_PORT")]
-    ws_port: u16,
-
-    /// ZeroMQ Server Port
-    #[cfg(feature = "zeromq")]
+    /// Side length of region cubes
+    ///
+    /// A value of 0 is invalid
     #[clap(
-        name = "PORT",
-        short = 'z',
-        long = "zmq-server-port",
-        default_value = "5555",
-        env = "WQL_ZMQ_SERVER_PORT"
+        short = 's',
+        long,
+        default_value = "16",
+        env = "WQL_SUBSCRIPTION_REGION_CUBE_SIZE"
     )]
+    region_size: u16,
+    // endregion
+
+    // region: WebSocket
+    /// WebSocket server port
+    #[cfg(feature = "websocket")]
+    #[clap(short = 'w', long, default_value = "8080", env = "WQL_WEBSOCKET_PORT")]
+    ws_port: u16,
+    // endregion
+
+    // region: ZeroMQ
+    /// ZeroMQ server port
+    #[cfg(feature = "zeromq")]
+    #[clap(short = 'z', long, default_value = "5555", env = "WQL_ZMQ_SERVER_PORT")]
     zmq_server_port: u16,
 
-    /// ZeroMQ Connection Timeout Seconds
+    /// ZeroMQ connection timeout (seconds)
     ///
-    /// It is not recommended to set this to a very large number. Values less than 10 are invalid.
+    /// It is not recommended to set this to a very large number, values less than 10 are invalid
     #[cfg(feature = "zeromq")]
-    #[clap(
-        short = 'T',
-        long = "zmq-timeout-secs",
-        default_value = "10",
-        env = "WQL_ZMQ_TIMEOUT_SECS"
-    )]
+    #[clap(short = 'T', long, default_value = "10", env = "WQL_ZMQ_TIMEOUT_SECS")]
     zmq_timeout_secs: u8,
+    // endregion
 
-    /// Subscription Region Cube Size
-    #[clap(long, default_value = "16", env = "WQL_SUBSCRIPTION_REGION_CUBE_SIZE")]
-    sub_region_cube_size: u16,
+    // region: Other Flags
+    /// Set verbosity level
+    ///
+    /// eg: -vvv for very verbose logs
+    #[clap(short, long, parse(from_occurrences))]
+    verbose: u8,
+    // endregion
 }
 
 #[tokio::main]
@@ -208,7 +213,7 @@ async fn main() -> Result<()> {
         peer_map,
         msg_rx,
         remove_rx,
-        args.sub_region_cube_size,
+        args.region_size,
     ));
 
     handles.push(proc_handle);
