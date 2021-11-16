@@ -62,7 +62,7 @@ struct Args {
 
     /// ZeroMQ Connection Timeout Seconds
     ///
-    /// It is not recommended to set this to a very large number. Values less than 5 are invalid.
+    /// It is not recommended to set this to a very large number. Values less than 10 are invalid.
     #[cfg(feature = "zeromq")]
     #[clap(
         short = 'T',
