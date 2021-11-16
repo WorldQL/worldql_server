@@ -4,7 +4,7 @@ use std::time::{Duration, Instant};
 
 use flume::Sender;
 use tokio::sync::RwLock;
-use tracing::{debug, trace};
+use tracing::{debug, info, trace};
 use uuid::Uuid;
 
 use super::peer::Peer;
@@ -99,6 +99,8 @@ impl PeerMap {
     #[inline]
     pub async fn insert(&mut self, uuid: Uuid, peer: Peer) -> Option<Peer> {
         debug!("inserting peer {} into map", &peer);
+        info!("[{}] {} Peer Connected", &peer.addr(), &peer.connection());
+
         let existing = self.map.insert(uuid, peer);
 
         let message = Message {
@@ -120,8 +122,9 @@ impl PeerMap {
         trace!("trying to remove peer id {} from map", &uuid);
         let result = self.map.remove(uuid);
 
-        if result.is_some() {
-            debug!("removed peer id {} from map", &uuid);
+        if let Some(peer) = &result {
+            debug!("removed peer {} from map", &peer);
+            info!("[{}] {} Peer Disconnected", peer.addr(), peer.connection());
 
             let message = Message {
                 instruction: Instruction::PeerDisconnect,

@@ -33,8 +33,6 @@ type ZmqConnection = Sender<ZmqOutgoingPair>;
 pub struct Peer {
     addr: SocketAddr,
     uuid: Uuid,
-
-    #[getter(skip)]
     connection: PeerConnection,
 }
 
