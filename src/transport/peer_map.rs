@@ -66,16 +66,16 @@ impl PeerMap {
         self.map.get_mut(uuid)
     }
 
+    /// Returns the number of connected Peers.
+    #[inline]
+    pub fn num_clients(&self) -> usize {
+        self.map.len()
+    }
+
     /// Returns an iterator of [`Uuid`] items for each contained [`Peer`].
     #[inline]
     pub fn peers_iter(&self) -> impl Iterator<Item = Uuid> + '_ {
         self.map.keys().copied()
-    }
-
-    /// Gets the number of connected peers.
-    #[inline]
-    pub fn num_clients(&self) -> usize {
-        self.map.keys().len()
     }
 
     /// Returns an iterator of [`Uuid`] items for each [`Peer`] that is considered stale.
