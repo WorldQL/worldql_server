@@ -4,7 +4,6 @@ use bytes::Bytes;
 use flatbuffers::{FlatBufferBuilder, InvalidFlatbuffer};
 use thiserror::Error;
 use uuid::Uuid;
-use tracing::{debug, info, warn};
 
 use super::{Decode, DecodeError, Encode, Entity, Instruction, Record, Vector3};
 use crate::flatbuffers::{root_as_message, MessageT};

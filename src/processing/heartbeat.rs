@@ -1,6 +1,5 @@
 use color_eyre::Result;
-use tracing::warn;
-use tracing::debug;
+use tracing::{debug, warn};
 use uuid::Uuid;
 
 use crate::structures::Message;
