@@ -30,6 +30,7 @@ pub async fn handle_heartbeat(message: Message, peer_map: &ThreadPeerMap) -> Res
     };
 
     // Update last received time
+    #[cfg(feature = "zeromq")]
     peer.update_last_heartbeat();
 
     // Echo back heartbeat
