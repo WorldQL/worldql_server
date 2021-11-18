@@ -12,6 +12,7 @@ pub struct AreaMap {
     world_name: String,
 
     map: HashMap<CubeArea, HashSet<Uuid>>,
+    subscribed_peers: HashSet<Uuid>,
     empty_set: HashSet<Uuid>,
 }
 
@@ -22,6 +23,7 @@ impl AreaMap {
             world_name,
 
             map: HashMap::new(),
+            subscribed_peers: HashSet::new(),
             empty_set: HashSet::new(),
         }
     }
@@ -36,6 +38,13 @@ impl AreaMap {
             None => false,
             Some(set) => set.contains(uuid),
         }
+    }
+
+    /// Returns `true` if the [`crate::transport::Peer`] corresponding to the given UUID
+    /// is subscribed to this world.
+    #[inline]
+    pub fn is_peer_subscribed_any(&self, uuid: &Uuid) -> bool {
+        self.subscribed_peers.contains(uuid)
     }
 
     /// Returns a vector of [`crate::transport::Peer`] structs which are subscribed to the
@@ -64,6 +73,7 @@ impl AreaMap {
             &self.world_name
         );
 
+        self.subscribed_peers.insert(uuid);
         entry.insert(uuid)
     }
 
@@ -92,6 +102,12 @@ impl AreaMap {
             self.map.remove(&cube);
         }
 
+        // Remove from subscriptions set if no subscriptions are left
+        let has_other_subs = self.map.values().any(|set| set.contains(uuid));
+        if !has_other_subs {
+            self.subscribed_peers.remove(uuid);
+        }
+
         removed
     }
 
@@ -99,6 +115,8 @@ impl AreaMap {
     ///
     /// Used in the event of a disconnect.
     pub fn remove_peer(&mut self, uuid: &Uuid) -> bool {
+        self.subscribed_peers.remove(uuid);
+
         let mut removed = false;
         for peers in self.map.values_mut() {
             if peers.remove(uuid) {
