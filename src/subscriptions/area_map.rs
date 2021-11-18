@@ -138,3 +138,111 @@ impl Display for AreaMap {
         )
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::structures::Vector3;
+
+    #[test]
+    fn area_subscriptions() {
+        let uuid = Uuid::new_v4();
+        let mut map = AreaMap::new(16, "world".into());
+
+        let cube_1 = CubeArea::new(0, 0, 0);
+        let cube_2 = CubeArea::new(16, 16, 16);
+
+        // Equivalent to cube_2
+        let vec_1 = Vector3::new(6.3, 1.0, 10.5);
+
+        // No subscriptions yet
+        assert!(!map.is_peer_subscribed(&uuid, cube_1));
+        assert!(!map.is_peer_subscribed(&uuid, cube_2));
+        assert!(!map.is_peer_subscribed(&uuid, vec_1));
+
+        // Subscribe to cube_1
+        map.add_subscription(uuid, cube_1);
+        assert!(map.is_peer_subscribed(&uuid, cube_1));
+        assert!(!map.is_peer_subscribed(&uuid, cube_2));
+        assert!(!map.is_peer_subscribed(&uuid, vec_1));
+
+        // Subscribe to cube_2
+        map.add_subscription(uuid, cube_2);
+        assert!(map.is_peer_subscribed(&uuid, cube_1));
+        assert!(map.is_peer_subscribed(&uuid, cube_2));
+        assert!(map.is_peer_subscribed(&uuid, vec_1));
+
+        // Unsubscribe from cube_1
+        map.remove_subscription(&uuid, cube_1);
+        assert!(!map.is_peer_subscribed(&uuid, cube_1));
+        assert!(map.is_peer_subscribed(&uuid, cube_2));
+        assert!(map.is_peer_subscribed(&uuid, vec_1));
+
+        // Unsubscribe from cube_2
+        map.remove_subscription(&uuid, cube_2);
+        assert!(!map.is_peer_subscribed(&uuid, cube_1));
+        assert!(!map.is_peer_subscribed(&uuid, cube_2));
+        assert!(!map.is_peer_subscribed(&uuid, vec_1));
+
+        // Subscribe to vec_1
+        map.add_subscription(uuid, vec_1);
+        assert!(!map.is_peer_subscribed(&uuid, cube_1));
+        assert!(map.is_peer_subscribed(&uuid, cube_2));
+        assert!(map.is_peer_subscribed(&uuid, vec_1));
+
+        // Unsubscribe from vec_1
+        map.remove_subscription(&uuid, vec_1);
+        assert!(!map.is_peer_subscribed(&uuid, cube_1));
+        assert!(!map.is_peer_subscribed(&uuid, cube_2));
+        assert!(!map.is_peer_subscribed(&uuid, vec_1));
+    }
+
+    #[test]
+    fn world_subscriptions() {
+        let uuid_1 = Uuid::new_v4();
+        let uuid_2 = Uuid::new_v4();
+
+        let cube_1 = CubeArea::new(0, 0, 0);
+        let cube_2 = CubeArea::new(16, 16, 16);
+        let mut map = AreaMap::new(16, "world".into());
+
+        // Neither are subscribed
+        assert!(!map.is_peer_subscribed_any(&uuid_1));
+        assert!(!map.is_peer_subscribed_any(&uuid_2));
+
+        // Only uuid_1 is subscribed
+        map.add_subscription(uuid_1, cube_1);
+        assert!(map.is_peer_subscribed_any(&uuid_1));
+        assert!(!map.is_peer_subscribed_any(&uuid_2));
+
+        // Only uuid_1 is subscribed
+        map.add_subscription(uuid_1, cube_2);
+        assert!(map.is_peer_subscribed_any(&uuid_1));
+        assert!(!map.is_peer_subscribed_any(&uuid_2));
+
+        // Both are subscribed
+        map.add_subscription(uuid_2, cube_2);
+        assert!(map.is_peer_subscribed_any(&uuid_1));
+        assert!(map.is_peer_subscribed_any(&uuid_2));
+
+        // Both are subscribed
+        map.remove_subscription(&uuid_1, cube_1);
+        assert!(map.is_peer_subscribed_any(&uuid_1));
+        assert!(map.is_peer_subscribed_any(&uuid_2));
+
+        // Only uuid_2 is subscribed
+        map.remove_subscription(&uuid_1, cube_2);
+        assert!(!map.is_peer_subscribed_any(&uuid_1));
+        assert!(map.is_peer_subscribed_any(&uuid_2));
+
+        // Only uuid_2 is subscribed
+        map.add_subscription(uuid_2, cube_1);
+        assert!(!map.is_peer_subscribed_any(&uuid_1));
+        assert!(map.is_peer_subscribed_any(&uuid_2));
+
+        // Neither are subscribed
+        map.remove_peer(&uuid_2);
+        assert!(!map.is_peer_subscribed_any(&uuid_1));
+        assert!(!map.is_peer_subscribed_any(&uuid_2));
+    }
+}
