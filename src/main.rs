@@ -16,6 +16,7 @@ use crate::transport::start_websocket_server;
 use crate::transport::{start_zeromq_incoming, start_zeromq_outgoing};
 use crate::transport::{PeerMap, ThreadPeerMap};
 
+mod constants;
 mod flatbuffers;
 mod processing;
 mod structures;
