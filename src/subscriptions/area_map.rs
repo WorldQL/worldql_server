@@ -59,6 +59,13 @@ impl AreaMap {
         }
     }
 
+    /// Returns a vector of [`crate::transport::Peer`] structs which are subscribed to
+    /// this world.
+    #[inline]
+    pub fn get_subscribed_any_peers(&self) -> impl Iterator<Item = Uuid> + '_ {
+        self.subscribed_peers.iter().copied()
+    }
+
     /// If the subscription was added, `true` is returned.
     ///
     /// If the subscription was already present, `false` is returned
