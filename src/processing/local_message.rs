@@ -1,7 +1,7 @@
 use color_eyre::Result;
-use tracing::debug;
+use tracing::{debug, warn};
 
-use crate::structures::Message;
+use crate::structures::{Message, Replication};
 use crate::subscriptions::WorldMap;
 use crate::trace_packet;
 use crate::transport::ThreadPeerMap;
@@ -28,12 +28,35 @@ pub async fn handle_local_message(
 
     let area_map = world_map.get_mut(&message.world_name);
     let uuid = message.sender_uuid;
-    let peers = area_map
-        .get_subscribed_peers(cube)
-        .filter(|peer| *peer != uuid);
 
-    let mut map = peer_map.write().await;
-    let _ = map.broadcast_to(message, peers).await;
+    // We duplicate the broadcast function to avoid holding the lock for longer than we need
+    match message.replication {
+        Replication::ExceptSelf => {
+            // Filer out self
+            let peers = area_map
+                .get_subscribed_peers(cube)
+                .filter(|peer| *peer != uuid);
+
+            let mut map = peer_map.write().await;
+            let _ = map.broadcast_to(message, peers).await;
+        }
+        Replication::IncludingSelf => {
+            // Don't filter
+            let peers = area_map.get_subscribed_peers(cube);
+
+            let mut map = peer_map.write().await;
+            let _ = map.broadcast_to(message, peers).await;
+        }
+        Replication::OnlySelf => {
+            // Filter out not self
+            let peers = area_map
+                .get_subscribed_peers(cube)
+                .filter(|peer| *peer == uuid);
+
+            let mut map = peer_map.write().await;
+            let _ = map.broadcast_to(message, peers).await;
+        }
+    };
 
     Ok(())
 }
