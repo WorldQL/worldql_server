@@ -160,6 +160,97 @@ impl<'a> flatbuffers::Verifiable for Instruction {
 }
 
 impl flatbuffers::SimpleToVerifyInSlice for Instruction {}
+#[deprecated(since = "2.0.0", note = "Use associated constants instead. This will no longer be generated in 2021.")]
+pub const ENUM_MIN_REPLICATION: u8 = 0;
+#[deprecated(since = "2.0.0", note = "Use associated constants instead. This will no longer be generated in 2021.")]
+pub const ENUM_MAX_REPLICATION: u8 = 2;
+#[deprecated(since = "2.0.0", note = "Use associated constants instead. This will no longer be generated in 2021.")]
+#[allow(non_camel_case_types)]
+pub const ENUM_VALUES_REPLICATION: [Replication; 3] = [
+  Replication::ExceptSelf,
+  Replication::IncludingSelf,
+  Replication::OnlySelf,
+];
+
+#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
+#[repr(transparent)]
+pub struct Replication(pub u8);
+#[allow(non_upper_case_globals)]
+impl Replication {
+  pub const ExceptSelf: Self = Self(0);
+  pub const IncludingSelf: Self = Self(1);
+  pub const OnlySelf: Self = Self(2);
+
+  pub const ENUM_MIN: u8 = 0;
+  pub const ENUM_MAX: u8 = 2;
+  pub const ENUM_VALUES: &'static [Self] = &[
+    Self::ExceptSelf,
+    Self::IncludingSelf,
+    Self::OnlySelf,
+  ];
+  /// Returns the variant's name or "" if unknown.
+  pub fn variant_name(self) -> Option<&'static str> {
+    match self {
+      Self::ExceptSelf => Some("ExceptSelf"),
+      Self::IncludingSelf => Some("IncludingSelf"),
+      Self::OnlySelf => Some("OnlySelf"),
+      _ => None,
+    }
+  }
+}
+impl std::fmt::Debug for Replication {
+  fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+    if let Some(name) = self.variant_name() {
+      f.write_str(name)
+    } else {
+      f.write_fmt(format_args!("<UNKNOWN {:?}>", self.0))
+    }
+  }
+}
+impl<'a> flatbuffers::Follow<'a> for Replication {
+  type Inner = Self;
+  #[inline]
+  fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
+    let b = unsafe {
+      flatbuffers::read_scalar_at::<u8>(buf, loc)
+    };
+    Self(b)
+  }
+}
+
+impl flatbuffers::Push for Replication {
+    type Output = Replication;
+    #[inline]
+    fn push(&self, dst: &mut [u8], _rest: &[u8]) {
+        unsafe { flatbuffers::emplace_scalar::<u8>(dst, self.0); }
+    }
+}
+
+impl flatbuffers::EndianScalar for Replication {
+  #[inline]
+  fn to_little_endian(self) -> Self {
+    let b = u8::to_le(self.0);
+    Self(b)
+  }
+  #[inline]
+  #[allow(clippy::wrong_self_convention)]
+  fn from_little_endian(self) -> Self {
+    let b = u8::from_le(self.0);
+    Self(b)
+  }
+}
+
+impl<'a> flatbuffers::Verifiable for Replication {
+  #[inline]
+  fn run_verifier(
+    v: &mut flatbuffers::Verifier, pos: usize
+  ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
+    use self::flatbuffers::Verifiable;
+    u8::run_verifier(v, pos)
+  }
+}
+
+impl flatbuffers::SimpleToVerifyInSlice for Replication {}
 // struct Vec3d, aligned to 8
 #[repr(transparent)]
 #[derive(Clone, Copy, PartialEq)]
@@ -804,6 +895,7 @@ impl<'a> Message<'a> {
       if let Some(x) = args.world_name { builder.add_world_name(x); }
       if let Some(x) = args.sender_uuid { builder.add_sender_uuid(x); }
       if let Some(x) = args.parameter { builder.add_parameter(x); }
+      builder.add_replication(args.replication);
       builder.add_instruction(args.instruction);
       builder.finish()
     }
@@ -819,6 +911,7 @@ impl<'a> Message<'a> {
       let world_name = self.world_name().map(|x| {
         x.to_string()
       });
+      let replication = self.replication();
       let records = self.records().map(|x| {
         x.iter().map(|t| t.unpack()).collect()
       });
@@ -836,6 +929,7 @@ impl<'a> Message<'a> {
         parameter,
         sender_uuid,
         world_name,
+        replication,
         records,
         entities,
         position,
@@ -846,10 +940,11 @@ impl<'a> Message<'a> {
     pub const VT_PARAMETER: flatbuffers::VOffsetT = 6;
     pub const VT_SENDER_UUID: flatbuffers::VOffsetT = 8;
     pub const VT_WORLD_NAME: flatbuffers::VOffsetT = 10;
-    pub const VT_RECORDS: flatbuffers::VOffsetT = 12;
-    pub const VT_ENTITIES: flatbuffers::VOffsetT = 14;
-    pub const VT_POSITION: flatbuffers::VOffsetT = 16;
-    pub const VT_FLEX: flatbuffers::VOffsetT = 18;
+    pub const VT_REPLICATION: flatbuffers::VOffsetT = 12;
+    pub const VT_RECORDS: flatbuffers::VOffsetT = 14;
+    pub const VT_ENTITIES: flatbuffers::VOffsetT = 16;
+    pub const VT_POSITION: flatbuffers::VOffsetT = 18;
+    pub const VT_FLEX: flatbuffers::VOffsetT = 20;
 
   #[inline]
   pub fn instruction(&self) -> Instruction {
@@ -866,6 +961,10 @@ impl<'a> Message<'a> {
   #[inline]
   pub fn world_name(&self) -> Option<&'a str> {
     self._tab.get::<flatbuffers::ForwardsUOffset<&str>>(Message::VT_WORLD_NAME, None)
+  }
+  #[inline]
+  pub fn replication(&self) -> Replication {
+    self._tab.get::<Replication>(Message::VT_REPLICATION, Some(Replication::ExceptSelf)).unwrap()
   }
   #[inline]
   pub fn records(&self) -> Option<flatbuffers::Vector<'a, flatbuffers::ForwardsUOffset<Record<'a>>>> {
@@ -896,6 +995,7 @@ impl flatbuffers::Verifiable for Message<'_> {
      .visit_field::<flatbuffers::ForwardsUOffset<&str>>(&"parameter", Self::VT_PARAMETER, false)?
      .visit_field::<flatbuffers::ForwardsUOffset<&str>>(&"sender_uuid", Self::VT_SENDER_UUID, false)?
      .visit_field::<flatbuffers::ForwardsUOffset<&str>>(&"world_name", Self::VT_WORLD_NAME, false)?
+     .visit_field::<Replication>(&"replication", Self::VT_REPLICATION, false)?
      .visit_field::<flatbuffers::ForwardsUOffset<flatbuffers::Vector<'_, flatbuffers::ForwardsUOffset<Record>>>>(&"records", Self::VT_RECORDS, false)?
      .visit_field::<flatbuffers::ForwardsUOffset<flatbuffers::Vector<'_, flatbuffers::ForwardsUOffset<Entity>>>>(&"entities", Self::VT_ENTITIES, false)?
      .visit_field::<Vec3d>(&"position", Self::VT_POSITION, false)?
@@ -909,6 +1009,7 @@ pub struct MessageArgs<'a> {
     pub parameter: Option<flatbuffers::WIPOffset<&'a str>>,
     pub sender_uuid: Option<flatbuffers::WIPOffset<&'a str>>,
     pub world_name: Option<flatbuffers::WIPOffset<&'a str>>,
+    pub replication: Replication,
     pub records: Option<flatbuffers::WIPOffset<flatbuffers::Vector<'a, flatbuffers::ForwardsUOffset<Record<'a>>>>>,
     pub entities: Option<flatbuffers::WIPOffset<flatbuffers::Vector<'a, flatbuffers::ForwardsUOffset<Entity<'a>>>>>,
     pub position: Option<&'a Vec3d>,
@@ -922,6 +1023,7 @@ impl<'a> Default for MessageArgs<'a> {
             parameter: None,
             sender_uuid: None,
             world_name: None,
+            replication: Replication::ExceptSelf,
             records: None,
             entities: None,
             position: None,
@@ -949,6 +1051,10 @@ impl<'a: 'b, 'b> MessageBuilder<'a, 'b> {
   #[inline]
   pub fn add_world_name(&mut self, world_name: flatbuffers::WIPOffset<&'b  str>) {
     self.fbb_.push_slot_always::<flatbuffers::WIPOffset<_>>(Message::VT_WORLD_NAME, world_name);
+  }
+  #[inline]
+  pub fn add_replication(&mut self, replication: Replication) {
+    self.fbb_.push_slot::<Replication>(Message::VT_REPLICATION, replication, Replication::ExceptSelf);
   }
   #[inline]
   pub fn add_records(&mut self, records: flatbuffers::WIPOffset<flatbuffers::Vector<'b , flatbuffers::ForwardsUOffset<Record<'b >>>>) {
@@ -988,6 +1094,7 @@ impl std::fmt::Debug for Message<'_> {
       ds.field("parameter", &self.parameter());
       ds.field("sender_uuid", &self.sender_uuid());
       ds.field("world_name", &self.world_name());
+      ds.field("replication", &self.replication());
       ds.field("records", &self.records());
       ds.field("entities", &self.entities());
       ds.field("position", &self.position());
@@ -1002,6 +1109,7 @@ pub struct MessageT {
   pub parameter: Option<String>,
   pub sender_uuid: Option<String>,
   pub world_name: Option<String>,
+  pub replication: Replication,
   pub records: Option<Vec<RecordT>>,
   pub entities: Option<Vec<EntityT>>,
   pub position: Option<Vec3dT>,
@@ -1014,6 +1122,7 @@ impl Default for MessageT {
       parameter: None,
       sender_uuid: None,
       world_name: None,
+      replication: Replication::ExceptSelf,
       records: None,
       entities: None,
       position: None,
@@ -1036,6 +1145,7 @@ impl MessageT {
     let world_name = self.world_name.as_ref().map(|x|{
       _fbb.create_string(x)
     });
+    let replication = self.replication;
     let records = self.records.as_ref().map(|x|{
       let w: Vec<_> = x.iter().map(|t| t.pack(_fbb)).collect();_fbb.create_vector(&w)
     });
@@ -1052,6 +1162,7 @@ impl MessageT {
       parameter,
       sender_uuid,
       world_name,
+      replication,
       records,
       entities,
       position,

@@ -7,7 +7,7 @@ use once_cell::sync::Lazy;
 use thiserror::Error;
 use uuid::Uuid;
 
-use super::{Decode, DecodeError, Encode, Entity, Instruction, Record, Vector3};
+use super::{Decode, DecodeError, Encode, Entity, Instruction, Record, Replication, Vector3};
 use crate::flatbuffers::{root_as_message, MessageT};
 
 #[derive(Debug, Default, Clone)]
@@ -16,6 +16,7 @@ pub struct Message {
     pub parameter: Option<String>,
     pub sender_uuid: Uuid,
     pub world_name: String,
+    pub replication: Replication,
     pub records: Vec<Record>,
     pub entities: Vec<Entity>,
     pub position: Option<Vector3>,
@@ -42,6 +43,7 @@ impl Encode<MessageT> for Message {
             parameter: self.parameter,
             sender_uuid: Some(self.sender_uuid.to_string()),
             world_name: Some(self.world_name),
+            replication: self.replication.encode(),
             records: Some(records),
             entities: Some(entities),
             position: self.position.map(|p| p.encode()),
@@ -98,6 +100,7 @@ impl Decode<MessageT> for Message {
             parameter: encoded.parameter,
             sender_uuid: Uuid::parse_str(&sender_uuid)?,
             world_name,
+            replication: Replication::decode(encoded.replication)?,
             records,
             entities,
             position,
