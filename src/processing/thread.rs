@@ -56,7 +56,7 @@ async fn handle_message(
         Instruction::AreaSubscribe => area_subscribe(message, peer_map, world_map)?,
         Instruction::AreaUnsubscribe => area_unsubscribe(message, peer_map, world_map)?,
         Instruction::LocalMessage => local_message(message, peer_map, world_map).await?,
-        Instruction::GlobalMessage => global_message(message, peer_map).await?,
+        Instruction::GlobalMessage => global_message(message, peer_map, world_map).await?,
 
         // Warn on unknown instructions
         Instruction::Unknown => {
