@@ -7,7 +7,7 @@ use crate::flatbuffers::RecordT;
 #[derive(Debug, Default, Clone)]
 pub struct Record {
     pub uuid: Uuid,
-    pub position: Vector3,
+    pub position: Option<Vector3>,
     pub world_name: String,
     pub data: Option<String>,
     pub flex: Option<Bytes>,
@@ -17,7 +17,7 @@ impl Encode<RecordT> for Record {
     fn encode(self) -> RecordT {
         RecordT {
             uuid: Some(self.uuid.to_string()),
-            position: Some(self.position.encode()),
+            position: self.position.map(|p| p.encode()),
             world_name: Some(self.world_name),
             data: self.data,
             flex: self.flex.map(|flex| flex.to_vec()),
@@ -31,9 +31,10 @@ impl Decode<RecordT> for Record {
             .uuid
             .ok_or_else(|| DecodeError::MissingRequiredField("uuid".into()))?;
 
-        let position = encoded
-            .position
-            .ok_or_else(|| DecodeError::MissingRequiredField("position".into()))?;
+        let position = match encoded.position {
+            None => None,
+            Some(pos) => Some(Vector3::decode(pos)?),
+        };
 
         let world_name = encoded
             .world_name
@@ -41,7 +42,7 @@ impl Decode<RecordT> for Record {
 
         let record = Record {
             uuid: Uuid::parse_str(&uuid)?,
-            position: Vector3::decode(position)?,
+            position,
             world_name,
             data: encoded.data,
             flex: encoded.flex.map(Bytes::from),
