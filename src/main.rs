@@ -9,6 +9,7 @@ use tokio::sync::RwLock;
 use tokio_postgres::NoTls;
 use tracing::{debug, error, info, warn};
 
+use crate::database::DatabaseClient;
 use crate::processing::start_processing_thread;
 #[cfg(feature = "websocket")]
 use crate::transport::start_websocket_server;
@@ -17,6 +18,7 @@ use crate::transport::{start_zeromq_incoming, start_zeromq_outgoing};
 use crate::transport::{PeerMap, ThreadPeerMap};
 
 mod constants;
+mod database;
 mod flatbuffers;
 mod processing;
 mod structures;
@@ -38,8 +40,7 @@ struct Args {
     // region: Global Flags
     /// PostgreSQL connection string
     #[clap(short = 'p', long = "psql", env = "WQL_POSTGRES_CONNECTION_STRING")]
-    // TODO: Make required
-    psql_conn: Option<String>,
+    psql_conn: String,
 
     /// Side length of region cubes
     ///
@@ -149,29 +150,29 @@ async fn main() -> Result<()> {
         std::process::exit(1);
     }
 
-    // TODO: Make required
-    let client = match args.psql_conn {
-        None => None,
-        Some(conn) => {
-            let psql_result = tokio_postgres::connect(&conn, NoTls).await;
-            if let Err(err) = psql_result {
-                error!("PostgreSQL Error: {}", err);
-                std::process::exit(1);
-            }
+    let psql_result = tokio_postgres::connect(&args.psql_conn, NoTls).await;
+    if let Err(err) = psql_result {
+        error!("PostgreSQL Error: {}", err);
+        std::process::exit(1);
+    }
 
-            let (psql, psql_conn) = psql_result.unwrap();
-            tokio::spawn(async move {
-                debug!("spawned postgres read thread");
-                if let Err(e) = psql_conn.await {
-                    error!("PostgreSQL Connection Error: {}", e);
-                }
-            });
-
-            let client = Arc::new(psql);
-            info!("Connected to PostgreSQL");
-
-            Some(client)
+    let (client, psql_conn) = psql_result.unwrap();
+    tokio::spawn(async move {
+        debug!("spawned postgres read thread");
+        if let Err(e) = psql_conn.await {
+            error!("PostgreSQL Connection Error: {}", e);
         }
+    });
+
+    let client = DatabaseClient::new(client);
+    info!("Connected to PostgreSQL");
+
+    // Init database
+    if let Err(error) = client.init_database().await {
+        error!("Failed to create database tables!");
+        error!("{}", error);
+
+        std::process::exit(1);
     };
 
     let (msg_tx, msg_rx) = flume::unbounded();
