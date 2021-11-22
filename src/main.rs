@@ -45,13 +45,24 @@ struct Args {
     /// Side length of region cubes
     ///
     /// A value of 0 is invalid
-    #[clap(
-        short = 's',
-        long,
-        default_value = "16",
-        env = "WQL_SUBSCRIPTION_REGION_CUBE_SIZE"
-    )]
-    region_size: u16,
+    #[clap(long, default_value = "16", env = "WQL_SUBSCRIPTION_REGION_CUBE_SIZE")]
+    sub_region_size: u16,
+
+    // TODO: Add arg docs
+    #[clap(long, default_value = "16", env = "WQL_DB_REGION_X_SIZE")]
+    db_region_x_size: u16,
+
+    // TODO: Add arg docs
+    #[clap(long, default_value = "256", env = "WQL_DB_REGION_Y_SIZE")]
+    db_region_y_size: u16,
+
+    // TODO: Add arg docs
+    #[clap(long, default_value = "16", env = "WQL_DB_REGION_Z_SIZE")]
+    db_region_z_size: u16,
+
+    // TODO: Add arg docs
+    #[clap(long, default_value = "1024", env = "WQL_DB_TABLE_SIZE")]
+    db_table_size: u32,
     // endregion
 
     // region: WebSocket
@@ -136,12 +147,14 @@ async fn main() -> Result<()> {
     }
 
     // Validate region size arg
-    if args.region_size == 0 {
+    if args.sub_region_size == 0 {
         error!("A region size of 0 is invalid!");
         std::process::exit(1);
-    } else if args.region_size < 10 {
+    } else if args.sub_region_size < 10 {
         warn!("Region sizes less than 10 might impact lookup performance")
     }
+
+    // TODO: Validate db size args
 
     // Validate ZeroMQ Timeout arg
     #[cfg(feature = "zeromq")]
@@ -164,8 +177,14 @@ async fn main() -> Result<()> {
         }
     });
 
-    let client = DatabaseClient::new(client);
     info!("Connected to PostgreSQL");
+    let client = DatabaseClient::new(
+        client,
+        args.db_region_x_size,
+        args.db_region_y_size,
+        args.db_region_z_size,
+        args.db_table_size,
+    );
 
     // Init database
     if let Err(error) = client.init_database().await {
@@ -223,7 +242,7 @@ async fn main() -> Result<()> {
         peer_map,
         msg_rx,
         remove_rx,
-        args.region_size,
+        args.sub_region_size,
     ));
 
     handles.push(proc_handle);
