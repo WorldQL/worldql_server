@@ -9,6 +9,7 @@ use tokio::sync::RwLock;
 use tokio_postgres::NoTls;
 use tracing::{debug, error, info, warn};
 
+use crate::args::Args;
 use crate::database::DatabaseClient;
 use crate::processing::start_processing_thread;
 #[cfg(feature = "websocket")]
@@ -17,6 +18,7 @@ use crate::transport::start_websocket_server;
 use crate::transport::{start_zeromq_incoming, start_zeromq_outgoing};
 use crate::transport::{PeerMap, ThreadPeerMap};
 
+mod args;
 mod constants;
 mod database;
 mod flatbuffers;
@@ -33,67 +35,6 @@ compile_error!("the `zeromq` feature is only supported on unix-based systems");
 // Fail to compile if no transport features are enabled
 #[cfg(not(any(feature = "websocket", feature = "zeromq")))]
 compile_error!("at least one of `websocket` or `zeromq` features must be enabled!");
-
-#[derive(Debug, Parser)]
-#[clap(version, global_setting = clap::AppSettings::DeriveDisplayOrder)]
-struct Args {
-    // region: Global Flags
-    /// PostgreSQL connection string
-    #[clap(short = 'p', long = "psql", env = "WQL_POSTGRES_CONNECTION_STRING")]
-    psql_conn: String,
-
-    /// Side length of region cubes
-    ///
-    /// A value of 0 is invalid
-    #[clap(long, default_value = "16", env = "WQL_SUBSCRIPTION_REGION_CUBE_SIZE")]
-    sub_region_size: u16,
-
-    // TODO: Add arg docs
-    #[clap(long, default_value = "16", env = "WQL_DB_REGION_X_SIZE")]
-    db_region_x_size: u16,
-
-    // TODO: Add arg docs
-    #[clap(long, default_value = "256", env = "WQL_DB_REGION_Y_SIZE")]
-    db_region_y_size: u16,
-
-    // TODO: Add arg docs
-    #[clap(long, default_value = "16", env = "WQL_DB_REGION_Z_SIZE")]
-    db_region_z_size: u16,
-
-    // TODO: Add arg docs
-    #[clap(long, default_value = "1024", env = "WQL_DB_TABLE_SIZE")]
-    db_table_size: u32,
-    // endregion
-
-    // region: WebSocket
-    /// WebSocket server port
-    #[cfg(feature = "websocket")]
-    #[clap(short = 'w', long, default_value = "8080", env = "WQL_WEBSOCKET_PORT")]
-    ws_port: u16,
-    // endregion
-
-    // region: ZeroMQ
-    /// ZeroMQ server port
-    #[cfg(feature = "zeromq")]
-    #[clap(short = 'z', long, default_value = "5555", env = "WQL_ZMQ_SERVER_PORT")]
-    zmq_server_port: u16,
-
-    /// ZeroMQ connection timeout (seconds)
-    ///
-    /// It is not recommended to set this to a very large number, values less than 10 are invalid
-    #[cfg(feature = "zeromq")]
-    #[clap(short = 'T', long, default_value = "10", env = "WQL_ZMQ_TIMEOUT_SECS")]
-    zmq_timeout_secs: u8,
-    // endregion
-
-    // region: Other Flags
-    /// Set verbosity level
-    ///
-    /// eg: -vvv for very verbose logs
-    #[clap(short, long, parse(from_occurrences))]
-    verbose: u8,
-    // endregion
-}
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -144,23 +85,6 @@ async fn main() -> Result<()> {
                 std::process::exit(1);
             }
         }
-    }
-
-    // Validate region size arg
-    if args.sub_region_size == 0 {
-        error!("A region size of 0 is invalid!");
-        std::process::exit(1);
-    } else if args.sub_region_size < 10 {
-        warn!("Region sizes less than 10 might impact lookup performance")
-    }
-
-    // TODO: Validate db size args
-
-    // Validate ZeroMQ Timeout arg
-    #[cfg(feature = "zeromq")]
-    if args.zmq_timeout_secs < 10 {
-        error!("A ZeroMQ timeout of less than 10 seconds is invalid!");
-        std::process::exit(1);
     }
 
     let psql_result = tokio_postgres::connect(&args.psql_conn, NoTls).await;
