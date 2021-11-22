@@ -1,8 +1,8 @@
 mod client;
 mod init;
 mod navigation;
-mod query_const;
+mod query_constants;
 mod world_region;
 
 pub use client::DatabaseClient;
-pub(self) use query_const::*;
+pub(self) use query_constants::*;
