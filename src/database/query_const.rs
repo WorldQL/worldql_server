@@ -55,5 +55,9 @@ pub(super) const INSERT_TABLE_SUFFIX: &str = "
 ";
 
 // TODO
-pub(super) const INSERT_REGION_ID: &str = "";
+pub(super) const INSERT_REGION_ID: &str = "
+    INSERT INTO region_navigation (min_x, max_x, min_y, max_y, min_z, max_z, world_name)
+    VALUES ($1, $2, $3, $4, $5, $6, $7)
+    RETURNING region_id
+";
 // endregion

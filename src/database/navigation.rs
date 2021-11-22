@@ -1,8 +1,9 @@
 use tokio_postgres::Error;
 
 use super::world_region::WorldRegion;
-use super::DatabaseClient;
-use crate::database::{INSERT_TABLE_SUFFIX, LOOKUP_TABLE_SUFFIX};
+use super::{
+    DatabaseClient, INSERT_REGION_ID, INSERT_TABLE_SUFFIX, LOOKUP_REGION_ID, LOOKUP_TABLE_SUFFIX,
+};
 use crate::structures::Vector3;
 
 impl DatabaseClient {
@@ -85,6 +86,56 @@ impl DatabaseClient {
             return Ok(*id);
         }
 
-        todo!()
+        // Query database for table_suffix
+        let rows = self
+            .client
+            .query(
+                LOOKUP_REGION_ID,
+                &[region.world_name(), region.x(), region.y(), region.z()],
+            )
+            .await?;
+
+        let region_id = match rows.get(0) {
+            // ID found, return
+            Some(row) => {
+                let region_id: i32 = row.try_get("region_id")?;
+                region_id
+            }
+
+            // No suffix found, create and return
+            None => {
+                let min_x = *region.x();
+                let min_y = *region.y();
+                let min_z = *region.z();
+
+                let max_x = min_x + i64::from(self.region_x_size());
+                let max_y = min_y + i64::from(self.region_y_size());
+                let max_z = min_z + i64::from(self.region_z_size());
+
+                // Insert new values into DB
+                let row = self
+                    .client
+                    .query_one(
+                        INSERT_REGION_ID,
+                        &[
+                            &min_x,
+                            &max_x,
+                            &min_y,
+                            &max_y,
+                            &min_z,
+                            &max_z,
+                            region.world_name(),
+                        ],
+                    )
+                    .await?;
+
+                let region_id: i32 = row.try_get("region_id")?;
+                region_id
+            }
+        };
+
+        // Insert into cache and return
+        self.region_cache.insert(region.clone(), region_id);
+        Ok(region_id)
     }
 }
