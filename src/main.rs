@@ -87,6 +87,12 @@ async fn main() -> Result<()> {
         }
     }
 
+    // Validate args
+    let valid = args.validate();
+    if !valid {
+        std::process::exit(1);
+    }
+
     let psql_result = tokio_postgres::connect(&args.psql_conn, NoTls).await;
     if let Err(err) = psql_result {
         error!("PostgreSQL Error: {}", err);
