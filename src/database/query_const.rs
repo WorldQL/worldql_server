@@ -43,6 +43,12 @@ pub(super) const LOOKUP_TABLE_SUFFIX: &str = "
     $4 >= min_z AND $4 < max_z
 ";
 
+pub(super) const INSERT_TABLE_SUFFIX: &str = "
+    INSERT INTO table_navigation (min_x, max_x, min_y, max_y, min_z, max_z, world_name)
+    VALUES ($1, $2, $3, $4, $5, $6, $7)
+    RETURNING table_suffix
+";
+
 pub(super) const LOOKUP_REGION_ID: &str = "
     SELECT region_id FROM region_navigation
     WHERE world_name = $1 AND
@@ -50,17 +56,7 @@ pub(super) const LOOKUP_REGION_ID: &str = "
     $3 >= min_y AND $3 < max_y AND
     $4 >= min_z AND $4 < max_z
 ";
-// endregion
 
-// region: Inserts
-// TODO
-pub(super) const INSERT_TABLE_SUFFIX: &str = "
-    INSERT INTO table_navigation (min_x, max_x, min_y, max_y, min_z, max_z, world_name)
-    VALUES ($1, $2, $3, $4, $5, $6, $7)
-    RETURNING table_suffix
-";
-
-// TODO
 pub(super) const INSERT_REGION_ID: &str = "
     INSERT INTO region_navigation (min_x, max_x, min_y, max_y, min_z, max_z, world_name)
     VALUES ($1, $2, $3, $4, $5, $6, $7)
