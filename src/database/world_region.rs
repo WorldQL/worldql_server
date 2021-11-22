@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use derive_getters::Getters;
 
 use super::DatabaseClient;
@@ -58,6 +60,16 @@ impl WorldRegion {
         let max_z = min_z + table_size;
 
         (min_z, max_z)
+    }
+}
+
+impl Display for WorldRegion {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{{ world = \"{}\", x = {}, y = {}, z = {} }}",
+            self.world_name, self.x, self.y, self.z
+        )
     }
 }
 // endregion
