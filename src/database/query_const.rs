@@ -63,3 +63,39 @@ pub(super) const INSERT_REGION_ID: &str = "
     RETURNING region_id
 ";
 // endregion
+
+// region: Create World Table
+pub(super) fn create_world(world_name: &str, suffix: i32) -> String {
+    // TODO: Prevent SQL Injection
+    let query = format!(
+        "
+        CREATE TABLE {}_{}
+        (
+            region_id integer,
+            x         double precision,
+            y         double precision,
+            z         double precision,
+            uuid      varchar(36),
+            data      varchar,
+            flex      bytea
+        )
+        ",
+        world_name, suffix
+    );
+
+    query
+}
+
+pub(super) fn create_world_index(world_name: &str, suffix: i32) -> String {
+    // TODO: Prevent SQL Injection
+    let query = format!(
+        "
+        CREATE INDEX {0}_{1}_region_id_index
+        ON {0}_{1} USING btree (region_id);
+        ",
+        world_name, suffix
+    );
+
+    query
+}
+// endregion
