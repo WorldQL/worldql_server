@@ -13,6 +13,12 @@ pub(super) const CREATE_TABLE_NAVIGATION: &str = "
     );
 ";
 
+pub(super) const CREATE_TABLE_NAVIGATION_INDEX: &str = "
+    CREATE UNIQUE INDEX IF NOT EXISTS
+    table_navigation_table_suffix_uindex
+    ON table_navigation (table_suffix)
+";
+
 pub(super) const CREATE_REGION_NAVIGATION: &str = "
     CREATE TABLE IF NOT EXISTS region_navigation
     (
