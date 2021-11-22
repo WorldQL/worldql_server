@@ -8,6 +8,7 @@ use crate::structures::{Record, Vector3};
 
 pub struct DatabaseClient {
     pub(super) client: Client,
+    // TODO: Replace with bounded LRU caches
     pub(super) table_cache: HashMap<WorldRegion, i32>,
     pub(super) region_cache: HashMap<WorldRegion, i32>,
 

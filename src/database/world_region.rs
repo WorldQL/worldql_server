@@ -73,8 +73,10 @@ mod tests {
 
     #[test]
     fn conversion() {
+        // TODO: Add more tests
         test_conversion!((0.0, 0.0, 0.0), (16, 256, 16), (0, 0, 0));
         test_conversion!((10.2, 84.1, 15.9), (16, 256, 16), (0, 0, 0));
+        test_conversion!((1925.0, 54.0, 93.0), (16, 256, 16), (1920, 0, 80));
     }
 }
 // endregion
