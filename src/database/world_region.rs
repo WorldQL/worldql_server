@@ -4,7 +4,7 @@ use super::DatabaseClient;
 use crate::structures::Vector3;
 
 // region: WorldRegion Struct
-#[derive(Debug, Getters, Clone, Hash)]
+#[derive(Debug, Getters, Clone, PartialEq, Eq, Hash)]
 pub(super) struct WorldRegion {
     world_name: String,
     x: i64,
