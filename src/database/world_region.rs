@@ -35,6 +35,30 @@ impl WorldRegion {
             z,
         }
     }
+
+    #[inline]
+    pub(super) fn x_bounds(&self, table_size: i64) -> (i64, i64) {
+        let min_x = self.x - (self.x % table_size);
+        let max_x = min_x + table_size;
+
+        (min_x, max_x)
+    }
+
+    #[inline]
+    pub(super) fn y_bounds(&self, table_size: i64) -> (i64, i64) {
+        let min_y = self.y - (self.y % table_size);
+        let max_y = min_y + table_size;
+
+        (min_y, max_y)
+    }
+
+    #[inline]
+    pub(super) fn z_bounds(&self, table_size: i64) -> (i64, i64) {
+        let min_z = self.z - (self.z % table_size);
+        let max_z = min_z + table_size;
+
+        (min_z, max_z)
+    }
 }
 // endregion
 

@@ -2,7 +2,7 @@ use tokio_postgres::Error;
 
 use super::world_region::WorldRegion;
 use super::DatabaseClient;
-use crate::database::LOOKUP_TABLE_SUFFIX;
+use crate::database::{INSERT_TABLE_SUFFIX, LOOKUP_TABLE_SUFFIX};
 use crate::structures::Vector3;
 
 impl DatabaseClient {
@@ -22,6 +22,8 @@ impl DatabaseClient {
     }
 
     async fn get_table_suffix(&mut self, region: &WorldRegion) -> Result<i32, Error> {
+        // TODO: Add traces
+
         // Early return for cached value
         if let Some(id) = self.table_cache.get(region) {
             return Ok(*id);
@@ -39,20 +41,42 @@ impl DatabaseClient {
         let table_suffix = match rows.get(0) {
             // Suffix found, return
             Some(row) => {
-                // TODO: Return table_suffix
-                todo!()
+                let table_suffix: i32 = row.try_get("table_suffix")?;
+                table_suffix
             }
 
             // No suffix found, create and return
             None => {
-                // TODO:
-                todo!()
+                let table_size = i64::from(self.table_size());
+                let (min_x, max_x) = region.x_bounds(table_size);
+                let (min_y, max_y) = region.y_bounds(table_size);
+                let (min_z, max_z) = region.z_bounds(table_size);
+
+                // Insert new values into DB
+                let row = self
+                    .client
+                    .query_one(
+                        INSERT_TABLE_SUFFIX,
+                        &[
+                            &min_x,
+                            &max_x,
+                            &min_y,
+                            &max_y,
+                            &min_z,
+                            &max_z,
+                            region.world_name(),
+                        ],
+                    )
+                    .await?;
+
+                let table_suffix: i32 = row.try_get("table_suffix")?;
+                table_suffix
             }
         };
 
         // Insert into cache and return
         self.table_cache.insert(region.clone(), table_suffix);
-        return Ok(table_suffix)
+        Ok(table_suffix)
     }
 
     async fn get_region_id(&mut self, region: &WorldRegion) -> Result<i32, Error> {

@@ -2,12 +2,12 @@
 pub(super) const CREATE_TABLE_NAVIGATION: &str = "
     CREATE TABLE IF NOT EXISTS table_navigation
     (
-        min_x        integer,
-        max_x        integer,
-        min_y        integer,
-        max_y        integer,
-        min_z        integer,
-        max_z        integer,
+        min_x        bigint,
+        max_x        bigint,
+        min_y        bigint,
+        max_y        bigint,
+        min_z        bigint,
+        max_z        bigint,
         world_name   varchar(32),
         table_suffix serial
     );
@@ -16,12 +16,12 @@ pub(super) const CREATE_TABLE_NAVIGATION: &str = "
 pub(super) const CREATE_REGION_NAVIGATION: &str = "
     CREATE TABLE IF NOT EXISTS region_navigation
     (
-        min_x      integer,
-        max_x      integer,
-        min_y      integer,
-        max_y      integer,
-        min_z      integer,
-        max_z      integer,
+        min_x      bigint,
+        max_x      bigint,
+        min_y      bigint,
+        max_y      bigint,
+        min_z      bigint,
+        max_z      bigint,
         world_name varchar(32),
         region_id  serial
     );
@@ -48,7 +48,11 @@ pub(super) const LOOKUP_REGION_ID: &str = "
 
 // region: Inserts
 // TODO
-pub(super) const INSERT_TABLE_SUFFIX: &str = "";
+pub(super) const INSERT_TABLE_SUFFIX: &str = "
+    INSERT INTO table_navigation (min_x, max_x, min_y, max_y, min_z, max_z, world_name)
+    VALUES ($1, $2, $3, $4, $5, $6, $7)
+    RETURNING table_suffix
+";
 
 // TODO
 pub(super) const INSERT_REGION_ID: &str = "";
