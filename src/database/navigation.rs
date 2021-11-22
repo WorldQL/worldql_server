@@ -76,7 +76,7 @@ impl DatabaseClient {
         };
 
         // Insert into cache and return
-        self.table_cache.insert(region.clone(), table_suffix);
+        self.table_cache.put(region.clone(), table_suffix);
         Ok(table_suffix)
     }
 
@@ -135,7 +135,7 @@ impl DatabaseClient {
         };
 
         // Insert into cache and return
-        self.region_cache.insert(region.clone(), region_id);
+        self.region_cache.put(region.clone(), region_id);
         Ok(region_id)
     }
 }

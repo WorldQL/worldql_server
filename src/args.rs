@@ -42,6 +42,12 @@ pub struct Args {
     /// A value of 0 is invalid
     #[clap(long, default_value = "1024", env = "WQL_DB_TABLE_SIZE", parse(try_from_str = parse_non_zero_32))]
     pub db_table_size: u32,
+
+    /// Maximum number of cached database lookups
+    ///
+    /// Set to 0 to disable cache eviction
+    #[clap(long, default_value = "1024", env = "WQL_DB_CACHE_SIZE", parse(try_from_str = parse_non_zero_sized))]
+    pub db_cache_size: usize,
     // endregion
 
     // region: WebSocket
@@ -99,6 +105,15 @@ fn parse_non_zero_16(src: &str) -> Result<u16, ParseError> {
 
 fn parse_non_zero_32(src: &str) -> Result<u32, ParseError> {
     let size = src.parse::<u32>()?;
+    if size == 0 {
+        return Err(ParseError::NonZero);
+    }
+
+    Ok(size)
+}
+
+fn parse_non_zero_sized(src: &str) -> Result<usize, ParseError> {
+    let size = src.parse::<usize>()?;
     if size == 0 {
         return Err(ParseError::NonZero);
     }

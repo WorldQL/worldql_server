@@ -114,6 +114,7 @@ async fn main() -> Result<()> {
         args.db_region_y_size,
         args.db_region_z_size,
         args.db_table_size,
+        args.db_cache_size,
     );
 
     // Init database
