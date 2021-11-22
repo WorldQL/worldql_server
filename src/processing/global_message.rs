@@ -7,7 +7,7 @@ use crate::subscriptions::WorldMap;
 use crate::trace_packet;
 use crate::transport::ThreadPeerMap;
 
-pub async fn handle_global_message(
+pub(super) async fn handle_global_message(
     message: Message,
     peer_map: &ThreadPeerMap,
     world_map: &WorldMap,

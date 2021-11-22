@@ -6,7 +6,7 @@ use crate::subscriptions::WorldMap;
 use crate::trace_packet;
 use crate::transport::ThreadPeerMap;
 
-pub fn handle_area_unsubscribe(
+pub(super) fn handle_area_unsubscribe(
     message: Message,
     peer_map: &ThreadPeerMap,
     world_map: &mut WorldMap,

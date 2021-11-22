@@ -1,10 +1,10 @@
 use thiserror::Error;
 
-pub trait Encode<T> {
+pub(super) trait Encode<T> {
     fn encode(self) -> T;
 }
 
-pub trait Decode<T> {
+pub(super) trait Decode<T> {
     fn decode(encoded: T) -> Result<Self, DecodeError>
     where
         Self: Sized;

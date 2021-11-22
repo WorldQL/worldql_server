@@ -6,7 +6,8 @@ mod record;
 mod replication;
 mod vector3;
 
-pub use codec::{Decode, DecodeError, Encode};
+pub use codec::DecodeError;
+pub(self) use codec::{Decode, Encode};
 pub use entity::Entity;
 pub use instruction::Instruction;
 pub use message::Message;

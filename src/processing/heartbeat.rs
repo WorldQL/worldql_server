@@ -6,7 +6,7 @@ use crate::structures::Message;
 use crate::trace_packet;
 use crate::transport::ThreadPeerMap;
 
-pub async fn handle_heartbeat(message: Message, peer_map: &ThreadPeerMap) -> Result<()> {
+pub(super) async fn handle_heartbeat(message: Message, peer_map: &ThreadPeerMap) -> Result<()> {
     trace_packet!("{}", &message);
 
     let uuid = message.sender_uuid;

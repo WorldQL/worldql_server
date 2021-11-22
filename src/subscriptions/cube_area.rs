@@ -47,7 +47,7 @@ impl CubeArea {
     ///
     /// Vector3 also implements [`ToCubeArea`] which implicitly calls this function.
     #[inline]
-    pub fn from_vector3(vec: Vector3, size: u16) -> Self {
+    pub(super) fn from_vector3(vec: Vector3, size: u16) -> Self {
         let x = Self::coord_clamp(*vec.x(), size);
         let y = Self::coord_clamp(*vec.y(), size);
         let z = Self::coord_clamp(*vec.z(), size);
