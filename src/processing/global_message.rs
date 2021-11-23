@@ -5,7 +5,7 @@ use crate::structures::{Message, Replication};
 use crate::subscriptions::WorldMap;
 use crate::trace_packet;
 use crate::transport::ThreadPeerMap;
-use crate::utils::GLOBAL_WORLD;
+use crate::utils::{sanitize_world_name, GLOBAL_WORLD};
 
 pub(super) async fn handle_global_message(
     message: Message,
@@ -34,8 +34,20 @@ pub(super) async fn handle_global_message(
             }
         };
     } else {
+        let world_name = match sanitize_world_name(&message.world_name) {
+            Ok(world_name) => world_name,
+            Err(error) => {
+                warn!(
+                    "peer {} sent invalid world name: {} ({})",
+                    uuid, &message.world_name, error
+                );
+
+                return Ok(());
+            }
+        };
+
         // Broadcast to subscribed
-        let area_map = world_map.get(&message.world_name);
+        let area_map = world_map.get(&world_name);
         if area_map.is_none() {
             // No subscriptions, return early
             return Ok(());
