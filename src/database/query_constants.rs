@@ -35,7 +35,7 @@ pub(super) const CREATE_REGION_NAVIGATION: &str = "
 // endregion
 
 // region: Lookups
-pub(super) const LOOKUP_TABLE_SUFFIX: &str = "
+pub(super) const QUERY_LOOKUP_TABLE_SUFFIX: &str = "
     SELECT table_suffix FROM table_navigation
     WHERE world_name = $1 AND
     $2 >= min_x AND $2 < max_x AND
@@ -43,13 +43,13 @@ pub(super) const LOOKUP_TABLE_SUFFIX: &str = "
     $4 >= min_z AND $4 < max_z
 ";
 
-pub(super) const INSERT_TABLE_SUFFIX: &str = "
+pub(super) const QUERY_INSERT_TABLE_SUFFIX: &str = "
     INSERT INTO table_navigation (min_x, max_x, min_y, max_y, min_z, max_z, world_name)
     VALUES ($1, $2, $3, $4, $5, $6, $7)
     RETURNING table_suffix
 ";
 
-pub(super) const LOOKUP_REGION_ID: &str = "
+pub(super) const QUERY_LOOKUP_REGION_ID: &str = "
     SELECT region_id FROM region_navigation
     WHERE world_name = $1 AND
     $2 >= min_x AND $2 < max_x AND
@@ -57,7 +57,7 @@ pub(super) const LOOKUP_REGION_ID: &str = "
     $4 >= min_z AND $4 < max_z
 ";
 
-pub(super) const INSERT_REGION_ID: &str = "
+pub(super) const QUERY_INSERT_REGION_ID: &str = "
     INSERT INTO region_navigation (min_x, max_x, min_y, max_y, min_z, max_z, world_name)
     VALUES ($1, $2, $3, $4, $5, $6, $7)
     RETURNING region_id
@@ -65,8 +65,7 @@ pub(super) const INSERT_REGION_ID: &str = "
 // endregion
 
 // region: Create World Table
-pub(super) fn create_world(world_name: &str, suffix: i32) -> String {
-    // TODO: Prevent SQL Injection
+pub(super) fn query_create_world(world_name: &str, suffix: i32) -> String {
     let query = format!(
         "
         CREATE TABLE {}_{}
@@ -86,8 +85,7 @@ pub(super) fn create_world(world_name: &str, suffix: i32) -> String {
     query
 }
 
-pub(super) fn create_world_index(world_name: &str, suffix: i32) -> String {
-    // TODO: Prevent SQL Injection
+pub(super) fn query_create_world_index(world_name: &str, suffix: i32) -> String {
     let query = format!(
         "
         CREATE INDEX {0}_{1}_region_id_index

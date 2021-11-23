@@ -3,7 +3,7 @@ use tracing::trace;
 
 use super::world_region::WorldRegion;
 use super::{
-    DatabaseClient, INSERT_REGION_ID, INSERT_TABLE_SUFFIX, LOOKUP_REGION_ID, LOOKUP_TABLE_SUFFIX,
+    DatabaseClient, QUERY_INSERT_REGION_ID, QUERY_INSERT_TABLE_SUFFIX, QUERY_LOOKUP_REGION_ID, QUERY_LOOKUP_TABLE_SUFFIX,
 };
 use crate::structures::Vector3;
 
@@ -37,7 +37,7 @@ impl DatabaseClient {
         let rows = self
             .client
             .query(
-                LOOKUP_TABLE_SUFFIX,
+                QUERY_LOOKUP_TABLE_SUFFIX,
                 &[region.world_name(), region.x(), region.y(), region.z()],
             )
             .await?;
@@ -68,7 +68,7 @@ impl DatabaseClient {
                 let row = self
                     .client
                     .query_one(
-                        INSERT_TABLE_SUFFIX,
+                        QUERY_INSERT_TABLE_SUFFIX,
                         &[
                             &min_x,
                             &max_x,
@@ -111,7 +111,7 @@ impl DatabaseClient {
         let rows = self
             .client
             .query(
-                LOOKUP_REGION_ID,
+                QUERY_LOOKUP_REGION_ID,
                 &[region.world_name(), region.x(), region.y(), region.z()],
             )
             .await?;
@@ -141,7 +141,7 @@ impl DatabaseClient {
                 let row = self
                     .client
                     .query_one(
-                        INSERT_REGION_ID,
+                        QUERY_INSERT_REGION_ID,
                         &[
                             &min_x,
                             &max_x,
