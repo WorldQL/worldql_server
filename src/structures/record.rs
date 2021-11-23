@@ -1,4 +1,5 @@
 use bytes::Bytes;
+use tokio_postgres::Row;
 use uuid::Uuid;
 
 use super::{Decode, DecodeError, Encode, Vector3};
@@ -49,5 +50,24 @@ impl Decode<RecordT> for Record {
         };
 
         Ok(record)
+    }
+}
+
+impl From<Row> for Record {
+    fn from(row: Row) -> Self {
+        let x: f64 = row.get("x");
+        let y: f64 = row.get("y");
+        let z: f64 = row.get("z");
+
+        let uuid: String = row.get("uuid");
+        let flex: Option<Vec<u8>> = row.get("flex");
+
+        Self {
+            uuid: Uuid::parse_str(&uuid).unwrap(),
+            position: Some(Vector3::new(x, y, z)),
+            world_name: row.get("world_name"),
+            data: row.get("data"),
+            flex: flex.map(Bytes::from),
+        }
     }
 }
