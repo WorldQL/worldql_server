@@ -8,8 +8,8 @@ impl DatabaseClient {
     pub async fn init_database(&self) -> Result<()> {
         // Create tables
         future::try_join(
-            self.client.prepare(CREATE_TABLE_NAVIGATION),
-            self.client.prepare(CREATE_REGION_NAVIGATION),
+            self.client.execute(CREATE_TABLE_NAVIGATION, &[]),
+            self.client.execute(CREATE_REGION_NAVIGATION, &[]),
         )
         .await?;
 
