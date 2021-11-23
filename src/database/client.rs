@@ -5,7 +5,9 @@ use tokio_postgres::error::SqlState;
 use tokio_postgres::Client;
 
 use super::world_region::WorldRegion;
-use crate::database::{query_create_world, query_create_world_index, query_insert_record};
+use crate::database::{
+    query_create_world, query_create_world_index, query_insert_record, query_select_records,
+};
 use crate::structures::{Record, Vector3};
 use crate::utils::{sanitize_world_name, SanitizeError};
 
@@ -144,12 +146,25 @@ impl DatabaseClient {
         Ok(())
     }
 
+    /// Returns a [`Vec`] containing all records found within the region represented
+    /// by `point_inside_region`
     pub async fn get_records_in_region(
         &mut self,
         world_name: &str,
         point_inside_region: Vector3,
-    ) -> Result<()> {
-        todo!()
+    ) -> Result<Vec<Record>> {
+        let (table_suffix, region_id) = self.lookup_ids(world_name, &point_inside_region).await?;
+
+        let query = query_select_records(world_name, table_suffix);
+        let records = self
+            .client
+            .query(&query, &[&region_id])
+            .await?
+            .into_iter()
+            .map(|row| Record::from_postgres_row(row, world_name))
+            .collect::<Vec<Record>>();
+
+        Ok(records)
     }
     // endregion
 }

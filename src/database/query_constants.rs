@@ -111,4 +111,16 @@ pub(super) fn query_insert_record(world_name: &str, suffix: i32) -> String {
 
     query
 }
+
+pub(super) fn query_select_records(world_name: &str, suffix: i32) -> String {
+    let query = format!(
+        "
+        SELECT x, y, z, uuid, data, flex FROM {0}_{1}
+        WHERE region_id = $1
+        ",
+        world_name, suffix
+    );
+
+    query
+}
 // endregion

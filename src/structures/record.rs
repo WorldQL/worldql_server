@@ -53,18 +53,17 @@ impl Decode<RecordT> for Record {
     }
 }
 
-impl From<Row> for Record {
-    fn from(row: Row) -> Self {
+impl Record {
+    pub fn from_postgres_row(row: Row, world_name: &str) -> Self {
         let x: f64 = row.get("x");
         let y: f64 = row.get("y");
         let z: f64 = row.get("z");
-
         let flex: Option<Vec<u8>> = row.get("flex");
 
         Self {
             uuid: row.get("uuid"),
             position: Some(Vector3::new(x, y, z)),
-            world_name: row.get("world_name"),
+            world_name: world_name.to_string(),
             data: row.get("data"),
             flex: flex.map(Bytes::from),
         }
