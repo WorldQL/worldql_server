@@ -17,7 +17,7 @@ pub(super) struct WorldRegion {
 impl WorldRegion {
     pub(super) fn new(
         world_name: &str,
-        vector: Vector3,
+        vector: &Vector3,
         region_x_size: u16,
         region_y_size: u16,
         region_z_size: u16,
@@ -78,7 +78,7 @@ impl Display for WorldRegion {
 impl DatabaseClient {
     /// Shorthand function to create a new [`WorldRegion`]
     #[inline]
-    pub(super) fn world_region(&self, world_name: &str, vector: Vector3) -> WorldRegion {
+    pub(super) fn world_region(&self, world_name: &str, vector: &Vector3) -> WorldRegion {
         WorldRegion::new(
             world_name,
             vector,
@@ -99,7 +99,7 @@ mod tests {
         ($input: expr, $sizes: expr, $expected: expr) => {
             let world = "world";
             let vector = Vector3::new($input.0, $input.1, $input.2);
-            let region = WorldRegion::new(world, vector, $sizes.0, $sizes.1, $sizes.2);
+            let region = WorldRegion::new(world, &vector, $sizes.0, $sizes.1, $sizes.2);
 
             assert_eq!(region.x, $expected.0);
             assert_eq!(region.y, $expected.1);
