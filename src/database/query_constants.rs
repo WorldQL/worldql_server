@@ -97,3 +97,18 @@ pub(super) fn query_create_world_index(world_name: &str, suffix: i32) -> String 
     query
 }
 // endregion
+
+// region: Record Manipulation
+pub(super) fn query_insert_record(world_name: &str, suffix: i32) -> String {
+    let query = format!(
+        "
+        INSERT INTO {0}_{1}
+        (region_id, x, y, z, uuid, data, flex)
+        VALUES ($1, $2, $3, $4, $5, $6, $7)
+        ",
+        world_name, suffix
+    );
+
+    query
+}
+// endregion

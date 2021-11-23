@@ -3,7 +3,8 @@ use tracing::trace;
 
 use super::world_region::WorldRegion;
 use super::{
-    DatabaseClient, QUERY_INSERT_REGION_ID, QUERY_INSERT_TABLE_SUFFIX, QUERY_LOOKUP_REGION_ID, QUERY_LOOKUP_TABLE_SUFFIX,
+    DatabaseClient, QUERY_INSERT_REGION_ID, QUERY_INSERT_TABLE_SUFFIX, QUERY_LOOKUP_REGION_ID,
+    QUERY_LOOKUP_TABLE_SUFFIX,
 };
 use crate::structures::Vector3;
 

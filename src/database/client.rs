@@ -1,9 +1,13 @@
 use color_eyre::Result;
 use lru::LruCache;
+use thiserror::Error;
+use tokio_postgres::error::SqlState;
 use tokio_postgres::Client;
 
 use super::world_region::WorldRegion;
+use crate::database::{query_create_world, query_create_world_index, query_insert_record};
 use crate::structures::{Record, Vector3};
+use crate::utils::{sanitize_world_name, SanitizeError};
 
 pub struct DatabaseClient {
     pub(super) client: Client,
@@ -66,12 +70,95 @@ impl DatabaseClient {
     // endregion
 
     // region: Methods
-    pub async fn create_record(record: Record) -> Result<()> {
-        todo!()
+    /// Insert a single [`Record`] into the database.
+    pub async fn insert_record(&mut self, record: Record) -> Result<(), DatabaseError> {
+        // TODO: Handle records without position
+        let position = record.position.unwrap();
+        let world_name = sanitize_world_name(&record.world_name)?;
+
+        let (table_suffix, region_id) = self.lookup_ids(&world_name, &position).await?;
+        let query = query_insert_record(&world_name, table_suffix);
+
+        let result = self
+            .client
+            .execute(
+                &query,
+                &[
+                    &region_id,
+                    position.x(),
+                    position.y(),
+                    position.z(),
+                    &record.uuid.to_string(),
+                    &record.data,
+                    &record.flex.as_ref().map(|b| b.to_vec()),
+                ],
+            )
+            .await;
+
+        // Insertion completed without errors, exit early
+        if result.is_ok() {
+            return Ok(());
+        }
+
+        // Handle SQL Error
+        let error = result.unwrap_err();
+        let db_error = error.as_db_error();
+
+        // If error isn't a database error, re-throw
+        if db_error.is_none() {
+            return Err(DatabaseError::PostgresError(error));
+        }
+
+        // Check for undefined table error, if not then re-throw
+        let db_error = db_error.unwrap();
+        if *db_error.code() != SqlState::UNDEFINED_TABLE {
+            return Err(DatabaseError::PostgresError(error));
+        }
+
+        // Create table for world region
+        self.client
+            .execute(&query_create_world(&world_name, table_suffix), &[])
+            .await?;
+
+        // Create index for new table
+        self.client
+            .execute(&query_create_world_index(&world_name, table_suffix), &[])
+            .await?;
+
+        // Retry insertion
+        self.client
+            .execute(
+                &query,
+                &[
+                    &region_id,
+                    position.x(),
+                    position.y(),
+                    position.z(),
+                    &record.uuid.to_string(),
+                    &record.data,
+                    &record.flex.as_ref().map(|b| b.to_vec()),
+                ],
+            )
+            .await?;
+
+        Ok(())
     }
 
-    pub async fn records_in_region(world_name: &str, point_inside_region: Vector3) -> Result<()> {
+    pub async fn get_records_in_region(
+        &mut self,
+        world_name: &str,
+        point_inside_region: Vector3,
+    ) -> Result<()> {
         todo!()
     }
     // endregion
+}
+
+#[derive(Debug, Error)]
+pub enum DatabaseError {
+    #[error("world name error: {0}")]
+    InvalidWorldName(#[from] SanitizeError),
+
+    #[error(transparent)]
+    PostgresError(#[from] tokio_postgres::Error),
 }
