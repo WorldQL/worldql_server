@@ -59,11 +59,10 @@ impl From<Row> for Record {
         let y: f64 = row.get("y");
         let z: f64 = row.get("z");
 
-        let uuid: String = row.get("uuid");
         let flex: Option<Vec<u8>> = row.get("flex");
 
         Self {
-            uuid: Uuid::parse_str(&uuid).unwrap(),
+            uuid: row.get("uuid"),
             position: Some(Vector3::new(x, y, z)),
             world_name: row.get("world_name"),
             data: row.get("data"),

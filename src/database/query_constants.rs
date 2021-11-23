@@ -74,7 +74,7 @@ pub(super) fn query_create_world(world_name: &str, suffix: i32) -> String {
             x         double precision,
             y         double precision,
             z         double precision,
-            uuid      varchar(36),
+            uuid      uuid,
             data      varchar,
             flex      bytea
         )
