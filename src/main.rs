@@ -19,7 +19,6 @@ use crate::transport::{start_zeromq_incoming, start_zeromq_outgoing};
 use crate::transport::{PeerMap, ThreadPeerMap};
 
 mod args;
-mod constants;
 mod database;
 mod flatbuffers;
 mod processing;

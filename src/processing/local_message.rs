@@ -1,11 +1,11 @@
 use color_eyre::Result;
 use tracing::debug;
 
-use crate::constants::GLOBAL_WORLD;
 use crate::structures::{Message, Replication};
 use crate::subscriptions::WorldMap;
 use crate::trace_packet;
 use crate::transport::ThreadPeerMap;
+use crate::utils::GLOBAL_WORLD;
 
 pub(super) async fn handle_local_message(
     message: Message,
