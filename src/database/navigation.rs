@@ -8,19 +8,19 @@ use super::{
 use crate::structures::Vector3;
 
 impl DatabaseClient {
-    /// Lookup both `table_id` and `region_id` in a single function.
+    /// Lookup both `table_suffix` and `region_id` in a single function.
     ///
-    /// Returned tuple has the form `(table_id, region_id)`
+    /// Returned tuple has the form `(table_suffix, region_id)`
     pub(super) async fn lookup_ids(
         &mut self,
         world_name: &str,
-        point: Vector3,
+        point: &Vector3,
     ) -> Result<(i32, i32), Error> {
         let world_region = self.world_region(world_name, point);
-        let table_id = self.get_table_suffix(&world_region).await?;
+        let table_suffix = self.get_table_suffix(&world_region).await?;
         let region_id = self.get_region_id(&world_region).await?;
 
-        Ok((table_id, region_id))
+        Ok((table_suffix, region_id))
     }
 
     async fn get_table_suffix(&mut self, region: &WorldRegion) -> Result<i32, Error> {
