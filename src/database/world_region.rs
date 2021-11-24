@@ -91,29 +91,40 @@ impl DatabaseClient {
 ///
 /// For negatives, they should still round down.
 fn clamp_region_coord(c: f64, region_size: u16) -> i64 {
-    // Handle zero cases
+    // Unit case, 0 always return 0
     if c == 0.0 || c == -0.0 {
         return 0;
     }
 
-    let region_size = i64::from(region_size);
-
     if c >= 0.0 {
-        // Truncate `c` to an int
+        let region_size = i64::from(region_size);
         let c = c as i64;
 
         c - (c % region_size)
     } else {
-        let c = c.floor() as i64;
-        c - region_size + (c.abs() % region_size)
+        let new_c = (-c) + f64::from(region_size);
+        let result = clamp_region_coord(new_c, region_size);
+
+        -result
     }
 }
 
 fn clamp_table_size(c: i64, table_size: i64) -> i64 {
+    // On a table border, return
+    if c % table_size == 0 {
+        return c;
+    }
+
     if c >= 0 {
-        c - (c % table_size)
+        let region_size = table_size;
+        let c = c as i64;
+
+        c - (c % region_size)
     } else {
-        (c + (c.abs() % table_size)) - table_size
+        let new_c = (-c) + table_size;
+        let result = clamp_table_size(new_c, table_size);
+
+        -result
     }
 }
 // endregion
@@ -191,7 +202,8 @@ mod tests {
         test_clamp_table_size!(-45, 1024, -1024);
         test_clamp_table_size!(-687, 1024, -1024);
         test_clamp_table_size!(-1023, 1024, -1024);
-        test_clamp_table_size!(-1024, 1024, -2048);
+        test_clamp_table_size!(-1024, 1024, -1024);
+        test_clamp_table_size!(-1025, 1024, -2048);
     }
     // endregion
 
@@ -316,7 +328,7 @@ mod tests {
             mc_chunk,
             table_size,
             (-1024, 0),
-            (-2048, -3072),
+            (-2048, -1024),
             (-1024, 0)
         );
 
