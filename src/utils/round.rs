@@ -29,6 +29,7 @@ mod tests {
     fn round_positive() {
         // Multiples of 10
         test_round!((0.0, 10.0), 10.0);
+        test_round!((-0.0, 10.0), 10.0);
         test_round!((0.1, 10.0), 10.0);
         test_round!((1.0, 10.0), 10.0);
         test_round!((5.0, 10.0), 10.0);
@@ -42,6 +43,7 @@ mod tests {
 
         // Multiples of 8
         test_round!((0.0, 8.0), 8.0);
+        test_round!((-0.0, 8.0), 8.0);
         test_round!((2.0, 8.0), 8.0);
         test_round!((5.0, 8.0), 8.0);
         test_round!((7.0, 8.0), 8.0);
