@@ -1,6 +1,7 @@
 use color_eyre::Result;
 use flume::Receiver;
 use tracing::{debug, warn};
+use tracing_subscriber::registry::Data;
 use uuid::Uuid;
 
 use super::area_subscribe::handle_area_subscribe as area_subscribe;
@@ -8,9 +9,10 @@ use super::area_unsubscribe::handle_area_unsubscribe as area_unsubscribe;
 use super::global_message::handle_global_message as global_message;
 use super::heartbeat::handle_heartbeat as heartbeat;
 use super::local_message::handle_local_message as local_message;
+use super::record_create::handle_record_create as record_create;
 use crate::structures::{Instruction, Message};
 use crate::subscriptions::WorldMap;
-use crate::trace_packet;
+use crate::{DatabaseClient, trace_packet};
 use crate::transport::ThreadPeerMap;
 
 pub async fn start_processing_thread(
@@ -18,6 +20,7 @@ pub async fn start_processing_thread(
     msg_rx: Receiver<Message>,
     remove_rx: Receiver<Uuid>,
     cube_size: u16,
+    mut database_client: DatabaseClient
 ) -> Result<()> {
     let mut world_map = WorldMap::new(cube_size);
 
@@ -30,7 +33,7 @@ pub async fn start_processing_thread(
 
             // Handle incoming messages
             Ok(message) = msg_rx.recv_async() => {
-                handle_message(message, &peer_map, &mut world_map).await?;
+                handle_message(message, &peer_map, &mut world_map, &mut database_client).await?;
             },
 
             // Both channels have closed, exit thread
@@ -46,6 +49,7 @@ async fn handle_message(
     message: Message,
     peer_map: &ThreadPeerMap,
     world_map: &mut WorldMap,
+    database_client: &mut DatabaseClient
 ) -> Result<()> {
     match message.instruction {
         // Panic on handshakes, they should never be sent to this thread.
@@ -57,6 +61,7 @@ async fn handle_message(
         Instruction::AreaUnsubscribe => area_unsubscribe(message, peer_map, world_map)?,
         Instruction::LocalMessage => local_message(message, peer_map, world_map).await?,
         Instruction::GlobalMessage => global_message(message, peer_map, world_map).await?,
+        Instruction::RecordCreate => record_create(message, peer_map, database_client).await?,
 
         // Warn on unknown instructions
         Instruction::Unknown => {

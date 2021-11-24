@@ -107,7 +107,7 @@ async fn main() -> Result<()> {
     });
 
     info!("Connected to PostgreSQL");
-    let client = DatabaseClient::new(
+    let mut client = DatabaseClient::new(
         client,
         args.db_region_x_size,
         args.db_region_y_size,
@@ -173,6 +173,7 @@ async fn main() -> Result<()> {
         msg_rx,
         remove_rx,
         args.sub_region_size,
+        client,
     ));
 
     handles.push(proc_handle);

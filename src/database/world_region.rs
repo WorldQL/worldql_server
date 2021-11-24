@@ -14,6 +14,24 @@ pub(super) struct WorldRegion {
     z: i64,
 }
 
+// define regions by their lowest possible value.
+fn negative_aware_region_align(c: i64, region_size: u16) -> i64{
+    let rs: i64 = i64::from(region_size);
+    if c >= 0 {
+        return c - (c % rs);
+    } else {
+        return c - rs + (c.abs() % rs);
+    }
+}
+
+fn negative_aware_min_bound(c: i64, table_size: i64) -> i64 {
+    if c >= 0 {
+        return c - (c % table_size);
+    } else {
+        return (c + (c.abs() % table_size)) - table_size;
+    }
+}
+
 impl WorldRegion {
     pub(super) fn new(
         world_name: &str,
@@ -26,9 +44,9 @@ impl WorldRegion {
         let y = *vector.y() as i64;
         let z = *vector.z() as i64;
 
-        let x = x - (x % i64::from(region_x_size));
-        let y = y - (y % i64::from(region_y_size));
-        let z = z - (z % i64::from(region_z_size));
+        let x = negative_aware_region_align(x, region_x_size);
+        let y = negative_aware_region_align(y, region_y_size);
+        let z = negative_aware_region_align(z, region_z_size);
 
         Self {
             world_name: world_name.into(),
@@ -40,7 +58,7 @@ impl WorldRegion {
 
     #[inline]
     pub(super) fn x_bounds(&self, table_size: i64) -> (i64, i64) {
-        let min_x = self.x - (self.x % table_size);
+        let min_x = negative_aware_min_bound(self.x, table_size);
         let max_x = min_x + table_size;
 
         (min_x, max_x)
@@ -48,7 +66,7 @@ impl WorldRegion {
 
     #[inline]
     pub(super) fn y_bounds(&self, table_size: i64) -> (i64, i64) {
-        let min_y = self.y - (self.y % table_size);
+        let min_y = negative_aware_min_bound(self.y, table_size);
         let max_y = min_y + table_size;
 
         (min_y, max_y)
@@ -56,7 +74,7 @@ impl WorldRegion {
 
     #[inline]
     pub(super) fn z_bounds(&self, table_size: i64) -> (i64, i64) {
-        let min_z = self.z - (self.z % table_size);
+        let min_z = negative_aware_min_bound(self.z, table_size);
         let max_z = min_z + table_size;
 
         (min_z, max_z)
