@@ -18,17 +18,17 @@ pub(super) struct WorldRegion {
 fn negative_aware_region_align(c: i64, region_size: u16) -> i64 {
     let rs: i64 = i64::from(region_size);
     if c >= 0 {
-        return c - (c % rs);
+        c - (c % rs)
     } else {
-        return c - rs + (c.abs() % rs);
+        c - rs + (c.abs() % rs)
     }
 }
 
 fn negative_aware_min_bound(c: i64, table_size: i64) -> i64 {
     if c >= 0 {
-        return c - (c % table_size);
+        c - (c % table_size)
     } else {
-        return (c + (c.abs() % table_size)) - table_size;
+        (c + (c.abs() % table_size)) - table_size
     }
 }
 
