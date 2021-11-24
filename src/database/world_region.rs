@@ -2,9 +2,8 @@ use std::fmt::Display;
 
 use derive_getters::Getters;
 
-use crate::structures::Vector3;
-
 use super::DatabaseClient;
+use crate::structures::Vector3;
 
 // region: WorldRegion Struct
 #[derive(Debug, Getters, Clone, PartialEq, Eq, Hash)]
@@ -182,7 +181,6 @@ mod tests {
             // TODO: Fix this.
             (0, 1024)
         );
-
     }
 }
 // endregion

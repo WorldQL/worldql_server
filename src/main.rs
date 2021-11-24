@@ -169,11 +169,11 @@ async fn main() -> Result<()> {
     }
 
     let proc_handle = tokio::spawn(start_processing_thread(
+        client,
         peer_map,
         msg_rx,
         remove_rx,
         args.sub_region_size,
-        client,
     ));
 
     handles.push(proc_handle);

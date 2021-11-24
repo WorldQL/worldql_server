@@ -1,13 +1,13 @@
-use crate::{DatabaseClient, ThreadPeerMap, trace_packet};
 use color_eyre::Result;
+
 use crate::structures::Message;
 use crate::utils::GLOBAL_WORLD;
-
+use crate::{trace_packet, DatabaseClient, ThreadPeerMap};
 
 pub(super) async fn handle_record_create(
     message: Message,
-    peer_map: &ThreadPeerMap,
     database_client: &mut DatabaseClient,
+    peer_map: &ThreadPeerMap,
 ) -> Result<()> {
     trace_packet!("{}", &message);
 
