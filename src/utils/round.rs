@@ -4,7 +4,7 @@ pub fn round_by_multiple(n: f64, multiple: f64) -> f64 {
     }
 
     // Special case, 0 should round up
-    if n == 0.0 {
+    if n == 0.0 || n == -0.0 {
         return multiple;
     }
 

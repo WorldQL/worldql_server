@@ -14,24 +14,6 @@ pub(super) struct WorldRegion {
     z: i64,
 }
 
-// define regions by their lowest possible value.
-fn negative_aware_region_align(c: i64, region_size: u16) -> i64 {
-    let rs: i64 = i64::from(region_size);
-    if c >= 0 {
-        c - (c % rs)
-    } else {
-        c - rs + (c.abs() % rs)
-    }
-}
-
-fn negative_aware_min_bound(c: i64, table_size: i64) -> i64 {
-    if c >= 0 {
-        c - (c % table_size)
-    } else {
-        (c + (c.abs() % table_size)) - table_size
-    }
-}
-
 impl WorldRegion {
     pub(super) fn new(
         world_name: &str,
@@ -40,13 +22,9 @@ impl WorldRegion {
         region_y_size: u16,
         region_z_size: u16,
     ) -> Self {
-        let x = *vector.x() as i64;
-        let y = *vector.y() as i64;
-        let z = *vector.z() as i64;
-
-        let x = negative_aware_region_align(x, region_x_size);
-        let y = negative_aware_region_align(y, region_y_size);
-        let z = negative_aware_region_align(z, region_z_size);
+        let x = clamp_region_coord(*vector.x(), region_x_size);
+        let y = clamp_region_coord(*vector.y(), region_y_size);
+        let z = clamp_region_coord(*vector.z(), region_z_size);
 
         Self {
             world_name: world_name.into(),
@@ -58,7 +36,7 @@ impl WorldRegion {
 
     #[inline]
     pub(super) fn x_bounds(&self, table_size: i64) -> (i64, i64) {
-        let min_x = negative_aware_min_bound(self.x, table_size);
+        let min_x = clamp_table_size(self.x, table_size);
         let max_x = min_x + table_size;
 
         (min_x, max_x)
@@ -66,7 +44,7 @@ impl WorldRegion {
 
     #[inline]
     pub(super) fn y_bounds(&self, table_size: i64) -> (i64, i64) {
-        let min_y = negative_aware_min_bound(self.y, table_size);
+        let min_y = clamp_table_size(self.y, table_size);
         let max_y = min_y + table_size;
 
         (min_y, max_y)
@@ -74,7 +52,7 @@ impl WorldRegion {
 
     #[inline]
     pub(super) fn z_bounds(&self, table_size: i64) -> (i64, i64) {
-        let min_z = negative_aware_min_bound(self.z, table_size);
+        let min_z = clamp_table_size(self.z, table_size);
         let max_z = min_z + table_size;
 
         (min_z, max_z)
@@ -108,17 +86,120 @@ impl DatabaseClient {
 }
 // endregion
 
+// region: Coordinate Clamp Functions
+/// Define region coords by their lowest possible value.
+///
+/// For negatives, they should still round down.
+fn clamp_region_coord(c: f64, region_size: u16) -> i64 {
+    // Handle zero cases
+    if c == 0.0 || c == -0.0 {
+        return 0;
+    }
+
+    let region_size = i64::from(region_size);
+
+    if c >= 0.0 {
+        // Truncate `c` to an int
+        let c = c as i64;
+
+        c - (c % region_size)
+    } else {
+        let c = c.floor() as i64;
+        c - region_size + (c.abs() % region_size)
+    }
+}
+
+fn clamp_table_size(c: i64, table_size: i64) -> i64 {
+    if c >= 0 {
+        c - (c % table_size)
+    } else {
+        (c + (c.abs() % table_size)) - table_size
+    }
+}
+// endregion
+
 // region: Tests
 #[cfg(test)]
 mod tests {
     use super::*;
 
+    // region: clamp_region_coord
+    macro_rules! test_clamp_region_coord {
+        ($input: expr, $region_size: expr, $expected: expr) => {
+            let output = super::clamp_region_coord($input, $region_size);
+            assert_eq!(output, $expected);
+        };
+    }
+
+    #[test]
+    fn clamp_region_coord() {
+        // Unit case
+        test_clamp_region_coord!(0.0, 16, 0);
+
+        // Positive
+        test_clamp_region_coord!(0.1, 16, 0);
+        test_clamp_region_coord!(15.0, 16, 0);
+        test_clamp_region_coord!(16.0, 16, 16);
+        test_clamp_region_coord!(31.9, 16, 16);
+        test_clamp_region_coord!(32.0, 16, 32);
+        test_clamp_region_coord!(0.0, 256, 0);
+        test_clamp_region_coord!(0.1, 256, 0);
+        test_clamp_region_coord!(128.0, 256, 0);
+        test_clamp_region_coord!(255.9, 256, 0);
+        test_clamp_region_coord!(256.0, 256, 256);
+        test_clamp_region_coord!(511.9, 256, 256);
+        test_clamp_region_coord!(512.0, 256, 512);
+
+        // Negative
+        test_clamp_region_coord!(-0.1, 16, -16);
+        test_clamp_region_coord!(-1.0, 16, -16);
+        test_clamp_region_coord!(-15.0, 16, -16);
+        test_clamp_region_coord!(-16.0, 16, -32);
+        test_clamp_region_coord!(-31.9, 16, -32);
+        test_clamp_region_coord!(-32.0, 16, -48);
+        test_clamp_region_coord!(-32.1, 16, -48);
+        test_clamp_region_coord!(-1.0, 256, -256);
+        test_clamp_region_coord!(-128.0, 256, -256);
+        test_clamp_region_coord!(-255.9, 256, -256);
+        test_clamp_region_coord!(-256.0, 256, -512);
+    }
+    // endregion
+
+    // region: clamp_table_size
+    macro_rules! test_clamp_table_size {
+        ($input: expr, $table_size: expr, $expected: expr) => {
+            let output = super::clamp_table_size($input, $table_size);
+            assert_eq!(output, $expected);
+        };
+    }
+
+    #[test]
+    fn clamp_table_size() {
+        // Unit case
+        test_clamp_table_size!(0, 1024, 0);
+
+        // Positive
+        test_clamp_table_size!(1, 1024, 0);
+        test_clamp_table_size!(256, 1024, 0);
+        test_clamp_table_size!(1024, 1024, 1024);
+        test_clamp_table_size!(1800, 1024, 1024);
+        test_clamp_table_size!(2047, 1024, 1024);
+        test_clamp_table_size!(2048, 1024, 2048);
+
+        // Negative
+        test_clamp_table_size!(-1, 1024, -1024);
+        test_clamp_table_size!(-45, 1024, -1024);
+        test_clamp_table_size!(-687, 1024, -1024);
+        test_clamp_table_size!(-1023, 1024, -1024);
+        test_clamp_table_size!(-1024, 1024, -2048);
+    }
+    // endregion
+
+    // region: conversion
     macro_rules! test_conversion {
         ($input: expr, $sizes: expr, $expected: expr) => {
-            let world = "world";
             let vector = Vector3::new($input.0, $input.1, $input.2);
-            let region = WorldRegion::new(world, &vector, $sizes.0, $sizes.1, $sizes.2);
-            println!("{:?}", region);
+            let region = WorldRegion::new("world", &vector, $sizes.0, $sizes.1, $sizes.2);
 
             assert_eq!(region.x, $expected.0);
             assert_eq!(region.y, $expected.1);
@@ -126,11 +207,32 @@ mod tests {
         };
     }
 
-    macro_rules! test_conversion_to_table_coordinates {
+    #[test]
+    fn conversion() {
+        let mc_chunk = (16, 256, 16);
+
+        // Positive
+        test_conversion!((0.0, 0.0, 0.0), mc_chunk, (0, 0, 0));
+        test_conversion!((10.2, 84.1, 15.9), mc_chunk, (0, 0, 0));
+        test_conversion!((10.2, 486.5, 15.9), mc_chunk, (0, 256, 0));
+        test_conversion!((1925.0, 54.0, 93.0), mc_chunk, (1920, 0, 80));
+
+        // Negative
+        test_conversion!((-0.01, -0.01, -0.01), mc_chunk, (-16, -256, -16));
+        test_conversion!((-15.9, -255.9, -15.9), mc_chunk, (-16, -256, -16));
+        test_conversion!((-50.0, -8.4, -17.6), mc_chunk, (-64, -256, -32));
+        test_conversion!((-1925.0, -478.3, -85.6), mc_chunk, (-1936, -512, -96));
+
+        // Mixed
+        test_conversion!((-45.0, 22.0, -1023.0), mc_chunk, (-48, 0, -1024));
+    }
+    // endregion
+
+    // region: table_bounds
+    macro_rules! test_table_bounds {
         ($input: expr, $sizes: expr, $table_sizes: expr, $expected_x: expr, $expected_y: expr, $expected_z: expr) => {
-            let world = "world";
             let vector = Vector3::new($input.0, $input.1, $input.2);
-            let region = WorldRegion::new(world, &vector, $sizes.0, $sizes.1, $sizes.2);
+            let region = WorldRegion::new("world", &vector, $sizes.0, $sizes.1, $sizes.2);
 
             assert_eq!(region.x_bounds($table_sizes), $expected_x);
             assert_eq!(region.y_bounds($table_sizes), $expected_y);
@@ -139,15 +241,87 @@ mod tests {
     }
 
     #[test]
-    fn conversion() {
-        // TODO: Add more tests
+    fn table_bounds() {
         let mc_chunk = (16, 256, 16);
-        test_conversion!((0.0, 0.0, 0.0), mc_chunk, (0, 0, 0));
-        test_conversion!((10.2, 84.1, 15.9), mc_chunk, (0, 0, 0));
-        test_conversion!((1925.0, 54.0, 93.0), mc_chunk, (1920, 0, 80));
-        test_conversion!((-45.0, 22.0, -1023.0), mc_chunk, (-48, 0, -1024));
+        let table_size = 1024;
 
-        test_conversion_to_table_coordinates!(
+        // Unit case
+        test_table_bounds!(
+            (0.0, 0.0, 0.0),
+            mc_chunk,
+            table_size,
+            (0, 1024),
+            (0, 1024),
+            (0, 1024)
+        );
+
+        // Positive
+        test_table_bounds!(
+            (0.0, 0.0, 0.0),
+            mc_chunk,
+            table_size,
+            (0, 1024),
+            (0, 1024),
+            (0, 1024)
+        );
+
+        test_table_bounds!(
+            (1925.0, 54.0, 93.0),
+            mc_chunk,
+            table_size,
+            (1024, 2048),
+            (0, 1024),
+            (0, 1024)
+        );
+
+        test_table_bounds!(
+            (2049.0, 54.0, 93.0),
+            mc_chunk,
+            table_size,
+            (2048, 3072),
+            (0, 1024),
+            (0, 1024)
+        );
+
+        // Negative
+        test_table_bounds!(
+            (-0.01, -0.01, -0.01),
+            mc_chunk,
+            table_size,
+            (-1024, 0),
+            (-1024, 0),
+            (-1024, 0)
+        );
+
+        test_table_bounds!(
+            (-1.0, -1.0, -1.0),
+            mc_chunk,
+            table_size,
+            (-1024, 0),
+            (-1024, 0),
+            (-1024, 0)
+        );
+
+        test_table_bounds!(
+            (-1023.9, -1023.9, -1023.9),
+            mc_chunk,
+            table_size,
+            (-1024, 0),
+            (-1024, 0),
+            (-1024, 0)
+        );
+
+        test_table_bounds!(
+            (-67.0, -1025.0, -586.0),
+            mc_chunk,
+            table_size,
+            (-1024, 0),
+            (-2048, -3072),
+            (-1024, 0)
+        );
+
+        // Mixed
+        test_table_bounds!(
             (-45.0, 22.0, -1004.0),
             mc_chunk,
             1024,
@@ -156,29 +330,21 @@ mod tests {
             (-1024, 0)
         );
 
-        test_conversion_to_table_coordinates!(
-            // This one is subtle, the Z value is below 1024
-            (-45.0, 22.0, -1015.0),
+        test_table_bounds!(
+            (-45.0, 22.0, -1025.0),
             mc_chunk,
             1024,
             (-1024, 0),
             (0, 1024),
-            // But the expected table is -1024 thru -2048. Wtf?
-            // It's because 1005's aligns to region z=-1024 which belongs to the next table.
             (-2048, -1024)
         );
-        println!("foo");
 
-        test_conversion_to_table_coordinates!(
-            // This one is subtle, the Z value is below 1024
+        test_table_bounds!(
             (-45.0, 22.0, 1015.0),
             mc_chunk,
             1024,
             (-1024, 0),
             (0, 1024),
-            // But the expected table is -1024 thru -2048. Wtf?
-            // It's because 1005's aligns to region z=-1024 which belongs to the next table.
-            // TODO: Fix this.
             (0, 1024)
         );
     }
