@@ -2,8 +2,9 @@ use std::fmt::Display;
 
 use derive_getters::Getters;
 
-use super::DatabaseClient;
 use crate::structures::Vector3;
+
+use super::DatabaseClient;
 
 // region: WorldRegion Struct
 #[derive(Debug, Getters, Clone, PartialEq, Eq, Hash)]
@@ -15,7 +16,7 @@ pub(super) struct WorldRegion {
 }
 
 // define regions by their lowest possible value.
-fn negative_aware_region_align(c: i64, region_size: u16) -> i64{
+fn negative_aware_region_align(c: i64, region_size: u16) -> i64 {
     let rs: i64 = i64::from(region_size);
     if c >= 0 {
         return c - (c % rs);
@@ -118,6 +119,7 @@ mod tests {
             let world = "world";
             let vector = Vector3::new($input.0, $input.1, $input.2);
             let region = WorldRegion::new(world, &vector, $sizes.0, $sizes.1, $sizes.2);
+            println!("{:?}", region);
 
             assert_eq!(region.x, $expected.0);
             assert_eq!(region.y, $expected.1);
@@ -125,12 +127,62 @@ mod tests {
         };
     }
 
+    macro_rules! test_conversion_to_table_coordinates {
+        ($input: expr, $sizes: expr, $table_sizes: expr, $expected_x: expr, $expected_y: expr, $expected_z: expr) => {
+            let world = "world";
+            let vector = Vector3::new($input.0, $input.1, $input.2);
+            let region = WorldRegion::new(world, &vector, $sizes.0, $sizes.1, $sizes.2);
+
+            assert_eq!(region.x_bounds($table_sizes), $expected_x);
+            assert_eq!(region.y_bounds($table_sizes), $expected_y);
+            assert_eq!(region.z_bounds($table_sizes), $expected_z);
+        };
+    }
+
     #[test]
     fn conversion() {
         // TODO: Add more tests
-        test_conversion!((0.0, 0.0, 0.0), (16, 256, 16), (0, 0, 0));
-        test_conversion!((10.2, 84.1, 15.9), (16, 256, 16), (0, 0, 0));
-        test_conversion!((1925.0, 54.0, 93.0), (16, 256, 16), (1920, 0, 80));
+        let mc_chunk = (16, 256, 16);
+        test_conversion!((0.0, 0.0, 0.0), mc_chunk, (0, 0, 0));
+        test_conversion!((10.2, 84.1, 15.9), mc_chunk, (0, 0, 0));
+        test_conversion!((1925.0, 54.0, 93.0), mc_chunk, (1920, 0, 80));
+        test_conversion!((-45.0, 22.0, -1023.0), mc_chunk, (-48, 0, -1024));
+
+        test_conversion_to_table_coordinates!(
+            (-45.0, 22.0, -1004.0),
+            mc_chunk,
+            1024,
+            (-1024, 0),
+            (0, 1024),
+            (-1024, 0)
+        );
+
+        test_conversion_to_table_coordinates!(
+            // This one is subtle, the Z value is below 1024
+            (-45.0, 22.0, -1015.0),
+            mc_chunk,
+            1024,
+            (-1024, 0),
+            (0, 1024),
+            // But the expected table is -1024 thru -2048. Wtf?
+            // It's because 1005's aligns to region z=-1024 which belongs to the next table.
+            (-2048, -1024)
+        );
+        println!("foo");
+
+        test_conversion_to_table_coordinates!(
+            // This one is subtle, the Z value is below 1024
+            (-45.0, 22.0, 1015.0),
+            mc_chunk,
+            1024,
+            (-1024, 0),
+            (0, 1024),
+            // But the expected table is -1024 thru -2048. Wtf?
+            // It's because 1005's aligns to region z=-1024 which belongs to the next table.
+            // TODO: Fix this.
+            (0, 1024)
+        );
+
     }
 }
 // endregion
