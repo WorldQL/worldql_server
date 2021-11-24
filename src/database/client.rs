@@ -73,7 +73,7 @@ impl DatabaseClient {
 
     // region: Methods
     /// Insert a single [`Record`] into the database.
-    pub async fn insert_record(&mut self, record: Record) -> Result<(), DatabaseError> {
+    pub async fn insert_record(&mut self, record: &Record) -> Result<(), DatabaseError> {
         // TODO: Handle records without position
         let position = record.position.unwrap();
         let world_name = sanitize_world_name(&record.world_name)?;

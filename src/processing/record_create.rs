@@ -1,4 +1,5 @@
 use color_eyre::Result;
+use tracing::warn;
 
 use crate::structures::Message;
 use crate::utils::GLOBAL_WORLD;
@@ -16,9 +17,13 @@ pub(super) async fn handle_record_create(
         return Ok(());
     }
 
-    let records = message.records;
-    for record in records {
-        database_client.insert_record(record).await?;
+    let uuid = message.sender_uuid;
+    for record in &message.records {
+        let result = database_client.insert_record(record).await;
+
+        if let Err(error) = result {
+            warn!("peer {} record create error: {}", uuid, error);
+        }
     }
 
     Ok(())
