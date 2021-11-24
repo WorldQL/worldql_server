@@ -112,6 +112,44 @@ pub(super) fn query_insert_record(world_name: &str, suffix: i32) -> String {
     query
 }
 
+pub(super) fn query_insert_record_many(world_name: &str, suffix: i32, count: usize) -> String {
+    let mut query = format!(
+        "
+        INSERT INTO {0}_{1}
+        (region_id, x, y, z, uuid, data, flex)
+        VALUES",
+        world_name, suffix
+    );
+
+    for i in 0..count {
+        let i = i * 7;
+        let prefix = if i == 0 { " " } else { ", " };
+
+        query += &format!(
+            "{}(${}, ${}, ${}, ${}, ${}, ${}, ${})",
+            prefix,
+            i + 1,
+            i + 2,
+            i + 3,
+            i + 4,
+            i + 5,
+            i + 6,
+            i + 7
+        );
+    }
+
+    query
+}
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn abc() {
+        let q = super::query_insert_record_many("world", 1, 2);
+        dbg!(q);
+    }
+}
+
 pub(super) fn query_select_records(world_name: &str, suffix: i32) -> String {
     let query = format!(
         "

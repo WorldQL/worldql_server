@@ -1,12 +1,16 @@
+use std::collections::HashMap;
+
 use color_eyre::Result;
 use lru::LruCache;
 use thiserror::Error;
 use tokio_postgres::error::SqlState;
+use tokio_postgres::types::ToSql;
 use tokio_postgres::Client;
 
 use super::world_region::WorldRegion;
 use crate::database::{
-    query_create_world, query_create_world_index, query_insert_record, query_select_records,
+    query_create_world, query_create_world_index, query_insert_record, query_insert_record_many,
+    query_select_records,
 };
 use crate::structures::{Record, Vector3};
 use crate::utils::{sanitize_world_name, SanitizeError};
@@ -72,7 +76,116 @@ impl DatabaseClient {
     // endregion
 
     // region: Methods
+    /// Insert many [`Record`] structs into the database.
+    ///
+    /// Batches records that map to the same table into a single `INSERT` operation.
+    pub async fn insert_records(&mut self, records: Vec<Record>) -> Vec<DatabaseError> {
+        type SqlParams = Vec<Box<dyn ToSql + Sync>>;
+
+        type HashKey = (String, i32);
+        type HashValue = (usize, SqlParams);
+        let mut table_map: HashMap<HashKey, HashValue> = HashMap::new();
+
+        // Divide up records into table insertion operations
+        let mut errors = Vec::with_capacity(records.len());
+        for record in records {
+            let position = record.position.unwrap();
+            let world_name = match sanitize_world_name(&record.world_name) {
+                Ok(world_name) => world_name,
+                Err(error) => {
+                    errors.push(error.into());
+                    continue;
+                }
+            };
+
+            let (table_suffix, region_id) = match self.lookup_ids(&world_name, &position).await {
+                Ok(result) => result,
+                Err(error) => {
+                    errors.push(error.into());
+                    continue;
+                }
+            };
+
+            let (count, params) = table_map.entry((world_name, table_suffix)).or_default();
+
+            // Add to record count
+            *count += 1;
+
+            // Push this records' data into params vector
+            params.push(Box::new(region_id));
+            params.push(Box::new(*position.x()));
+            params.push(Box::new(*position.y()));
+            params.push(Box::new(*position.z()));
+            params.push(Box::new(record.uuid));
+            params.push(Box::new(record.data));
+            params.push(Box::new(record.flex.map(|b| b.to_vec())));
+        }
+
+        for ((world_name, table_suffix), (count, args)) in table_map {
+            // Get a reference to each boxed parameter
+            let params = args.iter().map(Box::as_ref).collect::<Vec<_>>();
+
+            // Build a bulk insertion query and execute
+            let query = query_insert_record_many(&world_name, table_suffix, count);
+            let result = self.client.execute(&query, &params).await;
+
+            // Insertion completed without errors, exit early
+            if result.is_ok() {
+                continue;
+            }
+
+            // Handle SQL errors
+            let error = result.unwrap_err();
+            let db_error = error.as_db_error();
+
+            // If error isn't a database error, re-throw
+            if db_error.is_none() {
+                errors.push(DatabaseError::PostgresError(error));
+                continue;
+            }
+
+            // Check for undefined table error, if not then re-throw
+            let db_error = db_error.unwrap();
+            if *db_error.code() != SqlState::UNDEFINED_TABLE {
+                errors.push(DatabaseError::PostgresError(error));
+                continue;
+            }
+
+            // Create table for world region
+            let result = self
+                .client
+                .execute(&query_create_world(&world_name, table_suffix), &[])
+                .await;
+
+            if let Err(error) = result {
+                errors.push(error.into());
+                continue;
+            }
+
+            // Create index for new table
+            let result = self
+                .client
+                .execute(&query_create_world_index(&world_name, table_suffix), &[])
+                .await;
+
+            if let Err(error) = result {
+                errors.push(error.into());
+                continue;
+            }
+
+            // Retry insertion
+            let result = self.client.execute(&query, &params).await;
+            if let Err(error) = result {
+                errors.push(error.into());
+                continue;
+            }
+        }
+
+        errors
+    }
+
     /// Insert a single [`Record`] into the database.
+    #[deprecated = "use insert_records() instead"]
     pub async fn insert_record(&mut self, record: &Record) -> Result<(), DatabaseError> {
         // TODO: Handle records without position
         let position = record.position.unwrap();
