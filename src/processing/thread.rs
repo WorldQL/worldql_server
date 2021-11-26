@@ -9,6 +9,7 @@ use super::global_message::handle_global_message as global_message;
 use super::heartbeat::handle_heartbeat as heartbeat;
 use super::local_message::handle_local_message as local_message;
 use super::record_create::handle_record_create as record_create;
+use super::record_read::handle_record_read as record_read;
 use crate::structures::{Instruction, Message};
 use crate::subscriptions::WorldMap;
 use crate::transport::ThreadPeerMap;
@@ -61,6 +62,7 @@ async fn handle_message(
         Instruction::LocalMessage => local_message(message, peer_map, world_map).await?,
         Instruction::GlobalMessage => global_message(message, peer_map, world_map).await?,
         Instruction::RecordCreate => record_create(message, database_client, peer_map).await?,
+        Instruction::RecordRead => record_read(message, database_client, peer_map).await?,
 
         // Warn on unknown instructions
         Instruction::Unknown => {
