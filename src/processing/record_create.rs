@@ -18,12 +18,9 @@ pub(super) async fn handle_record_create(
     }
 
     let uuid = message.sender_uuid;
-    for record in &message.records {
-        let result = database_client.insert_record(record).await;
-
-        if let Err(error) = result {
-            warn!("peer {} record create error: {}", uuid, error);
-        }
+    let errors = database_client.insert_records(message.records).await;
+    for error in errors {
+        warn!("peer {} record create error: {}", uuid, error);
     }
 
     Ok(())

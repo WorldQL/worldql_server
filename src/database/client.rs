@@ -80,15 +80,15 @@ impl DatabaseClient {
     ///
     /// Batches records that map to the same table into a single `INSERT` operation.
     pub async fn insert_records(&mut self, records: Vec<Record>) -> Vec<DatabaseError> {
-        type SqlParams = Vec<Box<dyn ToSql + Sync>>;
-
         type HashKey = (String, i32);
-        type HashValue = (usize, SqlParams);
+        type HashValue = Vec<(i32, Record)>;
         let mut table_map: HashMap<HashKey, HashValue> = HashMap::new();
 
         // Divide up records into table insertion operations
-        let mut errors = Vec::with_capacity(records.len());
+        let len = records.len();
+        let mut errors = Vec::with_capacity(len);
         for record in records {
+            // TODO: Handle records without position
             let position = record.position.unwrap();
             let world_name = match sanitize_world_name(&record.world_name) {
                 Ok(world_name) => world_name,
@@ -98,6 +98,7 @@ impl DatabaseClient {
                 }
             };
 
+            // Lookup navigation IDs for this record
             let (table_suffix, region_id) = match self.lookup_ids(&world_name, &position).await {
                 Ok(result) => result,
                 Err(error) => {
@@ -106,24 +107,46 @@ impl DatabaseClient {
                 }
             };
 
-            let (count, params) = table_map.entry((world_name, table_suffix)).or_default();
+            // Get or create Vec for this table_suffix
+            let filtered_records = table_map
+                .entry((world_name, table_suffix))
+                .or_insert_with(|| Vec::with_capacity(len));
 
-            // Add to record count
-            *count += 1;
-
-            // Push this records' data into params vector
-            params.push(Box::new(region_id));
-            params.push(Box::new(*position.x()));
-            params.push(Box::new(*position.y()));
-            params.push(Box::new(*position.z()));
-            params.push(Box::new(record.uuid));
-            params.push(Box::new(record.data));
-            params.push(Box::new(record.flex.map(|b| b.to_vec())));
+            filtered_records.push((region_id, record));
         }
 
-        for ((world_name, table_suffix), (count, args)) in table_map {
-            // Get a reference to each boxed parameter
-            let params = args.iter().map(Box::as_ref).collect::<Vec<_>>();
+        for ((world_name, table_suffix), records) in table_map {
+            // Destructure and map records
+            let records = records
+                .into_iter()
+                .map(|(region_id, record)| {
+                    (
+                        region_id,
+                        record.position.unwrap(),
+                        record.uuid,
+                        record.data,
+                        record.flex.map(|b| b.to_vec()),
+                    )
+                })
+                .collect::<Vec<_>>();
+
+            // Construct params array
+            let count = records.len();
+            let params = {
+                let mut params: Vec<&(dyn ToSql + Sync)> = vec![];
+
+                for (region_id, position, uuid, data, flex) in &records {
+                    params.push(region_id);
+                    params.push(position.x());
+                    params.push(position.y());
+                    params.push(position.z());
+                    params.push(uuid);
+                    params.push(data);
+                    params.push(flex);
+                }
+
+                params
+            };
 
             // Build a bulk insertion query and execute
             let query = query_insert_record_many(&world_name, table_suffix, count);
@@ -174,7 +197,7 @@ impl DatabaseClient {
             }
 
             // Retry insertion
-            let result = self.client.execute(&query, &params).await;
+            let result = self.client.execute(&query, &params[..]).await;
             if let Err(error) = result {
                 errors.push(error.into());
                 continue;
