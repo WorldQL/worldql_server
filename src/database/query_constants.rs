@@ -70,13 +70,14 @@ pub(super) fn query_create_world(world_name: &str, suffix: i32) -> String {
         "
         CREATE TABLE {}_{}
         (
-            region_id integer,
-            x         double precision,
-            y         double precision,
-            z         double precision,
-            uuid      uuid,
-            data      varchar,
-            flex      bytea
+            last_modified timestamp NOT NULL DEFAULT NOW(),
+            region_id     integer,
+            x             double precision,
+            y             double precision,
+            z             double precision,
+            uuid          uuid,
+            data          varchar,
+            flex          bytea
         )
         ",
         world_name, suffix
