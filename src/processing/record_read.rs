@@ -33,6 +33,11 @@ pub(super) async fn handle_record_read(
                 }
             };
 
+            // Early return to avoid locking the peer map
+            if records.is_empty() {
+                return Ok(());
+            }
+
             let reply = Message {
                 instruction: Instruction::RecordReply,
                 world_name: message.world_name,

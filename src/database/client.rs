@@ -80,6 +80,11 @@ impl DatabaseClient {
     ///
     /// Batches records that map to the same table into a single `INSERT` operation.
     pub async fn insert_records(&mut self, records: Vec<Record>) -> Vec<DatabaseError> {
+        // Early return for no records
+        if records.is_empty() {
+            return vec![];
+        }
+
         type HashKey = (String, i32);
         type HashValue = Vec<(i32, Record)>;
         let mut table_map: HashMap<HashKey, HashValue> = HashMap::new();
