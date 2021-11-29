@@ -2,14 +2,14 @@
 pub(super) const CREATE_TABLE_NAVIGATION: &str = "
     CREATE TABLE IF NOT EXISTS table_navigation
     (
-        min_x        bigint,
-        max_x        bigint,
-        min_y        bigint,
-        max_y        bigint,
-        min_z        bigint,
-        max_z        bigint,
-        world_name   varchar(32),
-        table_suffix serial
+        min_x        bigint NOT NULL,
+        max_x        bigint NOT NULL,
+        min_y        bigint NOT NULL,
+        max_y        bigint NOT NULL,
+        min_z        bigint NOT NULL,
+        max_z        bigint NOT NULL,
+        world_name   varchar(32) NOT NULL,
+        table_suffix serial NOT NULL
     );
 ";
 
@@ -22,14 +22,14 @@ pub(super) const CREATE_TABLE_NAVIGATION_INDEX: &str = "
 pub(super) const CREATE_REGION_NAVIGATION: &str = "
     CREATE TABLE IF NOT EXISTS region_navigation
     (
-        min_x      bigint,
-        max_x      bigint,
-        min_y      bigint,
-        max_y      bigint,
-        min_z      bigint,
-        max_z      bigint,
-        world_name varchar(32),
-        region_id  serial
+        min_x      bigint NOT NULL,
+        max_x      bigint NOT NULL,
+        min_y      bigint NOT NULL,
+        max_y      bigint NOT NULL,
+        min_z      bigint NOT NULL,
+        max_z      bigint NOT NULL,
+        world_name varchar(32) NOT NULL,
+        region_id  serial NOT NULL
     );
 ";
 // endregion
@@ -71,11 +71,11 @@ pub(super) fn query_create_world(world_name: &str, suffix: i32) -> String {
         CREATE TABLE {}_{}
         (
             last_modified timestamp NOT NULL DEFAULT NOW(),
-            region_id     integer,
+            region_id     integer NOT NULL,
             x             double precision,
             y             double precision,
             z             double precision,
-            uuid          uuid,
+            uuid          uuid NOT NULL,
             data          varchar,
             flex          bytea
         )
