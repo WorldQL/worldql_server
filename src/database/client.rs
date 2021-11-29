@@ -297,10 +297,26 @@ impl DatabaseClient {
         let (table_suffix, region_id) = self.lookup_ids(world_name, &point_inside_region).await?;
 
         let query = query_select_records(world_name, table_suffix);
-        let records = self
-            .client
-            .query(&query, &[&region_id])
-            .await?
+        let result = self.client.query(&query, &[&region_id]).await;
+
+        // Check for undefined table error and early return no records
+        if let Err(error) = result {
+            match error.as_db_error() {
+                None => return Err(error.into()),
+                Some(db_error) => {
+                    // Early return
+                    if *db_error.code() == SqlState::UNDEFINED_TABLE {
+                        return Ok(vec![]);
+                    }
+
+                    // Different error, re-throw
+                    return Err(error.into());
+                }
+            }
+        }
+
+        let records = result
+            .unwrap()
             .into_iter()
             .map(|row| Record::from_postgres_row(row, world_name))
             .collect::<Vec<Record>>();
