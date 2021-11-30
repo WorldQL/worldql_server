@@ -220,7 +220,10 @@ impl Display for Message {
                 write!(f, " }}")
             }
 
-            Instruction::RecordCreate | Instruction::RecordUpdate | Instruction::RecordDelete | Instruction::RecordReply => write!(
+            Instruction::RecordCreate
+            | Instruction::RecordUpdate
+            | Instruction::RecordDelete
+            | Instruction::RecordReply => write!(
                 f,
                 "{} = {{ sender = \"{}\", world = \"{}\", records = [Record; {}] }}",
                 self.instruction,
