@@ -1,12 +1,22 @@
 use std::num::ParseIntError;
 
 use clap::{AppSettings, Parser};
+use once_cell::sync::Lazy;
 use thiserror::Error;
 use tracing::{error, warn};
 
+static VERSION: Lazy<String> = Lazy::new(|| {
+    let mut version = format!("v{}", env!("CARGO_PKG_VERSION"));
+    if let Some(hash) = option_env!("GIT_SHORT_HASH") {
+        version += &format!(" ({})", hash);
+    }
+
+    version
+});
+
 // region: Args Struct
 #[derive(Debug, Parser)]
-#[clap(version, global_setting = AppSettings::DeriveDisplayOrder)]
+#[clap(version = &VERSION[..], global_setting = AppSettings::DeriveDisplayOrder)]
 pub struct Args {
     // region: Global Flags
     /// PostgreSQL connection string
