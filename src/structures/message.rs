@@ -220,11 +220,23 @@ impl Display for Message {
                 write!(f, " }}")
             }
 
-            Instruction::RecordCreate => todo!(),
-            Instruction::RecordRead => todo!(),
-            Instruction::RecordUpdate => todo!(),
-            Instruction::RecordDelete => todo!(),
-            Instruction::RecordReply => todo!(),
+            Instruction::RecordCreate | Instruction::RecordUpdate | Instruction::RecordDelete | Instruction::RecordReply => write!(
+                f,
+                "{} = {{ sender = \"{}\", world = \"{}\", records = [Record; {}] }}",
+                self.instruction,
+                self.sender_uuid,
+                self.world_name,
+                self.records.len()
+            ),
+
+            Instruction::RecordRead => write!(
+                f,
+                "{} = {{ sender = \"{}\", world = \"{}\", position = {} }}",
+                self.instruction,
+                self.sender_uuid,
+                self.world_name,
+                self.position.as_ref().unwrap()
+            ),
 
             Instruction::Unknown => write!(
                 f,
