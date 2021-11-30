@@ -142,15 +142,6 @@ pub(super) fn query_insert_record_many(world_name: &str, suffix: i32, count: usi
     query
 }
 
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn abc() {
-        let q = super::query_insert_record_many("world", 1, 2);
-        dbg!(q);
-    }
-}
-
 pub(super) fn query_select_records(world_name: &str, suffix: i32) -> String {
     let query = format!(
         "
