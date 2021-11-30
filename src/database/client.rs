@@ -7,6 +7,7 @@ use tokio_postgres::error::SqlState;
 use tokio_postgres::types::ToSql;
 use tokio_postgres::Client;
 
+use super::query_delete_record;
 use super::world_region::WorldRegion;
 use crate::database::{
     query_create_world, query_create_world_index, query_insert_record, query_insert_record_many,
@@ -322,6 +323,40 @@ impl DatabaseClient {
             .collect::<Vec<Record>>();
 
         Ok(records)
+    }
+
+    /// Delete many [`Record`] structs at once.
+    pub async fn delete_records(&mut self, records: Vec<Record>) -> Vec<DatabaseError> {
+        let mut errors = vec![];
+
+        for record in records {
+            // TODO: Handle records without position
+            let position = record.position.unwrap();
+            let world_name = match sanitize_world_name(&record.world_name) {
+                Ok(world_name) => world_name,
+                Err(error) => {
+                    errors.push(error.into());
+                    continue;
+                }
+            };
+
+            let (table_suffix, region_id) = match self.lookup_ids(&world_name, &position).await {
+                Ok(result) => result,
+                Err(error) => {
+                    errors.push(error.into());
+                    continue;
+                }
+            };
+
+            let query = query_delete_record(&world_name, table_suffix);
+            let result = self.client.execute(&query, &[&region_id, &record.uuid]).await;
+
+            if let Err(error) = result {
+                errors.push(error.into())
+            }
+        }
+
+        errors
     }
     // endregion
 }

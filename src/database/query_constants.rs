@@ -153,4 +153,16 @@ pub(super) fn query_select_records(world_name: &str, suffix: i32) -> String {
 
     query
 }
+
+pub(super) fn query_delete_record(world_name: &str, suffix: i32) -> String {
+    let query = format!(
+        "
+        DELETE FROM {0}_{1} WHERE
+        region_id = $1 AND uuid = $2
+        ",
+        world_name, suffix
+    );
+
+    query
+}
 // endregion
