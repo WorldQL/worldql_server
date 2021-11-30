@@ -349,7 +349,10 @@ impl DatabaseClient {
             };
 
             let query = query_delete_record(&world_name, table_suffix);
-            let result = self.client.execute(&query, &[&region_id, &record.uuid]).await;
+            let result = self
+                .client
+                .execute(&query, &[&region_id, &record.uuid])
+                .await;
 
             if let Err(error) = result {
                 errors.push(error.into())

@@ -4,6 +4,7 @@ mod global_message;
 mod heartbeat;
 mod local_message;
 mod record_create;
+mod record_delete;
 mod record_read;
 mod thread;
 

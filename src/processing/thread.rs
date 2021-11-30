@@ -9,6 +9,7 @@ use super::global_message::handle_global_message as global_message;
 use super::heartbeat::handle_heartbeat as heartbeat;
 use super::local_message::handle_local_message as local_message;
 use super::record_create::handle_record_create as record_create;
+use super::record_delete::handle_record_delete as record_delete;
 use super::record_read::handle_record_read as record_read;
 use crate::structures::{Instruction, Message};
 use crate::subscriptions::WorldMap;
@@ -162,7 +163,7 @@ async fn handle_db_messages(
             }
 
             Instruction::RecordDelete => {
-                todo!()
+                record_delete(message, &mut database_client, &peer_map).await?;
             }
 
             _ => panic!("invalid message type"),
