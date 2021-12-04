@@ -7,8 +7,8 @@ use tokio_postgres::error::SqlState;
 use tokio_postgres::types::ToSql;
 use tokio_postgres::Client;
 
-use super::query_delete_record;
 use super::world_region::WorldRegion;
+use super::{query_create_world_schema, query_delete_record};
 use crate::database::{
     query_create_world, query_create_world_index, query_insert_record, query_insert_record_many,
     query_select_records,
@@ -180,6 +180,17 @@ impl DatabaseClient {
                 continue;
             }
 
+            // Create schema for world
+            let result = self
+                .client
+                .execute(&query_create_world_schema(&world_name), &[])
+                .await;
+
+            if let Err(error) = result {
+                errors.push(error.into());
+                continue;
+            }
+
             // Create table for world region
             let result = self
                 .client
@@ -258,6 +269,11 @@ impl DatabaseClient {
         if *db_error.code() != SqlState::UNDEFINED_TABLE {
             return Err(DatabaseError::PostgresError(error));
         }
+
+        // Create schema for world
+        self.client
+            .execute(&query_create_world_schema(&world_name), &[])
+            .await?;
 
         // Create table for world region
         self.client

@@ -1,6 +1,10 @@
 // region: Init
+pub(super) const CREATE_SCHEMA_NAVIGATION: &str = "
+    CREATE SCHEMA IF NOT EXISTS navigation
+";
+
 pub(super) const CREATE_TABLE_NAVIGATION: &str = "
-    CREATE TABLE IF NOT EXISTS table_navigation
+    CREATE TABLE IF NOT EXISTS navigation.tables
     (
         min_x        bigint NOT NULL,
         max_x        bigint NOT NULL,
@@ -16,11 +20,11 @@ pub(super) const CREATE_TABLE_NAVIGATION: &str = "
 pub(super) const CREATE_TABLE_NAVIGATION_INDEX: &str = "
     CREATE UNIQUE INDEX IF NOT EXISTS
     table_navigation_table_suffix_uindex
-    ON table_navigation (table_suffix)
+    ON navigation.tables (table_suffix)
 ";
 
 pub(super) const CREATE_REGION_NAVIGATION: &str = "
-    CREATE TABLE IF NOT EXISTS region_navigation
+    CREATE TABLE IF NOT EXISTS navigation.regions
     (
         min_x      bigint NOT NULL,
         max_x      bigint NOT NULL,
@@ -36,7 +40,7 @@ pub(super) const CREATE_REGION_NAVIGATION: &str = "
 
 // region: Lookups
 pub(super) const QUERY_LOOKUP_TABLE_SUFFIX: &str = "
-    SELECT table_suffix FROM table_navigation
+    SELECT table_suffix FROM navigation.tables
     WHERE world_name = $1 AND
     $2 >= min_x AND $2 < max_x AND
     $3 >= min_y AND $3 < max_y AND
@@ -44,13 +48,13 @@ pub(super) const QUERY_LOOKUP_TABLE_SUFFIX: &str = "
 ";
 
 pub(super) const QUERY_INSERT_TABLE_SUFFIX: &str = "
-    INSERT INTO table_navigation (min_x, max_x, min_y, max_y, min_z, max_z, world_name)
+    INSERT INTO navigation.tables (min_x, max_x, min_y, max_y, min_z, max_z, world_name)
     VALUES ($1, $2, $3, $4, $5, $6, $7)
     RETURNING table_suffix
 ";
 
 pub(super) const QUERY_LOOKUP_REGION_ID: &str = "
-    SELECT region_id FROM region_navigation
+    SELECT region_id FROM navigation.regions
     WHERE world_name = $1 AND
     $2 >= min_x AND $2 < max_x AND
     $3 >= min_y AND $3 < max_y AND
@@ -58,17 +62,32 @@ pub(super) const QUERY_LOOKUP_REGION_ID: &str = "
 ";
 
 pub(super) const QUERY_INSERT_REGION_ID: &str = "
-    INSERT INTO region_navigation (min_x, max_x, min_y, max_y, min_z, max_z, world_name)
+    INSERT INTO navigation.regions (min_x, max_x, min_y, max_y, min_z, max_z, world_name)
     VALUES ($1, $2, $3, $4, $5, $6, $7)
     RETURNING region_id
 ";
 // endregion
 
 // region: Create World Table
+pub(super) fn query_create_world_schema(world_name: &str) -> String {
+    let query = format!(
+        "
+        CREATE SCHEMA IF NOT EXISTS w_{}
+        ",
+        world_name
+    );
+
+    query
+}
+
+fn table_name(world_name: &str, suffix: i32) -> String {
+    format!("w_{0}.r_{1}", world_name, suffix)
+}
+
 pub(super) fn query_create_world(world_name: &str, suffix: i32) -> String {
     let query = format!(
         "
-        CREATE TABLE {}_{}
+        CREATE TABLE {}
         (
             last_modified timestamp NOT NULL DEFAULT NOW(),
             region_id     integer NOT NULL,
@@ -80,7 +99,7 @@ pub(super) fn query_create_world(world_name: &str, suffix: i32) -> String {
             flex          bytea
         )
         ",
-        world_name, suffix
+        table_name(world_name, suffix)
     );
 
     query
@@ -90,9 +109,11 @@ pub(super) fn query_create_world_index(world_name: &str, suffix: i32) -> String 
     let query = format!(
         "
         CREATE INDEX {0}_{1}_region_id_index
-        ON {0}_{1} USING btree (region_id);
+        ON {2} USING btree (region_id);
         ",
-        world_name, suffix
+        world_name,
+        suffix,
+        table_name(world_name, suffix)
     );
 
     query
@@ -103,11 +124,11 @@ pub(super) fn query_create_world_index(world_name: &str, suffix: i32) -> String 
 pub(super) fn query_insert_record(world_name: &str, suffix: i32) -> String {
     let query = format!(
         "
-        INSERT INTO {0}_{1}
+        INSERT INTO {}
         (region_id, x, y, z, uuid, data, flex)
         VALUES ($1, $2, $3, $4, $5, $6, $7)
         ",
-        world_name, suffix
+        table_name(world_name, suffix)
     );
 
     query
@@ -116,10 +137,10 @@ pub(super) fn query_insert_record(world_name: &str, suffix: i32) -> String {
 pub(super) fn query_insert_record_many(world_name: &str, suffix: i32, count: usize) -> String {
     let mut query = format!(
         "
-        INSERT INTO {0}_{1}
+        INSERT INTO {}
         (region_id, x, y, z, uuid, data, flex)
         VALUES",
-        world_name, suffix
+        table_name(world_name, suffix)
     );
 
     for i in 0..count {
@@ -145,10 +166,10 @@ pub(super) fn query_insert_record_many(world_name: &str, suffix: i32, count: usi
 pub(super) fn query_select_records(world_name: &str, suffix: i32) -> String {
     let query = format!(
         "
-        SELECT x, y, z, uuid, data, flex FROM {0}_{1}
+        SELECT x, y, z, uuid, data, flex FROM {}
         WHERE region_id = $1
         ",
-        world_name, suffix
+        table_name(world_name, suffix)
     );
 
     query
@@ -157,10 +178,10 @@ pub(super) fn query_select_records(world_name: &str, suffix: i32) -> String {
 pub(super) fn query_delete_record(world_name: &str, suffix: i32) -> String {
     let query = format!(
         "
-        DELETE FROM {0}_{1} WHERE
+        DELETE FROM {} WHERE
         region_id = $1 AND uuid = $2
         ",
-        world_name, suffix
+        table_name(world_name, suffix)
     );
 
     query
