@@ -166,8 +166,8 @@ pub(super) fn query_insert_record_many(world_name: &str, suffix: i32, count: usi
 pub(super) fn query_select_records(world_name: &str, suffix: i32) -> String {
     let query = format!(
         "
-        SELECT x, y, z, uuid, data, flex FROM {}
-        WHERE region_id = $1
+        SELECT last_modified, x, y, z, uuid, data, flex
+        FROM {} WHERE region_id = $1
         ",
         table_name(world_name, suffix)
     );

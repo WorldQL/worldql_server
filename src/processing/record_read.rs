@@ -38,6 +38,11 @@ pub(super) async fn handle_record_read(
                 return Ok(());
             }
 
+            let records = records
+                .into_iter()
+                .map(|(_, record)| record)
+                .collect::<Vec<_>>();
+
             let reply = Message {
                 instruction: Instruction::RecordReply,
                 world_name: message.world_name,

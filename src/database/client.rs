@@ -1,5 +1,7 @@
 use std::collections::HashMap;
 
+use chrono::offset::Utc;
+use chrono::DateTime;
 use color_eyre::Result;
 use lru::LruCache;
 use thiserror::Error;
@@ -15,6 +17,8 @@ use crate::database::{
 };
 use crate::structures::{Record, Vector3};
 use crate::utils::{sanitize_world_name, SanitizeError};
+
+type Timestamp = DateTime<Utc>;
 
 pub struct DatabaseClient {
     pub(super) client: Client,
@@ -310,7 +314,7 @@ impl DatabaseClient {
         &mut self,
         world_name: &str,
         point_inside_region: Vector3,
-    ) -> Result<Vec<Record>> {
+    ) -> Result<Vec<(Timestamp, Record)>> {
         let (table_suffix, region_id) = self.lookup_ids(world_name, &point_inside_region).await?;
 
         let query = query_select_records(world_name, table_suffix);
@@ -335,8 +339,13 @@ impl DatabaseClient {
         let records = result
             .unwrap()
             .into_iter()
-            .map(|row| Record::from_postgres_row(row, world_name))
-            .collect::<Vec<Record>>();
+            .map(|row| {
+                let timestamp: Timestamp = row.get("last_modified");
+                let record = Record::from_postgres_row(row, world_name);
+
+                (timestamp, record)
+            })
+            .collect::<Vec<_>>();
 
         Ok(records)
     }
