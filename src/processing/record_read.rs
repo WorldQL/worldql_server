@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use color_eyre::Result;
 use tracing::warn;
 
@@ -38,6 +40,23 @@ pub(super) async fn handle_record_read(
                 return Ok(());
             }
 
+            // Calculate most recent timestamp for each UUID
+            let deduped = {
+                let mut deduped = HashMap::new();
+                for (timestamp, record) in &records {
+                    // TODO: Handle records without position
+                    let data = (
+                        *timestamp,
+                        record.position.unwrap(),
+                        record.world_name.clone(),
+                    );
+
+                    deduped.insert(record.uuid, data);
+                }
+
+                deduped
+            };
+
             let records = records
                 .into_iter()
                 .map(|(_, record)| record)
@@ -50,15 +69,25 @@ pub(super) async fn handle_record_read(
                 ..Default::default()
             };
 
-            let mut map = peer_map.write().await;
-            let peer = map.get_mut(&uuid);
-            if peer.is_none() {
-                warn!("Missing peer {} for GlobalMessage send!", &uuid);
-                return Ok(());
+            // Lock peer map for only this section
+            {
+                let mut map = peer_map.write().await;
+                let peer = map.get_mut(&uuid);
+                if peer.is_none() {
+                    warn!("Missing peer {} for GlobalMessage send!", &uuid);
+                    return Ok(());
+                }
+
+                let peer = peer.unwrap();
+                let _ = peer.send(reply).await;
             }
 
-            let peer = peer.unwrap();
-            let _ = peer.send(reply).await;
+            // Deduplicate records in background
+            let result = database_client.dedupe_records(deduped).await;
+            if let Err(error) = result {
+                warn!("error deduping records for {}: {}", uuid, error);
+                return Ok(());
+            }
         }
 
         // Handle messages without position

@@ -186,4 +186,16 @@ pub(super) fn query_delete_record(world_name: &str, suffix: i32) -> String {
 
     query
 }
+
+pub(super) fn query_delete_duplictes(world_name: &str, suffix: i32) -> String {
+    let query = format!(
+        "
+        DELETE FROM {} WHERE
+        uuid = $1 AND last_modified < $2
+        ",
+        table_name(world_name, suffix)
+    );
+
+    query
+}
 // endregion

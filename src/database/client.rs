@@ -1,24 +1,22 @@
 use std::collections::HashMap;
+use std::time::SystemTime;
 
-use chrono::offset::Utc;
-use chrono::DateTime;
 use color_eyre::Result;
 use lru::LruCache;
 use thiserror::Error;
 use tokio_postgres::error::SqlState;
 use tokio_postgres::types::ToSql;
 use tokio_postgres::Client;
+use uuid::Uuid;
 
 use super::world_region::WorldRegion;
-use super::{query_create_world_schema, query_delete_record};
+use super::{query_create_world_schema, query_delete_duplictes, query_delete_record};
 use crate::database::{
     query_create_world, query_create_world_index, query_insert_record, query_insert_record_many,
     query_select_records,
 };
 use crate::structures::{Record, Vector3};
 use crate::utils::{sanitize_world_name, SanitizeError};
-
-type Timestamp = DateTime<Utc>;
 
 pub struct DatabaseClient {
     pub(super) client: Client,
@@ -314,7 +312,7 @@ impl DatabaseClient {
         &mut self,
         world_name: &str,
         point_inside_region: Vector3,
-    ) -> Result<Vec<(Timestamp, Record)>> {
+    ) -> Result<Vec<(SystemTime, Record)>> {
         let (table_suffix, region_id) = self.lookup_ids(world_name, &point_inside_region).await?;
 
         let query = query_select_records(world_name, table_suffix);
@@ -340,7 +338,7 @@ impl DatabaseClient {
             .unwrap()
             .into_iter()
             .map(|row| {
-                let timestamp: Timestamp = row.get("last_modified");
+                let timestamp: SystemTime = row.get("last_modified");
                 let record = Record::from_postgres_row(row, world_name);
 
                 (timestamp, record)
@@ -385,6 +383,22 @@ impl DatabaseClient {
         }
 
         errors
+    }
+
+    /// Delete duplicate records based on [`Uuid`] and last modified [`SystemTime`]
+    pub async fn dedupe_records(
+        &mut self,
+        deduped: HashMap<Uuid, (SystemTime, Vector3, String)>,
+    ) -> Result<(), DatabaseError> {
+        // TODO: Run concurrently
+        for (uuid, (timestamp, position, world_name)) in deduped {
+            let (table_suffix, _) = self.lookup_ids(&world_name, &position).await?;
+            let query = query_delete_duplictes(&world_name, table_suffix);
+
+            self.client.execute(&query, &[&uuid, &timestamp]).await?;
+        }
+
+        Ok(())
     }
     // endregion
 }
