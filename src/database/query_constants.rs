@@ -80,8 +80,9 @@ pub(super) fn query_create_world_schema(world_name: &str) -> String {
     query
 }
 
+#[inline]
 fn table_name(world_name: &str, suffix: i32) -> String {
-    format!("w_{0}.r_{1}", world_name, suffix)
+    format!("w_{0}.t_{1}", world_name, suffix)
 }
 
 pub(super) fn query_create_world(world_name: &str, suffix: i32) -> String {
