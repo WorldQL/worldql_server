@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use color_eyre::Result;
 use tracing::warn;
 
+use crate::database::DedupeData;
 use crate::structures::{Instruction, Message};
 use crate::utils::GLOBAL_WORLD;
 use crate::{trace_packet, DatabaseClient, ThreadPeerMap};
@@ -40,24 +41,47 @@ pub(super) async fn handle_record_read(
                 return Ok(());
             }
 
-            // Calculate most recent timestamp for each UUID
+            // Deduplicate records
             let deduped = {
-                let mut deduped = HashMap::new();
-                for (timestamp, record) in &records {
-                    // TODO: Handle records without position
-                    let data = (
-                        *timestamp,
-                        record.position.unwrap(),
-                        record.world_name.clone(),
-                    );
+                let mut map = HashMap::new();
+                for (ts, record) in records {
+                    match map.get(&record.uuid) {
+                        // Not seen before, insert
+                        None => {
+                            map.insert(record.uuid, (ts, record));
+                        }
 
-                    deduped.insert(record.uuid, data);
+                        // Seen before, check timestamp
+                        Some((existing_ts, _)) => {
+                            // Only insert if timestamp is later
+                            if &ts >= existing_ts {
+                                map.insert(record.uuid, (ts, record));
+                            }
+                        }
+                    }
                 }
 
-                deduped
+                map.into_values().collect::<Vec<_>>()
             };
 
-            let records = records
+            // Extract dedupe command information from list
+            let dedupe_ops = deduped
+                .iter()
+                .map(|(ts, record)| {
+                    let data: DedupeData = (
+                        record.uuid,
+                        *ts,
+                        record.world_name.clone(),
+                        // TODO: Handle records without position
+                        record.position.unwrap(),
+                    );
+
+                    data
+                })
+                .collect::<Vec<DedupeData>>();
+
+            // Extract only records from deduplicated list
+            let records = deduped
                 .into_iter()
                 .map(|(_, record)| record)
                 .collect::<Vec<_>>();
@@ -83,7 +107,7 @@ pub(super) async fn handle_record_read(
             }
 
             // Deduplicate records in background
-            let result = database_client.dedupe_records(deduped).await;
+            let result = database_client.dedupe_records(dedupe_ops).await;
             if let Err(error) = result {
                 warn!("error deduping records for {}: {}", uuid, error);
                 return Ok(());

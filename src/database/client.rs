@@ -29,6 +29,8 @@ pub struct DatabaseClient {
     table_size: u32,
 }
 
+pub type DedupeData = (Uuid, SystemTime, String, Vector3);
+
 impl DatabaseClient {
     pub fn new(
         client: Client,
@@ -386,12 +388,9 @@ impl DatabaseClient {
     }
 
     /// Delete duplicate records based on [`Uuid`] and last modified [`SystemTime`]
-    pub async fn dedupe_records(
-        &mut self,
-        deduped: HashMap<Uuid, (SystemTime, Vector3, String)>,
-    ) -> Result<(), DatabaseError> {
+    pub async fn dedupe_records(&mut self, ops: Vec<DedupeData>) -> Result<(), DatabaseError> {
         // TODO: Run concurrently
-        for (uuid, (timestamp, position, world_name)) in deduped {
+        for (uuid, timestamp, world_name, position) in ops {
             let (table_suffix, _) = self.lookup_ids(&world_name, &position).await?;
             let query = query_delete_duplictes(&world_name, table_suffix);
 
