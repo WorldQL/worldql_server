@@ -5,6 +5,7 @@ use std::sync::Arc;
 
 use clap::Parser;
 use color_eyre::Result;
+use dotenv::dotenv;
 use tokio::sync::RwLock;
 use tokio_postgres::NoTls;
 use tracing::{debug, error, info, warn};
@@ -38,6 +39,8 @@ compile_error!("at least one of `websocket` or `zeromq` features must be enabled
 #[tokio::main]
 async fn main() -> Result<()> {
     color_eyre::install()?;
+
+    dotenv().ok();
     let args = Args::parse();
 
     let filter = match args.verbose {
