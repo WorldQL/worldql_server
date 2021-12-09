@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use std::time::SystemTime;
 
+use chrono::prelude::*;
 use color_eyre::Result;
 use lru::LruCache;
 use thiserror::Error;
@@ -314,7 +315,7 @@ impl DatabaseClient {
         &mut self,
         world_name: &str,
         point_inside_region: Vector3,
-        after: Option<SystemTime>
+        after: Option<NaiveDateTime>,
     ) -> Result<Vec<(SystemTime, Record)>> {
         let (table_suffix, region_id) = self.lookup_ids(world_name, &point_inside_region).await?;
 
@@ -323,13 +324,13 @@ impl DatabaseClient {
             None => {
                 let query = query_select_records(world_name, table_suffix);
                 self.client.query(&query, &[&region_id]).await
-            },
+            }
 
             // Send only results after time
             Some(after) => {
                 let query = query_select_records_after(world_name, table_suffix);
                 self.client.query(&query, &[&region_id, &after]).await
-            },
+            }
         };
 
         // Check for undefined table error and early return no records
