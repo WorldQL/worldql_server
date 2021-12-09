@@ -176,6 +176,18 @@ pub(super) fn query_select_records(world_name: &str, suffix: i32) -> String {
     query
 }
 
+pub(super) fn query_select_records_after(world_name: &str, suffix: i32) -> String {
+    let query = format!(
+        "
+        SELECT last_modified, x, y, z, uuid, data, flex
+        FROM {} WHERE region_id = $1 AND last_modified > $2
+        ",
+        table_name(world_name, suffix)
+    );
+
+    query
+}
+
 pub(super) fn query_delete_record(world_name: &str, suffix: i32) -> String {
     let query = format!(
         "

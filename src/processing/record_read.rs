@@ -25,7 +25,7 @@ pub(super) async fn handle_record_read(
         // Handle messages with position
         Some(position) => {
             let result = database_client
-                .get_records_in_region(&message.world_name, position)
+                .get_records_in_region(&message.world_name, position, None)
                 .await;
 
             let records = match result {

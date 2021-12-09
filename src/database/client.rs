@@ -13,7 +13,7 @@ use super::world_region::WorldRegion;
 use super::{query_create_world_schema, query_delete_duplictes, query_delete_record};
 use crate::database::{
     query_create_world, query_create_world_index, query_insert_record, query_insert_record_many,
-    query_select_records,
+    query_select_records, query_select_records_after,
 };
 use crate::structures::{Record, Vector3};
 use crate::utils::{sanitize_world_name, SanitizeError};
@@ -314,11 +314,23 @@ impl DatabaseClient {
         &mut self,
         world_name: &str,
         point_inside_region: Vector3,
+        after: Option<SystemTime>
     ) -> Result<Vec<(SystemTime, Record)>> {
         let (table_suffix, region_id) = self.lookup_ids(world_name, &point_inside_region).await?;
 
-        let query = query_select_records(world_name, table_suffix);
-        let result = self.client.query(&query, &[&region_id]).await;
+        let result = match after {
+            // Send all results
+            None => {
+                let query = query_select_records(world_name, table_suffix);
+                self.client.query(&query, &[&region_id]).await
+            },
+
+            // Send only results after time
+            Some(after) => {
+                let query = query_select_records_after(world_name, table_suffix);
+                self.client.query(&query, &[&region_id, &after]).await
+            },
+        };
 
         // Check for undefined table error and early return no records
         if let Err(error) = result {
