@@ -1,5 +1,4 @@
 use std::collections::HashMap;
-use std::time::SystemTime;
 
 use chrono::prelude::*;
 use color_eyre::Result;
@@ -30,7 +29,7 @@ pub struct DatabaseClient {
     table_size: u32,
 }
 
-pub type DedupeData = (Uuid, SystemTime, String, Vector3);
+pub type DedupeData = (Uuid, NaiveDateTime, String, Vector3);
 
 impl DatabaseClient {
     pub fn new(
@@ -316,7 +315,7 @@ impl DatabaseClient {
         world_name: &str,
         point_inside_region: Vector3,
         after: Option<NaiveDateTime>,
-    ) -> Result<Vec<(SystemTime, Record)>> {
+    ) -> Result<Vec<(NaiveDateTime, Record)>> {
         let (table_suffix, region_id) = self.lookup_ids(world_name, &point_inside_region).await?;
 
         let result = match after {
@@ -353,7 +352,7 @@ impl DatabaseClient {
             .unwrap()
             .into_iter()
             .map(|row| {
-                let timestamp: SystemTime = row.get("last_modified");
+                let timestamp: NaiveDateTime = row.get("last_modified");
                 let record = Record::from_postgres_row(row, world_name);
 
                 (timestamp, record)
@@ -400,7 +399,7 @@ impl DatabaseClient {
         errors
     }
 
-    /// Delete duplicate records based on [`Uuid`] and last modified [`SystemTime`]
+    /// Delete duplicate records based on [`Uuid`] and last modified [`NaiveDateTime`]
     pub async fn dedupe_records(&mut self, ops: Vec<DedupeData>) -> Result<(), DatabaseError> {
         // TODO: Run concurrently
         for (uuid, timestamp, world_name, position) in ops {
