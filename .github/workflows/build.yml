@@ -6,7 +6,41 @@ on:
   pull_request:
 
 jobs:
-  build:
+  build-mac:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Install Rust Stable
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+      - name: Cache Cargo Registry
+        uses: actions/cache@v1
+        with:
+          path: ~/.cargo/registry
+          key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
+      - name: Cache Cargo Index
+        uses: actions/cache@v1
+        with:
+          path: ~/.cargo/git
+          key: ${{ runner.os }}-cargo-index-${{ hashFiles('**/Cargo.lock') }}
+      - name: Cache target Directory
+        uses: actions/cache@v1
+        with:
+          path: target
+          key: ${{ runner.os }}-cargo-build-target-${{ hashFiles('**/Cargo.lock') }}
+      - name: Build project
+        run: cargo build --release
+      - name: Strip binary
+        run: strip target/release/worldql_server
+      - name: Upload binary
+        uses: actions/upload-artifact@v1
+        with:
+          name: worldql_server
+          path: target/release/worldql_server
+  build-ubuntu:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
