@@ -16,7 +16,7 @@ pub async fn start_websocket_server(
     msg_tx: Sender<Message>,
     ws_port: u16,
 ) -> Result<()> {
-    let addr = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), ws_port);
+    let addr = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(0, 0, 0, 0)), ws_port);
     let listener = TcpListener::bind(&addr).await?;
     info!("WebSocket Server listening on port {}", ws_port);
 

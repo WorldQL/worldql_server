@@ -77,7 +77,7 @@ pub struct Args {
     ///
     /// It is not recommended to set this to a very large number, values less than 10 are invalid
     #[cfg(feature = "zeromq")]
-    #[clap(short = 'T', long, default_value = "10", env = "WQL_ZMQ_TIMEOUT_SECS", parse(try_from_str = parse_zmq_timeout_secs))]
+    #[clap(short = 'T', long, default_value = "25", env = "WQL_ZMQ_TIMEOUT_SECS", parse(try_from_str = parse_zmq_timeout_secs))]
     pub zmq_timeout_secs: u8,
     // endregion
 
