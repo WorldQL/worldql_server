@@ -1,5 +1,4 @@
 use color_eyre::Result;
-use futures_util::future;
 
 use super::client::DatabaseClient;
 use super::{
@@ -9,20 +8,19 @@ use super::{
 
 impl DatabaseClient {
     pub async fn init_database(&self) -> Result<()> {
-        // Create schema
-        self.client.execute(CREATE_SCHEMA_NAVIGATION, &[]).await?;
+        let queries = vec![
+            // Create schema
+            CREATE_SCHEMA_NAVIGATION,
+            // Create tables
+            CREATE_TABLE_NAVIGATION,
+            CREATE_REGION_NAVIGATION,
+            // Create index
+            CREATE_TABLE_NAVIGATION_INDEX,
+        ];
 
-        // Create tables
-        future::try_join(
-            self.client.execute(CREATE_TABLE_NAVIGATION, &[]),
-            self.client.execute(CREATE_REGION_NAVIGATION, &[]),
-        )
-        .await?;
-
-        // Create index
-        self.client
-            .execute(CREATE_TABLE_NAVIGATION_INDEX, &[])
-            .await?;
+        // Execute
+        let query = format!("{};", queries.join(";"));
+        self.client.batch_execute(&query).await?;
 
         Ok(())
     }

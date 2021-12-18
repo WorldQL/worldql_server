@@ -6,8 +6,16 @@ on:
   pull_request:
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
+  build_x86:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        include:
+          - os: ubuntu-latest
+            platform: linux
+          - os: macos-latest
+            platform: macos
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -20,17 +28,17 @@ jobs:
         uses: actions/cache@v1
         with:
           path: ~/.cargo/registry
-          key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-x86-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
       - name: Cache Cargo Index
         uses: actions/cache@v1
         with:
           path: ~/.cargo/git
-          key: ${{ runner.os }}-cargo-index-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-x86-cargo-index-${{ hashFiles('**/Cargo.lock') }}
       - name: Cache target Directory
         uses: actions/cache@v1
         with:
           path: target
-          key: ${{ runner.os }}-cargo-build-target-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-x86-cargo-build-target-${{ hashFiles('**/Cargo.lock') }}
       - name: Build project
         run: cargo build --release
       - name: Strip binary
@@ -38,8 +46,9 @@ jobs:
       - name: Upload binary
         uses: actions/upload-artifact@v1
         with:
-          name: worldql_server
+          name: worldql_server_${{ matrix.platform }}_x86
           path: target/release/worldql_server
+
   checks:
     runs-on: ubuntu-latest
     steps:

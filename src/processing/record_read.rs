@@ -24,8 +24,24 @@ pub(super) async fn handle_record_read(
     match message.position {
         // Handle messages with position
         Some(position) => {
+            // Extract parameter
+            let after = match message.parameter {
+                None => None,
+                Some(parameter) => {
+                    let ts = match crate::utils::parse_epoch_millis(&parameter) {
+                        Ok(ts) => ts,
+                        Err(error) => {
+                            warn!("error parsing timestamp for {}: {}", uuid, error);
+                            return Ok(());
+                        }
+                    };
+
+                    Some(ts)
+                }
+            };
+
             let result = database_client
-                .get_records_in_region(&message.world_name, position)
+                .get_records_in_region(&message.world_name, position, after)
                 .await;
 
             let records = match result {

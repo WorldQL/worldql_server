@@ -1,6 +1,6 @@
 use std::collections::HashMap;
-use std::time::SystemTime;
 
+use chrono::prelude::*;
 use color_eyre::Result;
 use lru::LruCache;
 use thiserror::Error;
@@ -13,7 +13,7 @@ use super::world_region::WorldRegion;
 use super::{query_create_world_schema, query_delete_duplictes, query_delete_record};
 use crate::database::{
     query_create_world, query_create_world_index, query_insert_record, query_insert_record_many,
-    query_select_records,
+    query_select_records, query_select_records_after,
 };
 use crate::structures::{Record, Vector3};
 use crate::utils::{sanitize_world_name, SanitizeError};
@@ -29,7 +29,7 @@ pub struct DatabaseClient {
     table_size: u32,
 }
 
-pub type DedupeData = (Uuid, SystemTime, String, Vector3);
+pub type DedupeData = (Uuid, NaiveDateTime, String, Vector3);
 
 impl DatabaseClient {
     pub fn new(
@@ -314,11 +314,23 @@ impl DatabaseClient {
         &mut self,
         world_name: &str,
         point_inside_region: Vector3,
-    ) -> Result<Vec<(SystemTime, Record)>> {
+        after: Option<NaiveDateTime>,
+    ) -> Result<Vec<(NaiveDateTime, Record)>> {
         let (table_suffix, region_id) = self.lookup_ids(world_name, &point_inside_region).await?;
 
-        let query = query_select_records(world_name, table_suffix);
-        let result = self.client.query(&query, &[&region_id]).await;
+        let result = match after {
+            // Send all results
+            None => {
+                let query = query_select_records(world_name, table_suffix);
+                self.client.query(&query, &[&region_id]).await
+            }
+
+            // Send only results after time
+            Some(after) => {
+                let query = query_select_records_after(world_name, table_suffix);
+                self.client.query(&query, &[&region_id, &after]).await
+            }
+        };
 
         // Check for undefined table error and early return no records
         if let Err(error) = result {
@@ -340,7 +352,7 @@ impl DatabaseClient {
             .unwrap()
             .into_iter()
             .map(|row| {
-                let timestamp: SystemTime = row.get("last_modified");
+                let timestamp: NaiveDateTime = row.get("last_modified");
                 let record = Record::from_postgres_row(row, world_name);
 
                 (timestamp, record)
@@ -387,7 +399,7 @@ impl DatabaseClient {
         errors
     }
 
-    /// Delete duplicate records based on [`Uuid`] and last modified [`SystemTime`]
+    /// Delete duplicate records based on [`Uuid`] and last modified [`NaiveDateTime`]
     pub async fn dedupe_records(&mut self, ops: Vec<DedupeData>) -> Result<(), DatabaseError> {
         // TODO: Run concurrently
         for (uuid, timestamp, world_name, position) in ops {
