@@ -13,7 +13,7 @@ pub async fn start_zeromq_incoming(
     server_port: u16,
     ctx: tmq::Context,
 ) -> Result<()> {
-    let pull_addr = format!("tcp://127.0.0.1:{}", server_port);
+    let pull_addr = format!("tcp://0.0.0.0:{}", server_port);
     let mut pull_socket = tmq::pull(&ctx.clone()).bind(&pull_addr)?;
     info!("ZeroMQ PULL Server listening on port {}", server_port);
 
