@@ -1,4 +1,4 @@
-use std::net::{IpAddr, Ipv4Addr, SocketAddr};
+use std::net::{IpAddr, SocketAddr};
 
 use color_eyre::Result;
 use flume::Sender;
@@ -14,11 +14,12 @@ use crate::transport::Peer;
 pub async fn start_websocket_server(
     peer_map: ThreadPeerMap,
     msg_tx: Sender<Message>,
+    ws_host: IpAddr,
     ws_port: u16,
 ) -> Result<()> {
-    let addr = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(0, 0, 0, 0)), ws_port);
+    let addr = SocketAddr::new(ws_host, ws_port);
     let listener = TcpListener::bind(&addr).await?;
-    info!("WebSocket Server listening on port {}", ws_port);
+    info!("WebSocket Server listening on {}", addr);
 
     while let Ok((stream, _)) = listener.accept().await {
         let addr = stream.peer_addr()?;

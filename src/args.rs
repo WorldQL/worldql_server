@@ -1,3 +1,4 @@
+use std::net::IpAddr;
 use std::num::ParseIntError;
 
 use clap::{AppSettings, Parser};
@@ -61,6 +62,16 @@ pub struct Args {
     // endregion
 
     // region: WebSocket
+    /// WebSocket Host
+    #[cfg(feature = "websocket")]
+    #[clap(
+        short = 'W',
+        long,
+        default_value = "0.0.0.0",
+        env = "WQL_WEBSOCKET_HOST"
+    )]
+    pub ws_host: IpAddr,
+
     /// WebSocket server port
     #[cfg(feature = "websocket")]
     #[clap(short = 'w', long, default_value = "8080", env = "WQL_WEBSOCKET_PORT")]

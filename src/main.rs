@@ -138,6 +138,7 @@ async fn main() -> Result<()> {
         let ws_handle = tokio::spawn(start_websocket_server(
             peer_map.clone(),
             msg_tx.clone(),
+            args.ws_host,
             args.ws_port,
         ));
 
