@@ -79,6 +79,16 @@ pub struct Args {
     // endregion
 
     // region: ZeroMQ
+    // ZeroMQ Server Host
+    #[cfg(feature = "zeromq")]
+    #[clap(
+        short = 'Z',
+        long,
+        default_value = "0.0.0.0",
+        env = "WQL_ZMQ_SERVER_HOST"
+    )]
+    pub zmq_server_host: IpAddr,
+
     /// ZeroMQ server port
     #[cfg(feature = "zeromq")]
     #[clap(short = 'z', long, default_value = "5555", env = "WQL_ZMQ_SERVER_PORT")]

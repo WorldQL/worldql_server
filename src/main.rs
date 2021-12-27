@@ -155,6 +155,7 @@ async fn main() -> Result<()> {
             peer_map.clone(),
             msg_tx,
             zmq_handshake_tx,
+            args.zmq_server_host,
             args.zmq_server_port,
             ctx.clone(),
         ));

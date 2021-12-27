@@ -1,3 +1,5 @@
+use std::net::IpAddr;
+
 use color_eyre::Result;
 use flume::Sender;
 use futures_util::StreamExt;
@@ -10,12 +12,16 @@ pub async fn start_zeromq_incoming(
     peer_map: ThreadPeerMap,
     msg_tx: Sender<Message>,
     handshake_tx: Sender<Message>,
+    server_host: IpAddr,
     server_port: u16,
     ctx: tmq::Context,
 ) -> Result<()> {
-    let pull_addr = format!("tcp://0.0.0.0:{}", server_port);
+    let pull_addr = format!("tcp://{}:{}", &server_host, &server_port);
     let mut pull_socket = tmq::pull(&ctx.clone()).bind(&pull_addr)?;
-    info!("ZeroMQ PULL Server listening on port {}", server_port);
+    info!(
+        "ZeroMQ PULL Server listening on {}:{}",
+        server_host, server_port
+    );
 
     loop {
         let msg = pull_socket.next().await;
