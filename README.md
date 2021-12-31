@@ -1,6 +1,13 @@
 # WorldQL Server [![Build](https://github.com/WorldQL/worldql_server/actions/workflows/build.yml/badge.svg)](https://github.com/WorldQL/worldql_server/actions/workflows/build.yml)
 *Rust implementation of the WorldQL server.*
 
+## Running WorldQL
+To run WorldQL you will first need the executable binary. The easiest way is by using the pre-built binaries available on this repo's [GitHub Actions](https://github.com/WorldQL/worldql_server/actions/workflows/build.yml) tab.
+Click on a workflow run and scroll to the bottom and you will find build artifacts containing the pre-built binary.
+
+If you want to build from source, for example if building for a platform not supported by CI, then follow the setup instructions below. **Make sure to build in release mode**, as Rust will optimise the
+final binary and you should get greater performance. To build in release mode use `cargo build --release`, and the resulting binary will end up in the `target/release` directory.
+
 ## Setup Instructions
 > **:warning: This project can only be built on unix-based systems due to the ZeroMQ library we're using only supporting epoll.** See [this issue](https://github.com/cetra3/tmq/issues/17) for more information.
 
