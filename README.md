@@ -16,6 +16,19 @@ Next you will need to install Rust, the easiest way is by using [Rustup](https:/
 ### Cloning the Project
 **If using WSL, ensure you clone the project inside the WSL filesystem.** If you use the Windows filesystem (any paths starting with `/mnt`) then you may experience slower compile times.
 
+### Building and Running
+The project is managed by Rust's package manager and build tool, Cargo, and should come preinstalled with Rust.
+
+To build the project, simply run `cargo build` in the project's root directory.  
+To build and run in a single command, you can use `cargo run`. To pass WorldQL CLI flags to `cargo run`, use `cargo run -- <...flags>`
+
+```bash
+# Example using cargo run
+$ cargo run -- --psql "hostname=localhost user=user password=secret"
+```
+
+WorldQL is configured either using environment variables or CLI flags. Run with `--help` to list flags and their associated environment variables. Note that CLI flags will always take priority.
+
 ### Using VSCode
 Ensure you have the [Rust Analyzer](https://marketplace.visualstudio.com/items?itemName=matklad.rust-analyzer) extension for excellent Rust language support. If using WSL, you will also need the [Remote - WSL](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-wsl) extension to be able to open the project from within the WSL filesystem.
 
