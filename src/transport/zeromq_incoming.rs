@@ -26,7 +26,7 @@ pub async fn start_zeromq_incoming(
     loop {
         let msg = pull_socket.next().await;
         match msg {
-            None => break,
+            None => continue,
             Some(msg) => {
                 let msg = msg?;
                 if msg.len() != 1 {
