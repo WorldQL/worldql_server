@@ -93,7 +93,7 @@ async fn handle_connection(
         match msg {
             None => break,
             Some(Err(error)) => {
-                debug!("websocket error: {} = \"{}\"", &addr, error);
+                debug!("websocket error: {} = \"{:?}\"", &addr, error);
                 break;
             }
             Some(Ok(msg)) => {
@@ -152,7 +152,7 @@ fn parse_message(
             debug!("deserialize error from peer: {}", addr);
 
             #[cfg(debug_assertions)]
-            tracing::error!("{}", error);
+            tracing::error!("{:?}", error);
 
             return ParseResult::Ignore;
         }

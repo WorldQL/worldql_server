@@ -38,7 +38,7 @@ pub(super) async fn handle_global_message(
             Ok(world_name) => world_name,
             Err(error) => {
                 warn!(
-                    "peer {} sent invalid world name: {} ({})",
+                    "peer {} sent invalid world name: {} ({:?})",
                     uuid, &message.world_name, error
                 );
 
