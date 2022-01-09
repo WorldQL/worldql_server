@@ -49,7 +49,10 @@ pub async fn start_zeromq_outgoing(
             },
 
             // Both channels have closed, exit thread
-            else => break,
+            else => {
+                info!("zeromq_outgoing thread loop exiting!");
+                break
+            },
         }
     }
 

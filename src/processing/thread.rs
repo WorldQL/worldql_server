@@ -52,7 +52,10 @@ pub async fn start_processing_thread(
             },
 
             // Both channels have closed, exit thread
-            else => break,
+            else => {
+                info!("processing thread exit triggered.");
+                break
+            },
         }
     }
 
@@ -135,7 +138,10 @@ async fn handle_sub_messages(
             },
 
             // Both channels have closed, exit thread
-            else => break,
+            else => {
+                info!("handle_sub_messages loop exiting");
+                break
+            },
         }
     }
 

@@ -91,7 +91,10 @@ async fn handle_connection(
     loop {
         let msg = incoming.next().await;
         match msg {
-            None => break,
+            None => {
+                info!("websocket handle_connection loop exiting.");
+                break;
+            }
             Some(Err(error)) => {
                 debug!("websocket error: {} = \"{:?}\"", &addr, error);
                 break;
