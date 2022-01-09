@@ -74,6 +74,4 @@ pub async fn start_zeromq_incoming(
             }
         }
     }
-
-    Ok(())
 }
