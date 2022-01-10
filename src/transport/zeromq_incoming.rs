@@ -1,4 +1,5 @@
 use std::net::IpAddr;
+use std::ops::Deref;
 
 use color_eyre::Result;
 use flume::Sender;
@@ -29,14 +30,13 @@ pub async fn start_zeromq_incoming(
             None => continue,
             Some(msg) => {
                 let msg = msg?;
-                if msg.len() != 1 {
-                    warn!("Dropping multipart ZeroMQ message. Clients should not send multipart messages to WorldQL.");
-                    continue;
-                }
 
-                // Take first element from multipart
-                let data = msg.into_iter().next().unwrap();
-                let message_result = Message::deserialize(&data);
+                let mut data = Vec::new();
+                for message in msg {
+                    data.extend_from_slice(message.deref());
+                }
+                let slice: &[u8] = data.as_slice();
+                let message_result = Message::deserialize(slice);
 
                 let message = match message_result {
                     Ok(m) => m,
