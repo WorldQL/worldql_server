@@ -1,10 +1,9 @@
 use std::net::IpAddr;
-use std::ops::Deref;
 
 use color_eyre::Result;
 use flume::Sender;
 use futures_util::StreamExt;
-use tracing::{debug, info, warn};
+use tracing::{debug, info};
 
 use super::ThreadPeerMap;
 use crate::structures::{Instruction, Message};
@@ -31,13 +30,13 @@ pub async fn start_zeromq_incoming(
             Some(msg) => {
                 let msg = msg?;
 
-                let mut data = Vec::new();
-                for message in msg {
-                    data.extend_from_slice(message.deref());
-                }
-                let slice: &[u8] = data.as_slice();
-                let message_result = Message::deserialize(slice);
+                let data = msg
+                    .into_iter()
+                    .map(|m| m.to_vec())
+                    .flatten()
+                    .collect::<Vec<_>>();
 
+                let message_result = Message::deserialize(&data);
                 let message = match message_result {
                     Ok(m) => m,
                     Err(error) => {

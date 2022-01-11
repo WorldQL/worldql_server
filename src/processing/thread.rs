@@ -1,6 +1,6 @@
 use color_eyre::Result;
 use flume::{Receiver, Sender};
-use tracing::{debug, error, info, warn};
+use tracing::{info, warn};
 use uuid::Uuid;
 
 use super::area_subscribe::handle_area_subscribe as area_subscribe;
