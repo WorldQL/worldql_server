@@ -61,8 +61,20 @@ pub struct Args {
     pub db_cache_size: usize,
     // endregion
 
+    // region: HTTP
+    /// HTTP server host
+    #[cfg(feature = "http")]
+    #[clap(short = 'H', long, default_value = "0.0.0.0", env = "WQL_HTTP_HOST")]
+    pub http_host: IpAddr,
+
+    /// HTTP server port
+    #[cfg(feature = "http")]
+    #[clap(short = 'h', long, default_value = "8081", env = "WQL_HTTP_PORT")]
+    pub http_port: u16,
+    // endregion
+
     // region: WebSocket
-    /// WebSocket Host
+    /// WebSocket server host
     #[cfg(feature = "websocket")]
     #[clap(
         short = 'W',
@@ -79,7 +91,7 @@ pub struct Args {
     // endregion
 
     // region: ZeroMQ
-    // ZeroMQ Server Host
+    // ZeroMQ server host
     #[cfg(feature = "zeromq")]
     #[clap(
         short = 'Z',
@@ -103,7 +115,7 @@ pub struct Args {
     // endregion
 
     // region: Other Flags
-    /// Set verbosity level
+    /// Verbosity level
     ///
     /// eg: -vvv for very verbose logs
     #[clap(short, long, parse(from_occurrences))]

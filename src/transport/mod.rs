@@ -1,10 +1,12 @@
-#[cfg(any(feature = "websocket"))]
+#[cfg(any(feature = "http", feature = "websocket"))]
 mod http;
 mod peer;
 mod peer_map;
 #[cfg(feature = "zeromq")]
 mod zeromq;
 
+#[cfg(feature = "http")]
+pub use http::start_http_server;
 #[cfg(feature = "websocket")]
 pub use http::start_websocket_server;
 #[cfg(feature = "zeromq")]

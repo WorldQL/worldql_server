@@ -13,6 +13,8 @@ use tracing::{debug, error, info, warn};
 use crate::args::Args;
 use crate::database::DatabaseClient;
 use crate::processing::start_processing_thread;
+#[cfg(feature = "http")]
+use crate::transport::start_http_server;
 #[cfg(feature = "websocket")]
 use crate::transport::start_websocket_server;
 #[cfg(feature = "zeromq")]
@@ -32,7 +34,7 @@ mod utils;
 #[cfg(all(feature = "zeromq", not(unix)))]
 compile_error!("the `zeromq` feature is only supported on unix-based systems");
 
-// Fail to compile if no transport features are enabled
+// Fail to compile if no full transport features are enabled
 #[cfg(not(any(feature = "websocket", feature = "zeromq")))]
 compile_error!("at least one of `websocket` or `zeromq` features must be enabled!");
 
@@ -132,6 +134,13 @@ async fn main() -> Result<()> {
 
     let peer_map: ThreadPeerMap = Arc::new(RwLock::new(PeerMap::new(remove_tx)));
     let mut handles = vec![];
+
+    #[cfg(feature = "http")]
+    {
+        let http_handle = tokio::spawn(start_http_server(args.http_host, args.http_port));
+
+        handles.push(http_handle);
+    }
 
     #[cfg(feature = "websocket")]
     {
