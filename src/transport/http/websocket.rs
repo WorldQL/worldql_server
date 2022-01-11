@@ -7,9 +7,8 @@ use tokio::net::{TcpListener, TcpStream};
 use tracing::{debug, info, trace};
 use uuid::Uuid;
 
-use super::ThreadPeerMap;
 use crate::structures::{Instruction, Message};
-use crate::transport::Peer;
+use crate::transport::{Peer, ThreadPeerMap};
 
 pub async fn start_websocket_server(
     peer_map: ThreadPeerMap,
