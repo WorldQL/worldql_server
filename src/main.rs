@@ -137,7 +137,11 @@ async fn main() -> Result<()> {
 
     #[cfg(feature = "http")]
     {
-        let http_handle = tokio::spawn(start_http_server(args.http_host, args.http_port));
+        let http_handle = tokio::spawn(start_http_server(
+            msg_tx.clone(),
+            args.http_host,
+            args.http_port,
+        ));
 
         handles.push(http_handle);
     }
