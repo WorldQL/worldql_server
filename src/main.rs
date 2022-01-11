@@ -141,6 +141,7 @@ async fn main() -> Result<()> {
             msg_tx.clone(),
             args.http_host,
             args.http_port,
+            args.http_auth_token,
         ));
 
         handles.push(http_handle);

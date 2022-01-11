@@ -71,6 +71,11 @@ pub struct Args {
     #[cfg(feature = "http")]
     #[clap(short = 'h', long, default_value = "8081", env = "WQL_HTTP_PORT")]
     pub http_port: u16,
+
+    /// HTTP server port
+    #[cfg(feature = "http")]
+    #[clap(long, env = "WQL_HTTP_AUTH_TOKEN")]
+    pub http_auth_token: Option<String>,
     // endregion
 
     // region: WebSocket
