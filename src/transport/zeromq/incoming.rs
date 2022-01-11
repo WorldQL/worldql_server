@@ -5,8 +5,8 @@ use flume::Sender;
 use futures_util::StreamExt;
 use tracing::{debug, info};
 
-use super::ThreadPeerMap;
 use crate::structures::{Instruction, Message};
+use crate::transport::ThreadPeerMap;
 
 pub async fn start_zeromq_incoming(
     peer_map: ThreadPeerMap,

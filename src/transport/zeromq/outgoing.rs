@@ -9,9 +9,8 @@ use tokio::time;
 use tracing::{debug, info};
 use uuid::Uuid;
 
-use super::{ThreadPeerMap, ZmqOutgoingPair};
 use crate::structures::{Instruction, Message};
-use crate::transport::Peer;
+use crate::transport::{Peer, ThreadPeerMap, ZmqOutgoingPair};
 
 type SocketMap = HashMap<Uuid, Push>;
 
