@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 # Generate Documentation
 cargo doc
 
