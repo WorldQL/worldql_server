@@ -3,7 +3,7 @@ ENV DEBIAN_FRONTEND="noninteractive"
 
 RUN apt-get update
 
-RUN apt-get install -y \
+RUN apt-get install --no-install-recommends -y \
     build-essential cmake \
     curl
 
@@ -12,7 +12,7 @@ ENV CARGO_HOME=/cargo
 ENV PATH=/cargo/bin:/rust/bin:$PATH
 
 RUN curl https://sh.rustup.rs -sSf | bash -s -- -y
-RUN echo 'source /cargo/env' >> $HOME/.bashrc
+RUN "echo 'source /cargo/env' >> $HOME/.bashrc"
 
 RUN mkdir /server
 COPY . /server
@@ -23,5 +23,5 @@ RUN strip target/release/worldql_server
 FROM ubuntu:20.04
 COPY --from=build /server/target/release/worldql_server /usr/local/bin
 
-CMD /usr/local/bin/worldql_server
-ENTRYPOINT /usr/local/bin/worldql_server
+CMD ["/usr/local/bin/worldql_server"]
+ENTRYPOINT ["/usr/local/bin/worldql_server"]
