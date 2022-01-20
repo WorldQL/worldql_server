@@ -12,7 +12,6 @@ ENV CARGO_HOME=/cargo
 ENV PATH=/cargo/bin:/rust/bin:$PATH
 
 RUN curl https://sh.rustup.rs -sSf | bash -s -- -y
-RUN "echo 'source /cargo/env' >> $HOME/.bashrc"
 
 RUN mkdir /server
 COPY . /server
