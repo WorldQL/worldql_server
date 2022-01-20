@@ -5,7 +5,7 @@ RUN apt-get update
 
 RUN apt-get install --no-install-recommends -y \
     build-essential cmake \
-    curl
+    ca-certificates curl
 
 ENV RUSTUP_HOME=/rust
 ENV CARGO_HOME=/cargo
