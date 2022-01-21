@@ -49,6 +49,7 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           context: .
+          file: ./worldql_server.Dockerfile
           push: ${{ (github.ref == 'refs/heads/trunk') || (contains(github.ref, 'refs/tags/') == true) }}
           tags: |
             ${{ steps.prepare.outputs.docker_image }}:latest
