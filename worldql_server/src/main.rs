@@ -1,4 +1,10 @@
-#![warn(clippy::cast_lossless, clippy::implicit_clone, clippy::unused_async, clippy::missing_panics_doc, clippy::redundant_closure_for_method_calls)]
+#![warn(
+    clippy::cast_lossless,
+    clippy::implicit_clone,
+    clippy::unused_async,
+    clippy::missing_panics_doc,
+    clippy::redundant_closure_for_method_calls
+)]
 
 use std::collections::HashSet;
 use std::sync::Arc;
