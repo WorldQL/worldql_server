@@ -1,4 +1,4 @@
-# WorldQL Server [![Build](https://github.com/WorldQL/worldql_server/actions/workflows/build.yml/badge.svg)](https://github.com/WorldQL/worldql_server/actions/workflows/build.yml)
+# WorldQL Server [![Build](https://github.com/WorldQL/worldql_server/actions/workflows/build.yml/badge.svg)](https://github.com/WorldQL/worldql_server/actions/workflows/build.yml) [![Docker Build](https://github.com/WorldQL/worldql_server/actions/workflows/docker.yml/badge.svg)](https://github.com/WorldQL/worldql_server/actions/workflows/docker.yml)
 *Rust implementation of the WorldQL server.*
 
 ## Running WorldQL
