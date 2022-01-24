@@ -6,8 +6,6 @@ use serde::{Deserialize, Serialize};
 /// have their own native heartbeat implementation
 #[derive(Debug, Clone, Default, Deserialize, Serialize)]
 pub struct HeartbeatRequest {
-    /// No-once
-    ///
     /// Will be echoed back to the sender to ensure data integrity
     pub no_once: Option<String>,
 }
