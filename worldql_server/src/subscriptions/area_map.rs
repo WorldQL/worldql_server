@@ -1,6 +1,6 @@
-use std::collections::{HashMap, HashSet};
 use std::fmt::Display;
 
+use ahash::{AHashMap, AHashSet};
 use tracing::trace;
 use uuid::Uuid;
 
@@ -11,9 +11,9 @@ pub struct AreaMap {
     cube_size: u16,
     world_name: String,
 
-    map: HashMap<CubeArea, HashSet<Uuid>>,
-    subscribed_peers: HashSet<Uuid>,
-    empty_set: HashSet<Uuid>,
+    map: AHashMap<CubeArea, AHashSet<Uuid>>,
+    subscribed_peers: AHashSet<Uuid>,
+    empty_set: AHashSet<Uuid>,
 }
 
 impl AreaMap {
@@ -22,9 +22,9 @@ impl AreaMap {
             cube_size,
             world_name,
 
-            map: HashMap::new(),
-            subscribed_peers: HashSet::new(),
-            empty_set: HashSet::new(),
+            map: AHashMap::new(),
+            subscribed_peers: AHashSet::new(),
+            empty_set: AHashSet::new(),
         }
     }
 

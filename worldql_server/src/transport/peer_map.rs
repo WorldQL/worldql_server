@@ -1,7 +1,7 @@
-use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 
+use ahash::{AHashMap, AHashSet};
 use flume::Sender;
 use tokio::sync::RwLock;
 use tracing::{debug, info, trace};
@@ -15,7 +15,7 @@ pub type ThreadPeerMap = Arc<RwLock<PeerMap>>;
 
 #[derive(Debug)]
 pub struct PeerMap {
-    map: HashMap<Uuid, Peer>,
+    map: AHashMap<Uuid, Peer>,
     on_remove: Sender<Uuid>,
 }
 
@@ -42,7 +42,7 @@ macro_rules! broadcast_to {
 impl PeerMap {
     pub fn new(on_remove: Sender<Uuid>) -> Self {
         Self {
-            map: HashMap::new(),
+            map: AHashMap::new(),
             on_remove,
         }
     }
@@ -153,7 +153,7 @@ impl PeerMap {
         message: Message,
         peers: impl Iterator<Item = Uuid>,
     ) -> Result<(), SendError> {
-        let peers = peers.collect::<HashSet<_>>();
+        let peers = peers.collect::<AHashSet<_>>();
         let peers = self
             .map
             .values_mut()

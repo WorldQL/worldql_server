@@ -1,5 +1,4 @@
-use std::collections::HashMap;
-
+use ahash::AHashMap;
 use chrono::prelude::*;
 use color_eyre::Result;
 use lru::LruCache;
@@ -92,7 +91,7 @@ impl DatabaseClient {
 
         type HashKey = (String, i32);
         type HashValue = Vec<(i32, Record)>;
-        let mut table_map: HashMap<HashKey, HashValue> = HashMap::new();
+        let mut table_map: AHashMap<HashKey, HashValue> = AHashMap::new();
 
         // Divide up records into table insertion operations
         let len = records.len();

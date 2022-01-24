@@ -1,6 +1,6 @@
-use std::collections::HashMap;
 use std::fmt::Display;
 
+use ahash::AHashMap;
 use tracing::debug;
 use uuid::Uuid;
 
@@ -9,14 +9,14 @@ use super::AreaMap;
 #[derive(Debug)]
 pub struct WorldMap {
     cube_size: u16,
-    map: HashMap<String, AreaMap>,
+    map: AHashMap<String, AreaMap>,
 }
 
 impl WorldMap {
     pub fn new(cube_size: u16) -> Self {
         Self {
             cube_size,
-            map: HashMap::new(),
+            map: AHashMap::new(),
         }
     }
 

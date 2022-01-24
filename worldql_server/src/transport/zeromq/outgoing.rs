@@ -1,6 +1,6 @@
-use std::collections::{HashMap, HashSet};
 use std::time::Duration;
 
+use ahash::{AHashMap, AHashSet};
 use color_eyre::Result;
 use flume::{Receiver, Sender};
 use futures_util::SinkExt;
@@ -12,7 +12,7 @@ use uuid::Uuid;
 use crate::structures::{Instruction, Message};
 use crate::transport::{Peer, ThreadPeerMap, ZmqOutgoingPair};
 
-type SocketMap = HashMap<Uuid, Push>;
+type SocketMap = AHashMap<Uuid, Push>;
 
 pub async fn start_zeromq_outgoing(
     peer_map: ThreadPeerMap,
@@ -22,7 +22,7 @@ pub async fn start_zeromq_outgoing(
     ctx: tmq::Context,
     timeout_secs: u8,
 ) -> Result<()> {
-    let mut sockets: SocketMap = HashMap::new();
+    let mut sockets: SocketMap = AHashMap::new();
     info!("Started ZeroMQ PUSH Manager");
 
     let duration = Duration::from_secs(u64::from(timeout_secs));
@@ -132,7 +132,7 @@ async fn handle_handshake(
 async fn check_stale_peers(peer_map: &ThreadPeerMap, max_duration: Duration) -> Result<()> {
     let uuids = {
         let map = peer_map.read().await;
-        map.stale_peers_iter(max_duration).collect::<HashSet<_>>()
+        map.stale_peers_iter(max_duration).collect::<AHashSet<_>>()
     };
 
     // Do nothing if no Peers are stale
