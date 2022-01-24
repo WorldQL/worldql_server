@@ -1,7 +1,8 @@
 [workspace]
 
 members = [
-  "worldql_server"
+  "worldql_server",
+  "worldql_messages",
 ]
 
 [profile.release.package.worldql_server]
