@@ -1,9 +1,11 @@
 use serde::{Deserialize, Serialize};
 
 pub use self::heartbeat_reply::HeartbeatReply;
+pub use self::status::{Error, Status};
 use crate::macros::{impl_into_message, impl_into_super};
 
 mod heartbeat_reply;
+mod status;
 
 /// Responses to [`crate::incoming::IncomingMessage`] requests
 #[derive(Debug, Clone, Deserialize, Serialize)]
