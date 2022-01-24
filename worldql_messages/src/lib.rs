@@ -6,6 +6,10 @@
 //!
 //! Incoming messages refer to messages that are server-bound, and outgoing messages
 //! refer to messages that are client-bound.
+//!
+//! # Serialization
+//! Enable the `msgpack` or `json` cargo features to expose serialization traits.
+//! These are enabled by default so if you don't want them you can use `no-default-features`
 
 #![forbid(unsafe_code)]
 #![deny(private_in_public)]

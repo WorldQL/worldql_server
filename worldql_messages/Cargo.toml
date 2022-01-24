@@ -13,6 +13,6 @@ serde_json = { version = "1.0.74", optional = true }
 uuid = { version = "0.8.2", features = ["serde", "v4"] }
 
 [features]
-default = []
+default = ["json", "msgpack"]
 json = ["serde_json"]
 msgpack = ["rmp-serde"]
