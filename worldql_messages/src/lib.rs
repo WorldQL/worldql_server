@@ -42,4 +42,7 @@ pub mod common;
 pub mod incoming;
 pub mod outgoing;
 
+#[cfg(any(feature = "json", feature = "msgpack"))]
+pub mod serialization;
+
 mod macros;
