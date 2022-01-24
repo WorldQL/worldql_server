@@ -6,6 +6,10 @@ pub use self::area_unsubscribe_request::AreaUnsubscribeRequest;
 pub use self::global_message_request::GlobalMessageRequest;
 pub use self::heartbeat_request::HeartbeatRequest;
 pub use self::local_message_request::LocalMessageRequest;
+pub use self::record_clear_request::RecordClearRequest;
+pub use self::record_delete_request::RecordDeleteRequest;
+pub use self::record_get_request::RecordGetRequest;
+pub use self::record_set_request::RecordSetRequest;
 pub use self::world_subscribe_request::WorldSubscribeRequest;
 pub use self::world_unsubscribe_request::WorldUnsubscribeRequest;
 
@@ -14,6 +18,10 @@ mod area_unsubscribe_request;
 mod global_message_request;
 mod heartbeat_request;
 mod local_message_request;
+mod record_clear_request;
+mod record_delete_request;
+mod record_get_request;
+mod record_set_request;
 mod world_subscribe_request;
 mod world_unsubscribe_request;
 
@@ -52,7 +60,10 @@ pub enum IncomingMessagePayload {
     WorldUnsubscribe(WorldUnsubscribeRequest),
     AreaSubscribe(AreaSubscribeRequest),
     AreaUnsubscribe(AreaUnsubscribeRequest),
-    // TODO
+    RecordGet(RecordGetRequest),
+    RecordSet(RecordSetRequest),
+    RecordDelete(RecordDeleteRequest),
+    RecordClear(RecordClearRequest),
 }
 // endregion
 
