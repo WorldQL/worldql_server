@@ -4,8 +4,13 @@ use uuid::Uuid;
 // region: IncomingMessage
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct IncomingMessage {
+    /// UUID of the Client that sent this message
     pub sender: Uuid,
+
+    /// Unique token to verify the client's UUID is correct and not being spoofed
     pub token: String,
+
+    /// Message Payload
     pub payload: IncomingMessagePayload,
 }
 
