@@ -1,13 +1,21 @@
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
+pub use self::area_subscribe_request::AreaSubscribeRequest;
+pub use self::area_unsubscribe_request::AreaUnsubscribeRequest;
 pub use self::global_message_request::GlobalMessageRequest;
 pub use self::heartbeat_request::HeartbeatRequest;
 pub use self::local_message_request::LocalMessageRequest;
+pub use self::world_subscribe_request::WorldSubscribeRequest;
+pub use self::world_unsubscribe_request::WorldUnsubscribeRequest;
 
+mod area_subscribe_request;
+mod area_unsubscribe_request;
 mod global_message_request;
 mod heartbeat_request;
 mod local_message_request;
+mod world_subscribe_request;
+mod world_unsubscribe_request;
 
 // region: IncomingMessage
 #[derive(Debug, Clone, Deserialize, Serialize)]
@@ -40,6 +48,10 @@ pub enum IncomingMessagePayload {
     Heartbeat(HeartbeatRequest),
     GlobalMessage(GlobalMessageRequest),
     LocalMessage(LocalMessageRequest),
+    WorldSubscribe(WorldSubscribeRequest),
+    WorldUnsubscribe(WorldUnsubscribeRequest),
+    AreaSubscribe(AreaSubscribeRequest),
+    AreaUnsubscribe(AreaUnsubscribeRequest),
     // TODO
 }
 // endregion
