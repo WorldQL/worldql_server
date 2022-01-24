@@ -27,3 +27,22 @@ pub enum IncomingMessagePayload {
     // TODO
 }
 // endregion
+
+// region: IntoIncomingMessage Trait
+pub trait IntoIncomingMessage {
+    /// Convert an [`IncomingMessagePayload`] into an [`IncomingMessage`]
+    #[must_use]
+    fn into_incoming_message(self, sender: Uuid, token: String) -> IncomingMessage;
+}
+
+impl<T: Into<IncomingMessagePayload>> IntoIncomingMessage for T {
+    #[inline]
+    fn into_incoming_message(self, sender: Uuid, token: String) -> IncomingMessage {
+        IncomingMessage {
+            sender,
+            token,
+            payload: self.into(),
+        }
+    }
+}
+// endregion
