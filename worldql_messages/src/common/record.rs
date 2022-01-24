@@ -7,9 +7,18 @@ use super::Vector3;
 // region: Record
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct Record {
+    /// Unique identifier for this record
+    ///
+    /// **Must be globally unique**
     pub uuid: Uuid,
+
+    /// World to store this record in
     pub world_name: String,
+
+    /// Position of this record
     pub position: Vector3,
+
+    /// Optional data held by this record
     pub data: Option<Bytes>,
 }
 

@@ -10,7 +10,7 @@ pub struct AreaUnsubscribeRequest {
 
     /// Position for the subscription
     ///
-    /// Will be transformed into an region defined by the server config
+    /// Will be transformed into a region defined by the server config
     pub position: Vector3,
 }
 
