@@ -5,3 +5,6 @@ edition = "2021"
 rust-version = "1.56"
 
 [dependencies]
+bytes = { version = "1.1.0", features = ["serde"] }
+serde = { version = "1.0.133", features = ["derive"] }
+uuid = { version = "0.8.2", features = ["serde", "v4"] }
