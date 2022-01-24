@@ -1,9 +1,13 @@
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
+pub use self::global_message_request::GlobalMessageRequest;
 pub use self::heartbeat_request::HeartbeatRequest;
+pub use self::local_message_request::LocalMessageRequest;
 
+mod global_message_request;
 mod heartbeat_request;
+mod local_message_request;
 
 // region: IncomingMessage
 #[derive(Debug, Clone, Deserialize, Serialize)]
@@ -34,6 +38,8 @@ impl IncomingMessage {
 #[serde(tag = "request", rename_all = "snake_case")]
 pub enum IncomingMessagePayload {
     Heartbeat(HeartbeatRequest),
+    GlobalMessage(GlobalMessageRequest),
+    LocalMessage(LocalMessageRequest),
     // TODO
 }
 // endregion
