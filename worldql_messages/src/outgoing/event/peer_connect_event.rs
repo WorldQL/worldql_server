@@ -1,8 +1,6 @@
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-/// Incoming Peer Connect
-///
 /// Emitted when a new peer fully connects to the server
 #[derive(Debug, Clone, Copy, Deserialize, Serialize)]
 pub struct PeerConnectEvent {

@@ -4,7 +4,8 @@ use uuid::Uuid;
 
 use crate::common::Vector3;
 
-/// Incoming Local Message
+/// Emitted when a local message is triggered for an
+/// area that the client is subscribed to
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct LocalMessageEvent {
     /// UUID of the client that triggered this event

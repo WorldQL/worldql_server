@@ -2,7 +2,8 @@ use bytes::Bytes;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-/// Incoming Global Messages
+/// Emitted when a global message is triggered on
+/// a world that the client is subscribed to
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct GlobalMessageEvent {
     /// UUID of the client that triggered this event
