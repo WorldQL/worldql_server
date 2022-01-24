@@ -15,6 +15,7 @@ pub struct AreaUnsubscribeRequest {
 }
 
 impl AreaUnsubscribeRequest {
+    /// Create a new [`AreaUnsubscribeRequest`]
     #[inline]
     #[must_use]
     pub fn new(world_name: String, position: Vector3) -> Self {

@@ -1,15 +1,19 @@
 use serde::{Deserialize, Serialize};
 
-mod event;
-mod reply;
-
 pub use event::*;
 pub use reply::*;
 
+mod event;
+mod reply;
+
+/// Outgoing replies or events
 #[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum OutgoingMessage {
+    /// Replies
     Reply(OutgoingMessageReply),
+
+    /// Events
     Event(OutgoingMessageEvent),
 }
 

@@ -1,3 +1,5 @@
+//! Common structs used by multiple message types
+
 mod record;
 mod vector3;
 

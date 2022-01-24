@@ -22,6 +22,7 @@ pub struct LocalMessageEvent {
 }
 
 impl LocalMessageEvent {
+    /// Create a new [`LocalMessageEvent`]
     #[inline]
     #[must_use]
     pub fn new(sender: Uuid, world_name: String, position: Vector3, data: Bytes) -> Self {

@@ -13,12 +13,16 @@ pub struct HeartbeatRequest {
 }
 
 impl HeartbeatRequest {
+    /// Create a new [`HeartbeatRequest`]
     #[inline]
     #[must_use]
     pub fn new(no_once: Option<String>) -> Self {
         Self { no_once }
     }
 
+    /// Create an empty [`HeartbeatRequest`]
+    ///
+    /// Equivalent to creating a [`HeartbeatRequest`] with `no_once` set to [`None`]
     #[inline]
     #[must_use]
     pub fn empty() -> Self {

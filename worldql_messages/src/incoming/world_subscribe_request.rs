@@ -8,6 +8,7 @@ pub struct WorldSubscribeRequest {
 }
 
 impl WorldSubscribeRequest {
+    /// Create a new [`WorldSubscribeRequest`]
     #[inline]
     #[must_use]
     pub fn new(world_name: String) -> Self {

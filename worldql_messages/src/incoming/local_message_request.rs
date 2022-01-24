@@ -21,6 +21,7 @@ pub struct LocalMessageRequest {
 }
 
 impl LocalMessageRequest {
+    /// Create a new [`LocalMessageRequest`]
     #[inline]
     #[must_use]
     pub fn new(world_name: String, position: Vector3, data: Bytes) -> Self {

@@ -12,6 +12,7 @@ pub struct PeerDisconnectEvent {
 }
 
 impl PeerDisconnectEvent {
+    /// Create a new [`PeerDisconnectEvent`]
     #[inline]
     #[must_use]
     pub fn new(uuid: Uuid, timeout: bool) -> Self {

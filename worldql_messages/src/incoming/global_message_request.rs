@@ -14,6 +14,7 @@ pub struct GlobalMessageRequest {
 }
 
 impl GlobalMessageRequest {
+    /// Create a new [`GlobalMessageRequest`]
     #[inline]
     #[must_use]
     pub fn new(world_name: String, data: Bytes) -> Self {

@@ -15,6 +15,7 @@ pub struct RecordClearRequest {
 }
 
 impl RecordClearRequest {
+    /// Create a new [`RecordClearRequest`] to clear all records in a world
     #[inline]
     #[must_use]
     pub fn new_clear_world(world_name: String) -> Self {
@@ -24,6 +25,7 @@ impl RecordClearRequest {
         }
     }
 
+    /// Create a new [`RecordClearRequest`] to clear all records in an area of a world
     #[inline]
     #[must_use]
     pub fn new_clear_world_area(world_name: String, position: Vector3) -> Self {

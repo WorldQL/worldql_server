@@ -17,6 +17,7 @@ pub struct GlobalMessageEvent {
 }
 
 impl GlobalMessageEvent {
+    /// Create a new [`GlobalMessageEvent`]
     #[inline]
     #[must_use]
     pub fn new(sender: Uuid, world_name: String, data: Bytes) -> Self {

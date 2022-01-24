@@ -25,12 +25,14 @@ pub enum RecordGetRequest {
 }
 
 impl RecordGetRequest {
+    /// Create a new [`RecordGetRequest`] to lookup by area
     #[inline]
     #[must_use]
     pub fn new_by_area(world_name: String, position: Vector3) -> Self {
         Self::Area { world_name, position }
     }
 
+    /// Create a new [`RecordGetRequest`] to lookup by UUID
     #[inline]
     #[must_use]
     pub fn new_by_id(records: Vec<PartialRecord>) -> Self {

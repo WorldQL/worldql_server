@@ -9,6 +9,7 @@ pub struct PeerConnectEvent {
 }
 
 impl PeerConnectEvent {
+    /// Create a new [`PeerConnectEvent`]
     #[inline]
     #[must_use]
     pub fn new(uuid: Uuid) -> Self {

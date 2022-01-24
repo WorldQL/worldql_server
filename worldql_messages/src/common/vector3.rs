@@ -3,6 +3,7 @@ use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssi
 
 use serde::{Deserialize, Serialize};
 
+/// A position in 3D space
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
 pub struct Vector3 {
     x: f64,
@@ -11,26 +12,31 @@ pub struct Vector3 {
 }
 
 impl Vector3 {
+    /// Create a new [`Vector3`]
     #[inline]
     #[must_use]
     pub fn new(x: f64, y: f64, z: f64) -> Self {
         Self { x, y, z }
     }
 
+    /// Create a [`Vector3`] with all components set to zero
     #[inline]
     #[must_use]
     pub fn zero() -> Self {
         Self::new(0.0, 0.0, 0.0)
     }
 
+    /// Returns the X component
     pub fn x(&self) -> f64 {
         self.x
     }
 
+    /// Returns the Y component
     pub fn y(&self) -> f64 {
         self.y
     }
 
+    /// Returns the Z component
     pub fn z(&self) -> f64 {
         self.z
     }

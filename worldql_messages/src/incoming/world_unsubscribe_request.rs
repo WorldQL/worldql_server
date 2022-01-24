@@ -10,6 +10,7 @@ pub struct WorldUnsubscribeRequest {
 }
 
 impl WorldUnsubscribeRequest {
+    /// Create a new [`WorldUnsubscribeRequest`]
     #[inline]
     #[must_use]
     pub fn new(world_name: String) -> Self {

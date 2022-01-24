@@ -11,6 +11,7 @@ pub struct RecordSetRequest {
 }
 
 impl RecordSetRequest {
+    /// Create a new [`RecordSetRequest`]
     #[inline]
     #[must_use]
     pub fn new(records: Vec<Record>) -> Self {

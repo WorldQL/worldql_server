@@ -27,6 +27,7 @@ mod world_subscribe_request;
 mod world_unsubscribe_request;
 
 // region: IncomingMessage
+/// Incoming Messages
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct IncomingMessage {
     /// UUID of the Client that sent this message
@@ -40,6 +41,7 @@ pub struct IncomingMessage {
 }
 
 impl IncomingMessage {
+    /// Create a new [`IncomingMessage`]
     pub fn new(sender: Uuid, token: String, payload: IncomingMessagePayload) -> Self {
         Self {
             sender,
@@ -51,19 +53,41 @@ impl IncomingMessage {
 // endregion
 
 // region: IncomingMessagePayload
+/// Enum containing message instruction types
 #[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(tag = "request", rename_all = "snake_case")]
 pub enum IncomingMessagePayload {
+    /// Heartbeat
     Heartbeat(HeartbeatRequest),
+
+    /// Global Message
     GlobalMessage(GlobalMessageRequest),
+
+    /// Local Message
     LocalMessage(LocalMessageRequest),
+
+    /// World Subscribe
     WorldSubscribe(WorldSubscribeRequest),
+
+    /// World Unsubscribe
     WorldUnsubscribe(WorldUnsubscribeRequest),
+
+    /// Area Subscribe
     AreaSubscribe(AreaSubscribeRequest),
+
+    /// Area Unsubscribe
     AreaUnsubscribe(AreaUnsubscribeRequest),
+
+    /// Record Get
     RecordGet(RecordGetRequest),
+
+    /// Record Set
     RecordSet(RecordSetRequest),
+
+    /// Record Delete
     RecordDelete(RecordDeleteRequest),
+
+    /// Record Clear
     RecordClear(RecordClearRequest),
 }
 
@@ -80,8 +104,9 @@ impl_into_super!(RecordDelete, Request, IncomingMessagePayload);
 impl_into_super!(RecordClear, Request, IncomingMessagePayload);
 
 // region: IntoIncomingMessage Trait
+/// Convert to an [`IncomingMessage`]
 pub trait IntoIncomingMessage {
-    /// Convert an [`IncomingMessagePayload`] into an [`IncomingMessage`]
+    /// Perform the conversion
     #[must_use]
     fn into_incoming_message(self, sender: Uuid, token: String) -> IncomingMessage;
 }

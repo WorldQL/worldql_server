@@ -9,6 +9,7 @@ pub struct RecordDeleteRequest {
 }
 
 impl RecordDeleteRequest {
+    /// Create a new [`RecordDeleteRequest`]
     #[inline]
     #[must_use]
     pub fn new(records: Vec<PartialRecord>) -> Self {

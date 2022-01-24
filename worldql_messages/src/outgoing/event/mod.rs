@@ -15,9 +15,16 @@ mod peer_disconnect_event;
 #[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(tag = "event", rename_all = "snake_case")]
 pub enum OutgoingMessageEvent {
+    /// Peer Connect
     PeerConnect(PeerConnectEvent),
+
+    /// Peer Disconnect
     PeerDisconnect(PeerDisconnectEvent),
+
+    /// Global Message
     GlobalMessage(GlobalMessageEvent),
+
+    /// Local Message
     LocalMessage(LocalMessageEvent),
 }
 
