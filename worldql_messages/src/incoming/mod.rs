@@ -1,6 +1,10 @@
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
+pub use self::heartbeat_request::HeartbeatRequest;
+
+mod heartbeat_request;
+
 // region: IncomingMessage
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct IncomingMessage {
@@ -10,7 +14,7 @@ pub struct IncomingMessage {
     /// Unique token to verify the client's UUID is correct and not being spoofed
     pub token: String,
 
-    /// Message Payload
+    /// Message payload
     pub payload: IncomingMessagePayload,
 }
 
@@ -29,6 +33,7 @@ impl IncomingMessage {
 #[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(tag = "request", rename_all = "snake_case")]
 pub enum IncomingMessagePayload {
+    Heartbeat(HeartbeatRequest),
     // TODO
 }
 // endregion
