@@ -1,3 +1,12 @@
+//! # WorldQL Messages
+//! Structs used to communicate with the WorldQL server.
+//!
+//! # Naming
+//! The naming of this crate's API is from the perspective of the WorldQL Server itself.
+//!
+//! Incoming messages refer to messages that are server-bound, and outgoing messages
+//! refer to messages that are client-bound.
+
 #![forbid(unsafe_code)]
 #![deny(private_in_public)]
 #![warn(

@@ -1,3 +1,5 @@
+//! Client-bound messages
+
 use serde::{Deserialize, Serialize};
 
 pub use event::*;

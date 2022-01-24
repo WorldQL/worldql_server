@@ -1,3 +1,5 @@
+//! Server-bound messages
+
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
