@@ -12,6 +12,7 @@ pub use self::record_get_request::RecordGetRequest;
 pub use self::record_set_request::RecordSetRequest;
 pub use self::world_subscribe_request::WorldSubscribeRequest;
 pub use self::world_unsubscribe_request::WorldUnsubscribeRequest;
+use crate::macros::impl_into_super;
 
 mod area_subscribe_request;
 mod area_unsubscribe_request;
@@ -65,7 +66,18 @@ pub enum IncomingMessagePayload {
     RecordDelete(RecordDeleteRequest),
     RecordClear(RecordClearRequest),
 }
-// endregion
+
+impl_into_super!(Heartbeat, Request, IncomingMessagePayload);
+impl_into_super!(GlobalMessage, Request, IncomingMessagePayload);
+impl_into_super!(LocalMessage, Request, IncomingMessagePayload);
+impl_into_super!(WorldSubscribe, Request, IncomingMessagePayload);
+impl_into_super!(WorldUnsubscribe, Request, IncomingMessagePayload);
+impl_into_super!(AreaSubscribe, Request, IncomingMessagePayload);
+impl_into_super!(AreaUnsubscribe, Request, IncomingMessagePayload);
+impl_into_super!(RecordGet, Request, IncomingMessagePayload);
+impl_into_super!(RecordSet, Request, IncomingMessagePayload);
+impl_into_super!(RecordDelete, Request, IncomingMessagePayload);
+impl_into_super!(RecordClear, Request, IncomingMessagePayload);
 
 // region: IntoIncomingMessage Trait
 pub trait IntoIncomingMessage {
