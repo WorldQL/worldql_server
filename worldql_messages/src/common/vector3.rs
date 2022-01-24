@@ -13,6 +13,17 @@ pub struct Vector3 {
 
 impl Vector3 {
     /// Create a new [`Vector3`]
+    ///
+    /// # Examples
+    /// ```
+    /// use worldql_messages::common::Vector3;
+    ///
+    /// let pos = Vector3::new(0.0, 1.0, 1.5);
+    ///
+    /// assert_eq!(pos.x(), 0.0);
+    /// assert_eq!(pos.y(), 1.0);
+    /// assert_eq!(pos.z(), 1.5);
+    /// ```
     #[inline]
     #[must_use]
     pub fn new(x: f64, y: f64, z: f64) -> Self {
@@ -20,23 +31,34 @@ impl Vector3 {
     }
 
     /// Create a [`Vector3`] with all components set to zero
+    ///
+    /// # Examples
+    /// ```
+    /// use worldql_messages::common::Vector3;
+    ///
+    /// let pos = Vector3::zero();
+    ///
+    /// assert_eq!(pos.x(), 0.0);
+    /// assert_eq!(pos.y(), 0.0);
+    /// assert_eq!(pos.z(), 0.0);
+    /// ```
     #[inline]
     #[must_use]
     pub fn zero() -> Self {
         Self::new(0.0, 0.0, 0.0)
     }
 
-    /// Returns the X component
+    /// Returns the X component of the vector
     pub fn x(&self) -> f64 {
         self.x
     }
 
-    /// Returns the Y component
+    /// Returns the Y component of the vector
     pub fn y(&self) -> f64 {
         self.y
     }
 
-    /// Returns the Z component
+    /// Returns the Z component of the vector
     pub fn z(&self) -> f64 {
         self.z
     }

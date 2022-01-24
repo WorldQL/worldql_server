@@ -25,6 +25,21 @@ pub struct Record {
 
 impl Record {
     /// Create a new [`Record`]
+    ///
+    /// # Examples
+    /// ```
+    /// use uuid::Uuid;
+    /// use worldql_messages::common::{Record, Vector3};
+    ///
+    /// let record = Record::new(Uuid::nil(), "world".to_owned(), Vector3::zero(), None);
+    ///
+    /// assert_eq!(record.uuid, Uuid::nil());
+    /// assert_eq!(record.world_name, "world");
+    /// assert_eq!(record.position.x(), 0.0);
+    /// assert_eq!(record.position.y(), 0.0);
+    /// assert_eq!(record.position.z(), 0.0);
+    /// assert_eq!(record.data, None);
+    /// ```
     #[inline]
     #[must_use]
     pub fn new(uuid: Uuid, world_name: String, position: Vector3, data: Option<Bytes>) -> Self {
@@ -37,6 +52,22 @@ impl Record {
     }
 
     /// Create a new [`Record`] by extending a [`PartialRecord`]
+    ///
+    /// # Examples
+    /// ```
+    /// use uuid::Uuid;
+    /// use worldql_messages::common::{Record, PartialRecord, Vector3};
+    ///
+    /// let partial = PartialRecord::new(Uuid::nil(), "world".to_owned(), Vector3::zero());
+    /// let record = Record::from_partial(partial, None);
+    ///
+    /// assert_eq!(record.uuid, Uuid::nil());
+    /// assert_eq!(record.world_name, "world");
+    /// assert_eq!(record.position.x(), 0.0);
+    /// assert_eq!(record.position.y(), 0.0);
+    /// assert_eq!(record.position.z(), 0.0);
+    /// assert_eq!(record.data, None);
+    /// ```
     #[inline]
     #[must_use]
     pub fn from_partial(partial: PartialRecord, data: Option<Bytes>) -> Self {
@@ -68,6 +99,20 @@ pub struct PartialRecord {
 
 impl PartialRecord {
     /// Create a new [`PartialRecord`]
+    ///
+    /// # Examples
+    /// ```
+    /// use uuid::Uuid;
+    /// use worldql_messages::common::{PartialRecord, Vector3};
+    ///
+    /// let record = PartialRecord::new(Uuid::nil(), "world".to_owned(), Vector3::zero());
+    ///
+    /// assert_eq!(record.uuid, Uuid::nil());
+    /// assert_eq!(record.world_name, "world");
+    /// assert_eq!(record.position.x(), 0.0);
+    /// assert_eq!(record.position.y(), 0.0);
+    /// assert_eq!(record.position.z(), 0.0);
+    /// ```
     #[inline]
     #[must_use]
     pub fn new(uuid: Uuid, world_name: String, position: Vector3) -> Self {
