@@ -20,10 +20,10 @@ impl GlobalMessageEvent {
     /// Create a new [`GlobalMessageEvent`]
     #[inline]
     #[must_use]
-    pub fn new(sender: Uuid, world_name: String, data: Bytes) -> Self {
+    pub fn new(sender: Uuid, world_name: impl Into<String>, data: Bytes) -> Self {
         Self {
             sender,
-            world_name,
+            world_name: world_name.into(),
             data,
         }
     }

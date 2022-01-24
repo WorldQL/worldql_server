@@ -31,7 +31,7 @@ impl Record {
     /// use uuid::Uuid;
     /// use worldql_messages::common::{Record, Vector3};
     ///
-    /// let record = Record::new(Uuid::nil(), "world".to_owned(), Vector3::zero(), None);
+    /// let record = Record::new(Uuid::nil(), "world", Vector3::zero(), None);
     ///
     /// assert_eq!(record.uuid, Uuid::nil());
     /// assert_eq!(record.world_name, "world");
@@ -42,10 +42,10 @@ impl Record {
     /// ```
     #[inline]
     #[must_use]
-    pub fn new(uuid: Uuid, world_name: String, position: Vector3, data: Option<Bytes>) -> Self {
+    pub fn new(uuid: Uuid, world_name: impl Into<String>, position: Vector3, data: Option<Bytes>) -> Self {
         Self {
             uuid,
-            world_name,
+            world_name: world_name.into(),
             position,
             data,
         }
@@ -58,7 +58,7 @@ impl Record {
     /// use uuid::Uuid;
     /// use worldql_messages::common::{Record, PartialRecord, Vector3};
     ///
-    /// let partial = PartialRecord::new(Uuid::nil(), "world".to_owned(), Vector3::zero());
+    /// let partial = PartialRecord::new(Uuid::nil(), "world", Vector3::zero());
     /// let record = Record::from_partial(partial, None);
     ///
     /// assert_eq!(record.uuid, Uuid::nil());
@@ -105,7 +105,7 @@ impl PartialRecord {
     /// use uuid::Uuid;
     /// use worldql_messages::common::{PartialRecord, Vector3};
     ///
-    /// let record = PartialRecord::new(Uuid::nil(), "world".to_owned(), Vector3::zero());
+    /// let record = PartialRecord::new(Uuid::nil(), "world", Vector3::zero());
     ///
     /// assert_eq!(record.uuid, Uuid::nil());
     /// assert_eq!(record.world_name, "world");
@@ -115,10 +115,10 @@ impl PartialRecord {
     /// ```
     #[inline]
     #[must_use]
-    pub fn new(uuid: Uuid, world_name: String, position: Vector3) -> Self {
+    pub fn new(uuid: Uuid, world_name: impl Into<String>, position: Vector3) -> Self {
         Self {
             uuid,
-            world_name,
+            world_name: world_name.into(),
             position,
         }
     }

@@ -44,10 +44,10 @@ pub struct IncomingMessage {
 
 impl IncomingMessage {
     /// Create a new [`IncomingMessage`]
-    pub fn new(sender: Uuid, token: String, payload: IncomingMessagePayload) -> Self {
+    pub fn new(sender: Uuid, token: impl Into<String>, payload: IncomingMessagePayload) -> Self {
         Self {
             sender,
-            token,
+            token: token.into(),
             payload,
         }
     }
@@ -110,15 +110,15 @@ impl_into_super!(RecordClear, Request, IncomingMessagePayload);
 pub trait IntoIncomingMessage {
     /// Perform the conversion
     #[must_use]
-    fn into_incoming_message(self, sender: Uuid, token: String) -> IncomingMessage;
+    fn into_incoming_message(self, sender: Uuid, token: impl Into<String>) -> IncomingMessage;
 }
 
 impl<T: Into<IncomingMessagePayload>> IntoIncomingMessage for T {
     #[inline]
-    fn into_incoming_message(self, sender: Uuid, token: String) -> IncomingMessage {
+    fn into_incoming_message(self, sender: Uuid, token: impl Into<String>) -> IncomingMessage {
         IncomingMessage {
             sender,
-            token,
+            token: token.into(),
             payload: self.into(),
         }
     }

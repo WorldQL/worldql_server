@@ -18,9 +18,9 @@ impl RecordClearRequest {
     /// Create a new [`RecordClearRequest`] to clear all records in a world
     #[inline]
     #[must_use]
-    pub fn new_clear_world(world_name: String) -> Self {
+    pub fn new_clear_world(world_name: impl Into<String>) -> Self {
         Self {
-            world_name,
+            world_name: world_name.into(),
             position: None,
         }
     }
@@ -28,9 +28,9 @@ impl RecordClearRequest {
     /// Create a new [`RecordClearRequest`] to clear all records in an area of a world
     #[inline]
     #[must_use]
-    pub fn new_clear_world_area(world_name: String, position: Vector3) -> Self {
+    pub fn new_clear_world_area(world_name: impl Into<String>, position: Vector3) -> Self {
         Self {
-            world_name,
+            world_name: world_name.into(),
             position: Some(position),
         }
     }

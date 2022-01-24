@@ -24,9 +24,9 @@ impl LocalMessageRequest {
     /// Create a new [`LocalMessageRequest`]
     #[inline]
     #[must_use]
-    pub fn new(world_name: String, position: Vector3, data: Bytes) -> Self {
+    pub fn new(world_name: impl Into<String>, position: Vector3, data: Bytes) -> Self {
         Self {
-            world_name,
+            world_name: world_name.into(),
             position,
             data,
         }

@@ -28,8 +28,8 @@ impl RecordGetRequest {
     /// Create a new [`RecordGetRequest`] to lookup by area
     #[inline]
     #[must_use]
-    pub fn new_by_area(world_name: String, position: Vector3) -> Self {
-        Self::Area { world_name, position }
+    pub fn new_by_area(world_name: impl Into<String>, position: Vector3) -> Self {
+        Self::Area { world_name: world_name.into(), position }
     }
 
     /// Create a new [`RecordGetRequest`] to lookup by UUID

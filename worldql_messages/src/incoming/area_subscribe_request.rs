@@ -21,9 +21,9 @@ impl AreaSubscribeRequest {
     /// Create a new [`AreaSubscribeRequest`]
     #[inline]
     #[must_use]
-    pub fn new(world_name: String, position: Vector3) -> Self {
+    pub fn new(world_name: impl Into<String>, position: Vector3) -> Self {
         Self {
-            world_name,
+            world_name: world_name.into(),
             position,
         }
     }

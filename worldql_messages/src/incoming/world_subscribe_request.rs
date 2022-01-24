@@ -11,7 +11,7 @@ impl WorldSubscribeRequest {
     /// Create a new [`WorldSubscribeRequest`]
     #[inline]
     #[must_use]
-    pub fn new(world_name: String) -> Self {
-        Self { world_name }
+    pub fn new(world_name: impl Into<String>) -> Self {
+        Self { world_name: world_name.into() }
     }
 }
