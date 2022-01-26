@@ -2,8 +2,8 @@
 
 use serde::{Deserialize, Serialize};
 
-pub use event::*;
-pub use reply::*;
+pub use self::event::*;
+pub use self::reply::*;
 
 mod event;
 mod reply;

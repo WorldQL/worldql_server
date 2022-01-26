@@ -15,7 +15,7 @@ pub enum SystemMessageEvent {
     Disconnect {
         /// Reason for terminating the connection
         reason: String,
-    }
+    },
 }
 
 impl SystemMessageEvent {
@@ -30,6 +30,8 @@ impl SystemMessageEvent {
     #[inline]
     #[must_use]
     pub fn new_disconnect(reason: impl Into<String>) -> Self {
-        Self::Disconnect { reason: reason.into() }
+        Self::Disconnect {
+            reason: reason.into(),
+        }
     }
 }

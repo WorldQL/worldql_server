@@ -14,13 +14,13 @@ pub enum RecordGetRequest {
         /// Position to lookup records by
         ///
         /// Will be transformed into a region defined by the server config
-        position: Vector3
+        position: Vector3,
     },
 
     /// Lookup records with known UUIDs
     Uuid {
         /// List of partial records containing information to lookup by
-        records: Vec<PartialRecord>
+        records: Vec<PartialRecord>,
     },
 }
 
@@ -29,7 +29,10 @@ impl RecordGetRequest {
     #[inline]
     #[must_use]
     pub fn new_by_area(world_name: impl Into<String>, position: Vector3) -> Self {
-        Self::Area { world_name: world_name.into(), position }
+        Self::Area {
+            world_name: world_name.into(),
+            position,
+        }
     }
 
     /// Create a new [`RecordGetRequest`] to lookup by UUID

@@ -25,7 +25,12 @@ impl LocalMessageEvent {
     /// Create a new [`LocalMessageEvent`]
     #[inline]
     #[must_use]
-    pub fn new(sender: Uuid, world_name: impl Into<String>, position: Vector3, data: Bytes) -> Self {
+    pub fn new(
+        sender: Uuid,
+        world_name: impl Into<String>,
+        position: Vector3,
+        data: Bytes,
+    ) -> Self {
         Self {
             sender,
             world_name: world_name.into(),

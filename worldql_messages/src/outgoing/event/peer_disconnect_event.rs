@@ -8,7 +8,7 @@ pub struct PeerDisconnectEvent {
     pub uuid: Uuid,
 
     /// Whether this disconnect was the result of a timeout
-    pub timeout: bool
+    pub timeout: bool,
 }
 
 impl PeerDisconnectEvent {

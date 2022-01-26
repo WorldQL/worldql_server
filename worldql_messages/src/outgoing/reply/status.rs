@@ -36,6 +36,9 @@ impl Error {
     #[inline]
     #[must_use]
     pub fn new(code: u32, message: impl Into<String>) -> Self {
-        Self { code, message: message.into() }
+        Self {
+            code,
+            message: message.into(),
+        }
     }
 }

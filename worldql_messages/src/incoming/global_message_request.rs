@@ -18,6 +18,9 @@ impl GlobalMessageRequest {
     #[inline]
     #[must_use]
     pub fn new(world_name: impl Into<String>, data: Bytes) -> Self {
-        Self { world_name: world_name.into(), data }
+        Self {
+            world_name: world_name.into(),
+            data,
+        }
     }
 }

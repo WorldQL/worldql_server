@@ -42,7 +42,12 @@ impl Record {
     /// ```
     #[inline]
     #[must_use]
-    pub fn new(uuid: Uuid, world_name: impl Into<String>, position: Vector3, data: Option<Bytes>) -> Self {
+    pub fn new(
+        uuid: Uuid,
+        world_name: impl Into<String>,
+        position: Vector3,
+        data: Option<Bytes>,
+    ) -> Self {
         Self {
             uuid,
             world_name: world_name.into(),
