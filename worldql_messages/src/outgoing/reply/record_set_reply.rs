@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-/// Replies to [`crate::incoming::RecordSetRequest`]
+/// Replies to [`RecordSetRequest`](crate::incoming::RecordSetRequest)
 #[derive(Debug, Clone, Copy, Deserialize, Serialize)]
 pub struct RecordSetReply {
     /// Number of records newly created

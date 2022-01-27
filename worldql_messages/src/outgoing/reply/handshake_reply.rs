@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-/// Replies to [`crate::incoming::HandshakeRequest`]
+/// Replies to [`HandshakeRequest`](crate::incoming::HandshakeRequest)
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct HandshakeReply {
     /// Token used to identify the client's UUID

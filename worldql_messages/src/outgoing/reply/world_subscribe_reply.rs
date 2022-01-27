@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-/// Replies to [`crate::incoming::WorldSubscribeRequest`]
+/// Replies to [`WorldSubscribeRequest`](crate::incoming::WorldSubscribeRequest)
 #[derive(Debug, Clone, Copy, Deserialize, Serialize)]
 pub struct WorldSubscribeReply {
     /// Whether or not the subscription was updated

@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-/// Replies to [`crate::incoming::RecordDeleteRequest`]
+/// Replies to [`RecordDeleteRequest`](crate::incoming::RecordDeleteRequest)
 #[derive(Debug, Clone, Copy, Deserialize, Serialize)]
 pub struct RecordDeleteReply {
     /// Number of records affected

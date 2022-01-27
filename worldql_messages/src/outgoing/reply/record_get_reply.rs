@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::common::Record;
 
-/// Replies to [`crate::incoming::RecordGetRequest`]
+/// Replies to [`RecordGetRequest`](crate::incoming::RecordGetRequest)
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct RecordGetReply {
     /// Returned records

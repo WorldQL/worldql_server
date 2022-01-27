@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::incoming::HeartbeatRequest;
 
-/// Replies to [`crate::incoming::HeartbeatRequest`]
+/// Replies to [`HeartbeatRequest`](crate::incoming::HeartbeatRequest)
 #[derive(Debug, Clone, Default, Deserialize, Serialize)]
 pub struct HeartbeatReply {
     /// Copied from the request to ensure data integrity
