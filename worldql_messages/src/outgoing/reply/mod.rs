@@ -2,6 +2,7 @@ use serde::{Deserialize, Serialize};
 
 pub use self::area_subscribe_reply::AreaSubscribeReply;
 pub use self::area_unsubscribe_reply::AreaUnsubscribeReply;
+pub use self::handshake_reply::HandshakeReply;
 pub use self::heartbeat_reply::HeartbeatReply;
 pub use self::record_clear_reply::RecordClearReply;
 pub use self::record_delete_reply::RecordDeleteReply;
@@ -14,6 +15,7 @@ use crate::macros::{impl_into_message, impl_into_status, impl_into_super};
 
 mod area_subscribe_reply;
 mod area_unsubscribe_reply;
+mod handshake_reply;
 mod heartbeat_reply;
 mod record_clear_reply;
 mod record_delete_reply;
@@ -27,6 +29,9 @@ mod world_unsubscribe_reply;
 #[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(tag = "reply", rename_all = "snake_case")]
 pub enum OutgoingMessageReply {
+    /// Handshake
+    Handshake(Status<HandshakeReply>),
+
     /// Heartbeat
     Heartbeat(HeartbeatReply),
 
@@ -57,6 +62,7 @@ pub enum OutgoingMessageReply {
 
 impl_into_super!(Heartbeat, Reply, OutgoingMessageReply);
 
+impl_into_status!(Handshake, Reply);
 impl_into_status!(WorldSubscribe, Reply);
 impl_into_status!(WorldUnsubscribe, Reply);
 impl_into_status!(AreaSubscribe, Reply);
@@ -66,6 +72,7 @@ impl_into_status!(RecordSet, Reply);
 impl_into_status!(RecordDelete, Reply);
 impl_into_status!(RecordClear, Reply);
 
+impl_into_message!(Handshake, Reply, crate::outgoing::OutgoingMessage);
 impl_into_message!(Heartbeat, Reply, crate::outgoing::OutgoingMessage);
 impl_into_message!(WorldSubscribe, Reply, crate::outgoing::OutgoingMessage);
 impl_into_message!(WorldUnsubscribe, Reply, crate::outgoing::OutgoingMessage);

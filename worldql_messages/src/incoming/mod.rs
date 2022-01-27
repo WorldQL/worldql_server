@@ -6,6 +6,7 @@ use uuid::Uuid;
 pub use self::area_subscribe_request::AreaSubscribeRequest;
 pub use self::area_unsubscribe_request::AreaUnsubscribeRequest;
 pub use self::global_message_request::GlobalMessageRequest;
+pub use self::handshake_request::{HandshakeOptions, HandshakeRequest};
 pub use self::heartbeat_request::HeartbeatRequest;
 pub use self::local_message_request::LocalMessageRequest;
 pub use self::record_clear_request::RecordClearRequest;
@@ -19,6 +20,7 @@ use crate::macros::impl_into_super;
 mod area_subscribe_request;
 mod area_unsubscribe_request;
 mod global_message_request;
+mod handshake_request;
 mod heartbeat_request;
 mod local_message_request;
 mod record_clear_request;
@@ -59,6 +61,9 @@ impl IncomingMessage {
 #[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(tag = "request", rename_all = "snake_case")]
 pub enum IncomingMessagePayload {
+    /// Handshake
+    Handshake(HandshakeRequest),
+
     /// Heartbeat
     Heartbeat(HeartbeatRequest),
 
@@ -93,6 +98,7 @@ pub enum IncomingMessagePayload {
     RecordClear(RecordClearRequest),
 }
 
+impl_into_super!(Handshake, Request, IncomingMessagePayload);
 impl_into_super!(Heartbeat, Request, IncomingMessagePayload);
 impl_into_super!(GlobalMessage, Request, IncomingMessagePayload);
 impl_into_super!(LocalMessage, Request, IncomingMessagePayload);
