@@ -8,3 +8,7 @@ members = [
 [profile.release.package.worldql_server]
 opt-level = 3
 codegen-units = 1
+
+[profile.release.package.worldql_messages]
+opt-level = 3
+codegen-units = 1
