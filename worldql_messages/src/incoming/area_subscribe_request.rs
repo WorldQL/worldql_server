@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::common::Vector3;
 
-/// Subscribe to an area in a world to recieve local messages
+/// Subscribe to an area in a world to receive local messages
 ///
 /// Implies subscribing to global messages for this world,
 /// if not already subscribed

@@ -71,7 +71,7 @@ async fn handle_message(
 ) -> Result<()> {
     match message.instruction {
         // Panic on handshakes, they should never be sent to this thread.
-        Instruction::Handshake => panic!("recieved handshake instruction on processing thread"),
+        Instruction::Handshake => panic!("received handshake instruction on processing thread"),
 
         // Panic on incoming client-bound instructions
         Instruction::PeerConnect | Instruction::PeerDisconnect | Instruction::RecordReply => {

@@ -11,7 +11,7 @@ pub enum Status<T> {
     Error(Error),
 }
 
-/// Used to indicate an error occured when processing the request
+/// Used to indicate an error occurred when processing the request
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct Error {
     /// Error Code

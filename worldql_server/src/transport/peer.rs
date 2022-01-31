@@ -55,7 +55,7 @@ impl Peer {
         }
     }
 
-    /// Returns `true` if the duration between the last recieved heartbeat is greater than `max_duration`
+    /// Returns `true` if the duration between the last received heartbeat is greater than `max_duration`
     pub fn is_stale(&self, now: &Instant, max_duration: &Duration) -> bool {
         match self.connection {
             #[cfg(feature = "websocket")]
