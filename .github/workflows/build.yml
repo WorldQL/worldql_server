@@ -48,6 +48,24 @@ jobs:
         with:
           name: worldql_server_${{ matrix.platform }}_x86
           path: target/release/worldql_server
+      - name: Extract Release Version
+        if: startsWith(github.ref, 'refs/tags/')
+        id: get_version
+        shell: bash
+        run: echo ::set-output name=version::${GITHUB_REF#refs/tags/v}
+      - name: Rename Release Asset
+        if: startsWith(github.ref, 'refs/tags/')
+        shell: bash
+        run: mv target/release/worldql_server target/release/worldql_server_${{ matrix.platform }}_x86
+      - name: Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          name: WorldQL v${{ steps.get_version.outputs.version }}
+          files: target/release/worldql_server_${{ matrix.platform }}_x86
+          generate_release_notes: true
 
   checks:
     runs-on: ubuntu-latest
