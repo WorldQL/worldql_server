@@ -1,4 +1,5 @@
-# WorldQL Server [![Build](https://github.com/WorldQL/worldql_server/actions/workflows/build.yml/badge.svg)](https://github.com/WorldQL/worldql_server/actions/workflows/build.yml) [![Docker Build](https://github.com/WorldQL/worldql_server/actions/workflows/docker.yml/badge.svg)](https://github.com/WorldQL/worldql_server/actions/workflows/docker.yml)
+# WorldQL Server [![Build](https://github.com/WorldQL/worldql_server/actions/workflows/build.yml/badge.svg)](https://github.com/WorldQL/worldql_server/actions/workflows/build.yml) [![Docker Build](https://github.com/WorldQL/worldql_server/actions/workflows/docker.yml/badge.svg)](https://github.com/WorldQL/worldql_server/actions/workflows/docker.yml) [![Discord](https://img.shields.io/discord/701873003679449108.svg?color=738ad6&label=Join%20the%20Discord%20server&logo=discord&logoColor=ffffff)](https://discord.gg/dN3WCZkSRV)
+
 *Rust implementation of the WorldQL server.*
 
 ## Running WorldQL
