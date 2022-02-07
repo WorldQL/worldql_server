@@ -29,9 +29,7 @@ use crate::transport::{PeerMap, ThreadPeerMap};
 
 mod args;
 mod database;
-mod flatbuffers;
 mod processing;
-mod structures;
 mod subscriptions;
 mod transport;
 mod utils;
