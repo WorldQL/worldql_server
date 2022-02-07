@@ -33,7 +33,7 @@ uuid = { version = "0.8.2", features = ["v4"] }
 worldql_messages = { path = "../worldql_messages", no-default-features = true, features = [] }
 
 [features]
-default = ["http", "websocket", "zeromq"]
+default = ["websocket"]
 http = ["axum", "serde"]
 websocket = ["tokio-tungstenite"]
 zeromq = ["tmq"]
