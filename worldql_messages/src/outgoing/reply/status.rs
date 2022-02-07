@@ -11,6 +11,22 @@ pub enum Status<T> {
     Error(Error),
 }
 
+impl<T> Status<T> {
+    /// Returns `true` if the result is [`Ok`](Status::Ok)
+    #[must_use]
+    #[inline]
+    pub const fn is_ok(&self) -> bool {
+        matches!(*self, Self::Ok(_))
+    }
+
+    /// Returns `true` if the result is [`Error`](Status::Error).
+    #[must_use]
+    #[inline]
+    pub const fn is_error(&self) -> bool {
+        !self.is_ok()
+    }
+}
+
 /// Used to indicate an error occurred when processing the request
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct Error {
