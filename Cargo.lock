@@ -1834,6 +1834,7 @@ name = "worldql_server"
 version = "0.1.0"
 dependencies = [
  "ahash",
+ "async-trait",
  "axum",
  "bytes",
  "chrono",

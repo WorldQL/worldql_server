@@ -6,6 +6,7 @@ rust-version = "1.56"
 
 [dependencies]
 ahash = "0.7.6"
+async-trait = "0.1.52"
 axum = { version = "0.4.4", optional = true, features = ["headers"] }
 bytes = "1.1.0"
 chrono = "0.4.19"
@@ -30,7 +31,7 @@ tokio-tungstenite = { version = "0.16.1", optional = true }
 tracing = "0.1.29"
 tracing-subscriber = { version = "0.3.5", features = ["env-filter"] }
 uuid = { version = "0.8.2", features = ["v4"] }
-worldql_messages = { path = "../worldql_messages", no-default-features = true, features = [] }
+worldql_messages = { path = "../worldql_messages", no-default-features = true, features = ["msgpack"] }
 
 [features]
 default = ["websocket"]

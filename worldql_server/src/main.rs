@@ -17,18 +17,18 @@ use tokio_postgres::NoTls;
 use tracing::{debug, error, info, warn};
 
 use crate::args::Args;
-use crate::database::DatabaseClient;
-use crate::processing::start_processing_thread;
+// use crate::database::DatabaseClient;
+// use crate::processing::start_processing_thread;
 #[cfg(feature = "http")]
 use crate::transport::start_http_server;
 #[cfg(feature = "websocket")]
-use crate::transport::start_websocket_server;
+use crate::transport::websocket::start_websocket_server;
 #[cfg(feature = "zeromq")]
 use crate::transport::{start_zeromq_incoming, start_zeromq_outgoing};
 use crate::transport::{PeerMap, ThreadPeerMap};
 
 mod args;
-mod database;
+// mod database;
 mod processing;
 mod subscriptions;
 mod transport;
@@ -101,37 +101,37 @@ async fn main() -> Result<()> {
         std::process::exit(1);
     }
 
-    let psql_result = tokio_postgres::connect(&args.psql_conn, NoTls).await;
-    if let Err(err) = psql_result {
-        error!("PostgreSQL Error: {}", err);
-        std::process::exit(1);
-    }
+    // let psql_result = tokio_postgres::connect(&args.psql_conn, NoTls).await;
+    // if let Err(err) = psql_result {
+    //     error!("PostgreSQL Error: {}", err);
+    //     std::process::exit(1);
+    // }
 
-    let (client, psql_conn) = psql_result.unwrap();
-    tokio::spawn(async move {
-        debug!("spawned postgres read thread");
-        if let Err(e) = psql_conn.await {
-            error!("PostgreSQL Connection Error: {}", e);
-        }
-    });
+    // let (client, psql_conn) = psql_result.unwrap();
+    // tokio::spawn(async move {
+    //     debug!("spawned postgres read thread");
+    //     if let Err(e) = psql_conn.await {
+    //         error!("PostgreSQL Connection Error: {}", e);
+    //     }
+    // });
 
-    info!("Connected to PostgreSQL");
-    let client = DatabaseClient::new(
-        client,
-        args.db_region_x_size,
-        args.db_region_y_size,
-        args.db_region_z_size,
-        args.db_table_size,
-        args.db_cache_size,
-    );
+    // info!("Connected to PostgreSQL");
+    // let client = DatabaseClient::new(
+    //     client,
+    //     args.db_region_x_size,
+    //     args.db_region_y_size,
+    //     args.db_region_z_size,
+    //     args.db_table_size,
+    //     args.db_cache_size,
+    // );
 
-    // Init database
-    if let Err(error) = client.init_database().await {
-        error!("Failed to create database tables!");
-        error!("{}", error);
+    // // Init database
+    // if let Err(error) = client.init_database().await {
+    //     error!("Failed to create database tables!");
+    //     error!("{}", error);
 
-        std::process::exit(1);
-    };
+    //     std::process::exit(1);
+    // };
 
     let (msg_tx, msg_rx) = flume::unbounded();
     let (remove_tx, remove_rx) = flume::unbounded();
@@ -191,15 +191,15 @@ async fn main() -> Result<()> {
         handles.push(zmq_outgoing_handle);
     }
 
-    let proc_handle = tokio::spawn(start_processing_thread(
-        client,
-        peer_map,
-        msg_rx,
-        remove_rx,
-        args.sub_region_size,
-    ));
+    // let proc_handle = tokio::spawn(start_processing_thread(
+    //     client,
+    //     peer_map,
+    //     msg_rx,
+    //     remove_rx,
+    //     args.sub_region_size,
+    // ));
 
-    handles.push(proc_handle);
+    // handles.push(proc_handle);
 
     // Run all threads
     let _ = futures_util::future::join_all(handles).await;

@@ -1,17 +1,9 @@
-#[cfg(any(feature = "http", feature = "websocket"))]
-mod http;
+mod errors;
 mod peer;
 mod peer_map;
-#[cfg(feature = "zeromq")]
-mod zeromq;
 
-#[cfg(feature = "http")]
-pub use http::start_http_server;
 #[cfg(feature = "websocket")]
-pub use http::start_websocket_server;
-#[cfg(feature = "zeromq")]
-pub use peer::ZmqOutgoingPair;
-pub use peer::{Peer, PeerConnection, SendError};
+pub mod websocket;
+
+pub use peer::{Peer, SendError};
 pub use peer_map::{PeerMap, ThreadPeerMap};
-#[cfg(feature = "zeromq")]
-pub use zeromq::{start_zeromq_incoming, start_zeromq_outgoing};
