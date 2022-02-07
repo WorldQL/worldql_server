@@ -1,8 +1,7 @@
 use std::fmt::Display;
 
 use derive_getters::Getters;
-
-use crate::structures::Vector3;
+use worldql_messages::common::Vector3;
 
 // region: CubeArea
 #[derive(Debug, Default, Getters, Clone, Copy, PartialEq, Eq, Hash)]
@@ -48,9 +47,9 @@ impl CubeArea {
     /// Vector3 also implements [`ToCubeArea`] which implicitly calls this function.
     #[inline]
     pub(super) fn from_vector3(vec: Vector3, size: u16) -> Self {
-        let x = Self::coord_clamp(*vec.x(), size);
-        let y = Self::coord_clamp(*vec.y(), size);
-        let z = Self::coord_clamp(*vec.z(), size);
+        let x = Self::coord_clamp(vec.x(), size);
+        let y = Self::coord_clamp(vec.y(), size);
+        let z = Self::coord_clamp(vec.z(), size);
 
         Self::new(x, y, z)
     }

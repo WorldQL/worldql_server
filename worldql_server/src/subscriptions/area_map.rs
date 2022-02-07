@@ -148,8 +148,9 @@ impl Display for AreaMap {
 
 #[cfg(test)]
 mod tests {
+    use worldql_messages::common::Vector3;
+
     use super::*;
-    use crate::structures::Vector3;
 
     #[test]
     fn area_subscriptions() {

@@ -7,6 +7,7 @@ use tokio_postgres::error::SqlState;
 use tokio_postgres::types::ToSql;
 use tokio_postgres::Client;
 use uuid::Uuid;
+use worldql_messages::common::{Record, Vector3};
 
 use super::world_region::WorldRegion;
 use super::{query_create_world_schema, query_delete_duplictes, query_delete_record};
@@ -14,7 +15,6 @@ use crate::database::{
     query_create_world, query_create_world_index, query_insert_record, query_insert_record_many,
     query_select_records, query_select_records_after,
 };
-use crate::structures::{Record, Vector3};
 use crate::utils::{sanitize_world_name, SanitizeError};
 
 pub struct DatabaseClient {
