@@ -18,7 +18,7 @@ use tracing::{debug, error, info, warn};
 
 use crate::args::Args;
 // use crate::database::DatabaseClient;
-// use crate::processing::start_processing_thread;
+use crate::processing::start_processing_thread;
 #[cfg(feature = "http")]
 use crate::transport::start_http_server;
 #[cfg(feature = "websocket")]
@@ -191,15 +191,15 @@ async fn main() -> Result<()> {
         handles.push(zmq_outgoing_handle);
     }
 
-    // let proc_handle = tokio::spawn(start_processing_thread(
-    //     client,
-    //     peer_map,
-    //     msg_rx,
-    //     remove_rx,
-    //     args.sub_region_size,
-    // ));
+    let proc_handle = tokio::spawn(start_processing_thread(
+        // client,
+        peer_map,
+        msg_rx,
+        remove_rx,
+        args.sub_region_size,
+    ));
 
-    // handles.push(proc_handle);
+    handles.push(proc_handle);
 
     // Run all threads
     let _ = futures_util::future::join_all(handles).await;
