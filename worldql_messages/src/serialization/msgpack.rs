@@ -1,6 +1,6 @@
 use bytes::Bytes;
-use rmp_serde::decode::Error as DecodeError;
-use rmp_serde::encode::Error as EncodeError;
+pub use rmp_serde::decode::Error as DecodeError;
+pub use rmp_serde::encode::Error as EncodeError;
 
 use crate::incoming::IncomingMessage;
 use crate::outgoing::OutgoingMessage;

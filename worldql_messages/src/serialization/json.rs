@@ -1,4 +1,4 @@
-use serde_json::Error;
+pub use serde_json::Error;
 
 use crate::incoming::IncomingMessage;
 use crate::outgoing::OutgoingMessage;

@@ -14,6 +14,6 @@ mod json;
 mod msgpack;
 
 #[cfg(feature = "json")]
-pub use json::SerializeJson;
+pub use json::*;
 #[cfg(feature = "msgpack")]
-pub use msgpack::SerializeBinary;
+pub use msgpack::*;
