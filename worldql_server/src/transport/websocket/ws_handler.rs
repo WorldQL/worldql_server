@@ -6,9 +6,9 @@ use futures_util::StreamExt;
 use tokio::net::{TcpListener, TcpStream};
 use tracing::{debug, info};
 use uuid::Uuid;
-use worldql_messages::server_bound::{ServerMessage, ServerMessagePayload};
-use worldql_messages::client_bound::{HandshakeReply, ClientMessageReply, Status};
+use worldql_messages::client_bound::{ClientMessageReply, HandshakeReply, Status};
 use worldql_messages::serialization::SerializeBinary;
+use worldql_messages::server_bound::{ServerMessage, ServerMessagePayload};
 
 use crate::transport::errors::{ERR_DUPLICATE_UUID, ERR_HANDSHAKE_REQUIRED, ERR_INVALID_MESSAGE};
 use crate::transport::websocket::WebSocketPeer;
@@ -75,7 +75,7 @@ async fn handle_connection(
                 Err(error) => {
                     debug!("invalid websocket message: {} = \"{}\"", &addr, error);
                     ERR_INVALID_MESSAGE.clone().into()
-                },
+                }
 
                 Ok(msg) => {
                     // Overwrite peer UUID with incoming UUID

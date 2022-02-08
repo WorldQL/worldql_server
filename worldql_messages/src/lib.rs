@@ -42,8 +42,8 @@
     missing_docs
 )]
 
-pub mod common;
 pub mod client_bound;
+pub mod common;
 pub mod server_bound;
 
 #[cfg(any(feature = "json", feature = "msgpack"))]

@@ -2,8 +2,8 @@ use bytes::Bytes;
 pub use rmp_serde::decode::Error as DecodeError;
 pub use rmp_serde::encode::Error as EncodeError;
 
-use crate::server_bound::ServerMessage;
 use crate::client_bound::ClientMessage;
+use crate::server_bound::ServerMessage;
 
 /// Serialize and Deserialize to/from MessagePack bytes
 pub trait SerializeBinary {
