@@ -35,3 +35,18 @@ impl SystemMessageEvent {
         }
     }
 }
+
+impl From<Error> for SystemMessageEvent {
+    #[inline]
+    fn from(error: Error) -> Self {
+        Self::UnknownError(error)
+    }
+}
+
+impl From<Error> for crate::outgoing::OutgoingMessage {
+    #[inline]
+    fn from(error: Error) -> Self {
+        let event: SystemMessageEvent = error.into();
+        event.into()
+    }
+}
