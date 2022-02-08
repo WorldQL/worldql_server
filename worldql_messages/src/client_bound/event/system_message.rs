@@ -43,7 +43,7 @@ impl From<Error> for SystemMessageEvent {
     }
 }
 
-impl From<Error> for crate::client_bound::OutgoingMessage {
+impl From<Error> for crate::client_bound::ClientMessage {
     #[inline]
     fn from(error: Error) -> Self {
         let event: SystemMessageEvent = error.into();

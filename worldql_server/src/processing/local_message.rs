@@ -1,5 +1,5 @@
 use color_eyre::Result;
-use worldql_messages::incoming::LocalMessageRequest;
+use worldql_messages::server_bound::LocalMessageRequest;
 
 use crate::subscriptions::WorldMap;
 

@@ -28,7 +28,7 @@ macro_rules! impl_into_status {
             }
 
             #[automatically_derived]
-            impl From<[< $variant $suffix >]> for $crate::client_bound::OutgoingMessageReply {
+            impl From<[< $variant $suffix >]> for $crate::client_bound::ClientMessageReply {
                 #[inline]
                 #[must_use]
                 fn from(from: [< $variant $suffix >]) -> Self {

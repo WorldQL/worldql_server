@@ -1,5 +1,5 @@
 use once_cell::sync::Lazy;
-use worldql_messages::outgoing::Error;
+use worldql_messages::client_bound::Error;
 
 macro_rules! error {
     ($name: ident, $code:expr, $message:expr) => {

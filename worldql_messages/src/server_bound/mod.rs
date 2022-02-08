@@ -33,7 +33,7 @@ mod world_unsubscribe_request;
 // region: IncomingMessage
 /// Incoming Messages
 #[derive(Debug, Clone, Deserialize, Serialize)]
-pub struct IncomingMessage {
+pub struct ServerMessage {
     /// UUID of the Client that sent this message
     pub sender: Uuid,
 
@@ -41,12 +41,12 @@ pub struct IncomingMessage {
     pub token: String,
 
     /// Message payload
-    pub payload: IncomingMessagePayload,
+    pub payload: ServerMessagePayload,
 }
 
-impl IncomingMessage {
+impl ServerMessage {
     /// Create a new [`IncomingMessage`]
-    pub fn new(sender: Uuid, token: impl Into<String>, payload: IncomingMessagePayload) -> Self {
+    pub fn new(sender: Uuid, token: impl Into<String>, payload: ServerMessagePayload) -> Self {
         Self {
             sender,
             token: token.into(),
@@ -60,7 +60,7 @@ impl IncomingMessage {
 /// Enum containing message instruction types
 #[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(tag = "request", rename_all = "snake_case")]
-pub enum IncomingMessagePayload {
+pub enum ServerMessagePayload {
     /// Handshake
     Handshake(HandshakeRequest),
 
@@ -98,31 +98,31 @@ pub enum IncomingMessagePayload {
     RecordClear(RecordClearRequest),
 }
 
-impl_into_super!(Handshake, Request, IncomingMessagePayload);
-impl_into_super!(Heartbeat, Request, IncomingMessagePayload);
-impl_into_super!(GlobalMessage, Request, IncomingMessagePayload);
-impl_into_super!(LocalMessage, Request, IncomingMessagePayload);
-impl_into_super!(WorldSubscribe, Request, IncomingMessagePayload);
-impl_into_super!(WorldUnsubscribe, Request, IncomingMessagePayload);
-impl_into_super!(AreaSubscribe, Request, IncomingMessagePayload);
-impl_into_super!(AreaUnsubscribe, Request, IncomingMessagePayload);
-impl_into_super!(RecordGet, Request, IncomingMessagePayload);
-impl_into_super!(RecordSet, Request, IncomingMessagePayload);
-impl_into_super!(RecordDelete, Request, IncomingMessagePayload);
-impl_into_super!(RecordClear, Request, IncomingMessagePayload);
+impl_into_super!(Handshake, Request, ServerMessagePayload);
+impl_into_super!(Heartbeat, Request, ServerMessagePayload);
+impl_into_super!(GlobalMessage, Request, ServerMessagePayload);
+impl_into_super!(LocalMessage, Request, ServerMessagePayload);
+impl_into_super!(WorldSubscribe, Request, ServerMessagePayload);
+impl_into_super!(WorldUnsubscribe, Request, ServerMessagePayload);
+impl_into_super!(AreaSubscribe, Request, ServerMessagePayload);
+impl_into_super!(AreaUnsubscribe, Request, ServerMessagePayload);
+impl_into_super!(RecordGet, Request, ServerMessagePayload);
+impl_into_super!(RecordSet, Request, ServerMessagePayload);
+impl_into_super!(RecordDelete, Request, ServerMessagePayload);
+impl_into_super!(RecordClear, Request, ServerMessagePayload);
 
 // region: IntoIncomingMessage Trait
 /// Convert to an [`IncomingMessage`]
 pub trait IntoIncomingMessage {
     /// Perform the conversion
     #[must_use]
-    fn into_incoming_message(self, sender: Uuid, token: impl Into<String>) -> IncomingMessage;
+    fn into_incoming_message(self, sender: Uuid, token: impl Into<String>) -> ServerMessage;
 }
 
-impl<T: Into<IncomingMessagePayload>> IntoIncomingMessage for T {
+impl<T: Into<ServerMessagePayload>> IntoIncomingMessage for T {
     #[inline]
-    fn into_incoming_message(self, sender: Uuid, token: impl Into<String>) -> IncomingMessage {
-        IncomingMessage {
+    fn into_incoming_message(self, sender: Uuid, token: impl Into<String>) -> ServerMessage {
+        ServerMessage {
             sender,
             token: token.into(),
             payload: self.into(),

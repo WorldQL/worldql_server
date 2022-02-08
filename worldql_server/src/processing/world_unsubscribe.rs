@@ -1,5 +1,5 @@
 use color_eyre::Result;
-use worldql_messages::incoming::WorldUnsubscribeRequest;
+use worldql_messages::server_bound::WorldUnsubscribeRequest;
 
 use crate::subscriptions::WorldMap;
 

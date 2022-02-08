@@ -5,8 +5,8 @@ use flume::Sender;
 use tokio::sync::RwLock;
 use tracing::{debug, info, trace};
 use uuid::Uuid;
-use worldql_messages::outgoing::{
-    OutgoingMessage, OutgoingMessageEvent, PeerConnectEvent, PeerDisconnectEvent,
+use worldql_messages::client_bound::{
+    ClientMessage, ClientMessageEvent, PeerConnectEvent, PeerDisconnectEvent,
 };
 use worldql_messages::serialization::SerializeBinary;
 
@@ -23,7 +23,7 @@ pub struct PeerMap {
 
 macro_rules! broadcast_to {
     ($event: expr, $peers: expr) => {{
-        let message: OutgoingMessage = $event.into();
+        let message: ClientMessage = $event.into();
         let bytes = message.serialize_binary().unwrap();
 
         let mut jobs = vec![];
@@ -123,14 +123,14 @@ impl PeerMap {
 
     // region: Broadcast Functions
     /// Broadcast an [`OutgoingMessage`] to all peers in the map.
-    pub async fn broadcast_all(&mut self, event: OutgoingMessageEvent) -> Result<(), SendError> {
+    pub async fn broadcast_all(&mut self, event: ClientMessageEvent) -> Result<(), SendError> {
         broadcast_to!(event, self.map.values_mut())
     }
 
     /// Broadcast an [`OutgoingMessageEvent`] to all peers that correspond to the [`Uuid`] iterator.
     pub async fn broadcast_to(
         &mut self,
-        event: OutgoingMessageEvent,
+        event: ClientMessageEvent,
         peers: impl Iterator<Item = Uuid>,
     ) -> Result<(), SendError> {
         let peers = peers.collect::<AHashSet<_>>();
@@ -146,7 +146,7 @@ impl PeerMap {
     /// broadcast.
     pub async fn broadcast_except(
         &mut self,
-        event: OutgoingMessageEvent,
+        event: ClientMessageEvent,
         except: Uuid,
     ) -> Result<(), SendError> {
         let peers = self.map.values_mut().filter(|peer| peer.uuid() != except);

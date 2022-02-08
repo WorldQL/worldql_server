@@ -8,7 +8,7 @@ use tokio::net::TcpStream;
 use tokio_tungstenite::tungstenite::Message as WsMessage;
 use tokio_tungstenite::WebSocketStream;
 use uuid::Uuid;
-use worldql_messages::outgoing::OutgoingMessage;
+use worldql_messages::client_bound::ClientMessage;
 use worldql_messages::serialization::SerializeBinary;
 
 use crate::transport::{Peer, SendError};
@@ -75,7 +75,7 @@ impl Peer for WebSocketPeer {
         false
     }
 
-    async fn send_message(&mut self, message: &OutgoingMessage) -> Result<(), SendError> {
+    async fn send_message(&mut self, message: &ClientMessage) -> Result<(), SendError> {
         let bytes = message.serialize_binary()?;
         self.send_bytes(&bytes).await?;
 

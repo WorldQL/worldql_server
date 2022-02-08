@@ -1,5 +1,5 @@
 use color_eyre::Result;
-use worldql_messages::incoming::HeartbeatRequest;
+use worldql_messages::server_bound::HeartbeatRequest;
 
 use crate::transport::ThreadPeerMap;
 

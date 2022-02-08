@@ -6,8 +6,8 @@ use futures_util::StreamExt;
 use tokio::net::{TcpListener, TcpStream};
 use tracing::{debug, info};
 use uuid::Uuid;
-use worldql_messages::incoming::{IncomingMessage, IncomingMessagePayload};
-use worldql_messages::outgoing::{HandshakeReply, OutgoingMessageReply, Status};
+use worldql_messages::server_bound::{ServerMessage, ServerMessagePayload};
+use worldql_messages::client_bound::{HandshakeReply, ClientMessageReply, Status};
 use worldql_messages::serialization::SerializeBinary;
 
 use crate::transport::errors::{ERR_DUPLICATE_UUID, ERR_HANDSHAKE_REQUIRED, ERR_INVALID_MESSAGE};
@@ -16,7 +16,7 @@ use crate::transport::{Peer, ThreadPeerMap};
 
 pub async fn start_websocket_server(
     peer_map: ThreadPeerMap,
-    msg_tx: Sender<IncomingMessage>,
+    msg_tx: Sender<ServerMessage>,
     ws_host: IpAddr,
     ws_port: u16,
 ) -> Result<()> {
@@ -41,7 +41,7 @@ pub async fn start_websocket_server(
 
 async fn handle_connection(
     peer_map: ThreadPeerMap,
-    msg_tx: Sender<IncomingMessage>,
+    msg_tx: Sender<ServerMessage>,
     addr: SocketAddr,
     stream: TcpStream,
 ) -> Result<()> {
@@ -69,7 +69,7 @@ async fn handle_connection(
             }
 
             let data = message.into_data();
-            let incoming = IncomingMessage::deserialize_binary(data.into());
+            let incoming = ServerMessage::deserialize_binary(data.into());
 
             let reply: Status<HandshakeReply> = match incoming {
                 Err(error) => {
@@ -87,7 +87,7 @@ async fn handle_connection(
                         ERR_DUPLICATE_UUID.clone().into()
                     } else {
                         match msg.payload {
-                            IncomingMessagePayload::Handshake(_) => {
+                            ServerMessagePayload::Handshake(_) => {
                                 // TODO: Check server auth
                                 // TODO: Check options
 
@@ -102,7 +102,7 @@ async fn handle_connection(
             };
 
             let is_error = reply.is_error();
-            let reply = OutgoingMessageReply::Handshake(reply);
+            let reply = ClientMessageReply::Handshake(reply);
             peer.send_message(&reply.into()).await?;
 
             // Return (disconnect) if the reply was an error
@@ -144,7 +144,7 @@ async fn handle_connection(
                 }
 
                 let data = message.into_data();
-                let incoming = IncomingMessage::deserialize_binary(data.into());
+                let incoming = ServerMessage::deserialize_binary(data.into());
 
                 // Handle decode errors
                 if let Err(error) = incoming {

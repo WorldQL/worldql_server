@@ -13,24 +13,24 @@ mod reply;
 /// Outgoing replies or events
 #[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(tag = "type", rename_all = "snake_case")]
-pub enum OutgoingMessage {
+pub enum ClientMessage {
     /// Replies
-    Reply(OutgoingMessageReply),
+    Reply(ClientMessageReply),
 
     /// Events
-    Event(OutgoingMessageEvent),
+    Event(ClientMessageEvent),
 }
 
-impl From<OutgoingMessageReply> for OutgoingMessage {
+impl From<ClientMessageReply> for ClientMessage {
     #[inline]
-    fn from(reply: OutgoingMessageReply) -> Self {
+    fn from(reply: ClientMessageReply) -> Self {
         Self::Reply(reply)
     }
 }
 
-impl From<OutgoingMessageEvent> for OutgoingMessage {
+impl From<ClientMessageEvent> for ClientMessage {
     #[inline]
-    fn from(event: OutgoingMessageEvent) -> Self {
+    fn from(event: ClientMessageEvent) -> Self {
         Self::Event(event)
     }
 }

@@ -16,7 +16,7 @@ mod system_message;
 /// Events that are not tied to a request/reply pair
 #[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(tag = "event", rename_all = "snake_case")]
-pub enum OutgoingMessageEvent {
+pub enum ClientMessageEvent {
     /// System Message
     SystemMessage(SystemMessageEvent),
 
@@ -33,14 +33,14 @@ pub enum OutgoingMessageEvent {
     LocalMessage(LocalMessageEvent),
 }
 
-impl_into_super!(SystemMessage, Event, OutgoingMessageEvent);
-impl_into_super!(PeerConnect, Event, OutgoingMessageEvent);
-impl_into_super!(PeerDisconnect, Event, OutgoingMessageEvent);
-impl_into_super!(GlobalMessage, Event, OutgoingMessageEvent);
-impl_into_super!(LocalMessage, Event, OutgoingMessageEvent);
+impl_into_super!(SystemMessage, Event, ClientMessageEvent);
+impl_into_super!(PeerConnect, Event, ClientMessageEvent);
+impl_into_super!(PeerDisconnect, Event, ClientMessageEvent);
+impl_into_super!(GlobalMessage, Event, ClientMessageEvent);
+impl_into_super!(LocalMessage, Event, ClientMessageEvent);
 
-impl_into_message!(SystemMessage, Event, super::OutgoingMessage);
-impl_into_message!(PeerConnect, Event, super::OutgoingMessage);
-impl_into_message!(PeerDisconnect, Event, super::OutgoingMessage);
-impl_into_message!(GlobalMessage, Event, super::OutgoingMessage);
-impl_into_message!(LocalMessage, Event, super::OutgoingMessage);
+impl_into_message!(SystemMessage, Event, super::ClientMessage);
+impl_into_message!(PeerConnect, Event, super::ClientMessage);
+impl_into_message!(PeerDisconnect, Event, super::ClientMessage);
+impl_into_message!(GlobalMessage, Event, super::ClientMessage);
+impl_into_message!(LocalMessage, Event, super::ClientMessage);

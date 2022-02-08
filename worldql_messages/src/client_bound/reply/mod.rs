@@ -28,7 +28,7 @@ mod world_unsubscribe_reply;
 /// Responses to [`crate::incoming::IncomingMessage`] requests
 #[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(tag = "reply", rename_all = "snake_case")]
-pub enum OutgoingMessageReply {
+pub enum ClientMessageReply {
     /// Handshake
     Handshake(Status<HandshakeReply>),
 
@@ -60,7 +60,7 @@ pub enum OutgoingMessageReply {
     RecordClear(Status<RecordClearReply>),
 }
 
-impl_into_super!(Heartbeat, Reply, OutgoingMessageReply);
+impl_into_super!(Heartbeat, Reply, ClientMessageReply);
 
 impl_into_status!(Handshake, Reply);
 impl_into_status!(WorldSubscribe, Reply);
@@ -72,13 +72,13 @@ impl_into_status!(RecordSet, Reply);
 impl_into_status!(RecordDelete, Reply);
 impl_into_status!(RecordClear, Reply);
 
-impl_into_message!(Handshake, Reply, crate::client_bound::OutgoingMessage);
-impl_into_message!(Heartbeat, Reply, crate::client_bound::OutgoingMessage);
-impl_into_message!(WorldSubscribe, Reply, crate::client_bound::OutgoingMessage);
-impl_into_message!(WorldUnsubscribe, Reply, crate::client_bound::OutgoingMessage);
-impl_into_message!(AreaSubscribe, Reply, crate::client_bound::OutgoingMessage);
-impl_into_message!(AreaUnsubscribe, Reply, crate::client_bound::OutgoingMessage);
-impl_into_message!(RecordGet, Reply, crate::client_bound::OutgoingMessage);
-impl_into_message!(RecordSet, Reply, crate::client_bound::OutgoingMessage);
-impl_into_message!(RecordDelete, Reply, crate::client_bound::OutgoingMessage);
-impl_into_message!(RecordClear, Reply, crate::client_bound::OutgoingMessage);
+impl_into_message!(Handshake, Reply, crate::client_bound::ClientMessage);
+impl_into_message!(Heartbeat, Reply, crate::client_bound::ClientMessage);
+impl_into_message!(WorldSubscribe, Reply, crate::client_bound::ClientMessage);
+impl_into_message!(WorldUnsubscribe, Reply, crate::client_bound::ClientMessage);
+impl_into_message!(AreaSubscribe, Reply, crate::client_bound::ClientMessage);
+impl_into_message!(AreaUnsubscribe, Reply, crate::client_bound::ClientMessage);
+impl_into_message!(RecordGet, Reply, crate::client_bound::ClientMessage);
+impl_into_message!(RecordSet, Reply, crate::client_bound::ClientMessage);
+impl_into_message!(RecordDelete, Reply, crate::client_bound::ClientMessage);
+impl_into_message!(RecordClear, Reply, crate::client_bound::ClientMessage);

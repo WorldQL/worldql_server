@@ -2,7 +2,7 @@ use color_eyre::Result;
 use flume::{Receiver, Sender};
 use tracing::{debug, warn};
 use uuid::Uuid;
-use worldql_messages::incoming::{IncomingMessage, IncomingMessagePayload};
+use worldql_messages::server_bound::{ServerMessage, ServerMessagePayload};
 
 use super::area_subscribe::handle_area_subscribe;
 use super::area_unsubscribe::handle_area_unsubscribe;
@@ -16,7 +16,7 @@ use crate::transport::ThreadPeerMap;
 
 pub async fn start_processing_thread(
     peer_map: ThreadPeerMap,
-    msg_rx: Receiver<IncomingMessage>,
+    msg_rx: Receiver<ServerMessage>,
     remove_rx: Receiver<Uuid>,
     cube_size: u16,
 ) -> Result<()> {
@@ -56,37 +56,37 @@ pub async fn start_processing_thread(
 
 #[inline]
 async fn handle_message(
-    sub_tx: &Sender<IncomingMessage>,
-    db_tx: &Sender<IncomingMessage>,
+    sub_tx: &Sender<ServerMessage>,
+    db_tx: &Sender<ServerMessage>,
     peer_map: &ThreadPeerMap,
-    incoming: IncomingMessage,
+    incoming: ServerMessage,
 ) -> Result<()> {
     // TODO: Verify message UUID / Token pair is valid
 
     match &incoming.payload {
         // Ignore handshakes, they should not be resent
-        IncomingMessagePayload::Handshake(_) => {
+        ServerMessagePayload::Handshake(_) => {
             warn!("received handshake from already authenticated peer")
         }
 
         // Instantly handle heartbeats
-        IncomingMessagePayload::Heartbeat(request) => handle_heartbeat(request, peer_map).await?,
+        ServerMessagePayload::Heartbeat(request) => handle_heartbeat(request, peer_map).await?,
 
         // Handle subscription and realtime messages
-        IncomingMessagePayload::GlobalMessage(_)
-        | IncomingMessagePayload::LocalMessage(_)
-        | IncomingMessagePayload::WorldSubscribe(_)
-        | IncomingMessagePayload::WorldUnsubscribe(_)
-        | IncomingMessagePayload::AreaSubscribe(_)
-        | IncomingMessagePayload::AreaUnsubscribe(_) => {
+        ServerMessagePayload::GlobalMessage(_)
+        | ServerMessagePayload::LocalMessage(_)
+        | ServerMessagePayload::WorldSubscribe(_)
+        | ServerMessagePayload::WorldUnsubscribe(_)
+        | ServerMessagePayload::AreaSubscribe(_)
+        | ServerMessagePayload::AreaUnsubscribe(_) => {
             sub_tx.send_async(incoming).await?;
         }
 
         // Handle database messages
-        IncomingMessagePayload::RecordGet(_)
-        | IncomingMessagePayload::RecordSet(_)
-        | IncomingMessagePayload::RecordDelete(_)
-        | IncomingMessagePayload::RecordClear(_) => {
+        ServerMessagePayload::RecordGet(_)
+        | ServerMessagePayload::RecordSet(_)
+        | ServerMessagePayload::RecordDelete(_)
+        | ServerMessagePayload::RecordClear(_) => {
             db_tx.send_async(incoming).await?;
         }
     }
@@ -95,7 +95,7 @@ async fn handle_message(
 }
 
 async fn handle_subscriptions(
-    msg_rx: Receiver<IncomingMessage>,
+    msg_rx: Receiver<ServerMessage>,
     remove_rx: Receiver<Uuid>,
     cube_size: u16,
 ) -> Result<()> {
@@ -111,12 +111,12 @@ async fn handle_subscriptions(
             // Handle incoming messages
             Ok(incoming) = msg_rx.recv_async() => {
                 match incoming.payload {
-                    IncomingMessagePayload::LocalMessage(request) => handle_local_message(request, &mut world_map).await?,
-                    IncomingMessagePayload::GlobalMessage(request) => handle_global_message(request, &mut world_map).await?,
-                    IncomingMessagePayload::WorldSubscribe(request) => handle_world_subscribe(request, &mut world_map).await?,
-                    IncomingMessagePayload::WorldUnsubscribe(request) => handle_world_unsubscribe(request, &mut world_map).await?,
-                    IncomingMessagePayload::AreaSubscribe(request) => handle_area_subscribe(request, &mut world_map).await?,
-                    IncomingMessagePayload::AreaUnsubscribe(request) => handle_area_unsubscribe(request, &mut world_map).await?,
+                    ServerMessagePayload::LocalMessage(request) => handle_local_message(request, &mut world_map).await?,
+                    ServerMessagePayload::GlobalMessage(request) => handle_global_message(request, &mut world_map).await?,
+                    ServerMessagePayload::WorldSubscribe(request) => handle_world_subscribe(request, &mut world_map).await?,
+                    ServerMessagePayload::WorldUnsubscribe(request) => handle_world_unsubscribe(request, &mut world_map).await?,
+                    ServerMessagePayload::AreaSubscribe(request) => handle_area_subscribe(request, &mut world_map).await?,
+                    ServerMessagePayload::AreaUnsubscribe(request) => handle_area_unsubscribe(request, &mut world_map).await?,
 
                     _ => panic!("invalid message type"),
                 }
@@ -132,7 +132,7 @@ async fn handle_subscriptions(
     todo!()
 }
 
-async fn handle_database(msg_rx: Receiver<IncomingMessage>) -> Result<()> {
+async fn handle_database(msg_rx: Receiver<ServerMessage>) -> Result<()> {
     // TODO
     Ok(())
 }

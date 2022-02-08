@@ -6,7 +6,7 @@ use async_trait::async_trait;
 use bytes::Bytes;
 use thiserror::Error;
 use uuid::Uuid;
-use worldql_messages::outgoing::OutgoingMessage;
+use worldql_messages::client_bound::ClientMessage;
 
 #[async_trait]
 pub trait Peer {
@@ -37,7 +37,7 @@ pub trait Peer {
     fn is_stale(&self, now: &Instant, max_duration: &Duration) -> bool;
 
     /// Send an [`OutgoingMessage`] to this peer
-    async fn send_message(&mut self, message: &OutgoingMessage) -> Result<(), SendError>;
+    async fn send_message(&mut self, message: &ClientMessage) -> Result<(), SendError>;
 
     /// Send raw [`Bytes`] to this peer
     async fn send_bytes(&mut self, bytes: &Bytes) -> Result<(), SendError>;
