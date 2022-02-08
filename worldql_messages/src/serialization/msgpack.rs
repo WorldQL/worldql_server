@@ -21,7 +21,7 @@ macro_rules! impl_msgpack {
         impl SerializeBinary for $target {
             #[inline]
             fn serialize_binary(&self) -> Result<Bytes, EncodeError> {
-                let vec = rmp_serde::to_vec(self)?;
+                let vec = rmp_serde::to_vec_named(self)?;
                 Ok(bytes::Bytes::from(vec))
             }
 
