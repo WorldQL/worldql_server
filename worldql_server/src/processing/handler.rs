@@ -134,5 +134,5 @@ async fn handle_subscriptions(
 
 async fn handle_database(msg_rx: Receiver<IncomingMessage>) -> Result<()> {
     // TODO
-    todo!()
+    Ok(())
 }
