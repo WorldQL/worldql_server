@@ -73,7 +73,7 @@ async fn handle_connection(
 
             let reply: Status<HandshakeReply> = match incoming {
                 Err(error) => {
-                    debug!("invalid websocket message: \"{}\"", error);
+                    debug!("invalid websocket message: {} = \"{}\"", &addr, error);
                     ERR_INVALID_MESSAGE.clone().into()
                 },
 
@@ -138,8 +138,12 @@ async fn handle_connection(
                 let incoming = IncomingMessage::deserialize_binary(data.into());
 
                 // Handle decode errors
-                if let Err(_) = incoming {
-                    // TODO: Figure out nice way of sending generic errors
+                if let Err(error) = incoming {
+                    debug!("invalid websocket message: {} = \"{}\"", &addr, error);
+
+                    let reply = ERR_INVALID_MESSAGE.clone().into();
+                    peer.send_message(&reply).await?;
+
                     continue;
                 }
 
