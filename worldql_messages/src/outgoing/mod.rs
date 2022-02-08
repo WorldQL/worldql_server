@@ -2,9 +2,11 @@
 
 use serde::{Deserialize, Serialize};
 
+pub use self::error::*;
 pub use self::event::*;
 pub use self::reply::*;
 
+mod error;
 mod event;
 mod reply;
 

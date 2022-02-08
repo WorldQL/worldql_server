@@ -8,7 +8,7 @@ pub use self::record_clear_reply::RecordClearReply;
 pub use self::record_delete_reply::RecordDeleteReply;
 pub use self::record_get_reply::RecordGetReply;
 pub use self::record_set_reply::RecordSetReply;
-pub use self::status::{Error, Status};
+pub use self::status::Status;
 pub use self::world_subscribe_reply::WorldSubscribeReply;
 pub use self::world_unsubscribe_reply::WorldUnsubscribeReply;
 use crate::macros::{impl_into_message, impl_into_status, impl_into_super};
