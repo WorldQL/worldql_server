@@ -1,7 +1,7 @@
 pub use serde_json::Error;
 
-use crate::incoming::IncomingMessage;
-use crate::outgoing::OutgoingMessage;
+use crate::server_bound::IncomingMessage;
+use crate::client_bound::OutgoingMessage;
 
 /// Serialize and Deserialize to/from a JSON string
 pub trait SerializeJson {

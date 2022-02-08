@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::outgoing::Error;
+use crate::client_bound::Error;
 
 /// Emitted when the server needs to send a message to any clients
 ///
@@ -43,7 +43,7 @@ impl From<Error> for SystemMessageEvent {
     }
 }
 
-impl From<Error> for crate::outgoing::OutgoingMessage {
+impl From<Error> for crate::client_bound::OutgoingMessage {
     #[inline]
     fn from(error: Error) -> Self {
         let event: SystemMessageEvent = error.into();

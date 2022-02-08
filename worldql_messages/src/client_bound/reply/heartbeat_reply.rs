@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::incoming::HeartbeatRequest;
+use crate::server_bound::HeartbeatRequest;
 
 /// Replies to [`HeartbeatRequest`](crate::incoming::HeartbeatRequest)
 #[derive(Debug, Clone, Default, Deserialize, Serialize)]

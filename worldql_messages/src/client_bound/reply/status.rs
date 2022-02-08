@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::outgoing::Error;
+use crate::client_bound::Error;
 
 /// Status for an message reply
 #[derive(Debug, Clone, Serialize, Deserialize)]

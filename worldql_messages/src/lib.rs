@@ -43,8 +43,8 @@
 )]
 
 pub mod common;
-pub mod incoming;
-pub mod outgoing;
+pub mod client_bound;
+pub mod server_bound;
 
 #[cfg(any(feature = "json", feature = "msgpack"))]
 pub mod serialization;
