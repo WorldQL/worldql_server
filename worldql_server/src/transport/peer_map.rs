@@ -63,12 +63,11 @@ impl PeerMap {
         self.map.get(uuid)
     }
 
-    // TODO: Look into uncommenting / removing this
-    // /// Returns a mutable reference to the [`Peer`] corresponding to the [`Uuid`].
-    // #[inline]
-    // pub fn get_mut(&mut self, uuid: &Uuid) -> Option<&mut Peer> {
-    //     self.map.get_mut(uuid)
-    // }
+    /// Returns a mutable reference to the [`Peer`] corresponding to the [`Uuid`].
+    #[inline]
+    pub fn get_mut(&mut self, uuid: &Uuid) -> Option<&mut BoxedPeer> {
+        self.map.get_mut(uuid)
+    }
 
     /// Returns the number of connected Peers.
     #[inline]
@@ -89,7 +88,6 @@ impl PeerMap {
     /// If the map did not have this key present, [`None`] is returned.
     #[inline]
     pub async fn insert(&mut self, uuid: Uuid, peer: BoxedPeer) -> Option<BoxedPeer> {
-        // debug!("inserting peer {} into map", peer);
         info!("[{}] {} Peer Connected", peer.addr(), peer.type_string());
 
         let existing = self.map.insert(uuid, peer);

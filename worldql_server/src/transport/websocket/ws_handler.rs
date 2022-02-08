@@ -112,6 +112,15 @@ async fn handle_connection(
         }
     }
 
+    // Handshake complete, add peer to map
+    let uuid = peer.uuid();
+    {
+        let mut map = peer_map.write().await;
+        let peer = Box::new(peer);
+
+        map.insert(uuid, peer).await;
+    }
+
     loop {
         let msg = incoming.next().await;
         match msg {
@@ -141,8 +150,11 @@ async fn handle_connection(
                 if let Err(error) = incoming {
                     debug!("invalid websocket message: {} = \"{}\"", &addr, error);
 
-                    let reply = ERR_INVALID_MESSAGE.clone().into();
-                    peer.send_message(&reply).await?;
+                    let mut map = peer_map.write().await;
+                    if let Some(peer) = map.get_mut(&uuid) {
+                        let reply = ERR_INVALID_MESSAGE.clone().into();
+                        let _ = peer.send_message(&reply).await;
+                    }
 
                     continue;
                 }
@@ -158,9 +170,9 @@ async fn handle_connection(
     }
 
     // Remove peer from map if the ID is not nil (unset from handshake)
-    if !peer.uuid().is_nil() {
+    if !uuid.is_nil() {
         let mut map = peer_map.write().await;
-        map.remove(&peer.uuid()).await;
+        map.remove(&uuid).await;
     }
 
     Ok(())
