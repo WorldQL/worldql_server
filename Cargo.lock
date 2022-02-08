@@ -347,17 +347,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4443176a9f2c162692bd3d352d745ef9413eec5782a80d8fd6f8a1ac692a07f7"
 
 [[package]]
-name = "flatbuffers"
-version = "2.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ef4c5738bcd7fad10315029c50026f83c9da5e4a21f8ed66826f43e0e2bde5f6"
-dependencies = [
- "bitflags",
- "smallvec",
- "thiserror",
-]
-
-[[package]]
 name = "flume"
 version = "0.10.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1842,7 +1831,6 @@ dependencies = [
  "color-eyre",
  "derive-getters",
  "dotenv",
- "flatbuffers",
  "flume",
  "futures-util",
  "lru",

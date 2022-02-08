@@ -14,7 +14,6 @@ clap = { version = "3.0.7", features = ["derive", "env"] }
 color-eyre = "0.6.0"
 derive-getters = "0.2.0"
 dotenv = "0.15.0"
-flatbuffers = "2.0.0"
 flume = "0.10.10"
 futures-util = "0.3.19"
 lru = "0.7.2"
