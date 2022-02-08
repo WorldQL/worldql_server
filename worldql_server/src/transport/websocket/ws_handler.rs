@@ -54,8 +54,7 @@ async fn handle_connection(
 
     let (outgoing, mut incoming) = stream.split();
 
-    // TODO: Generate this from random bytes
-    let auth_token = String::new();
+    let auth_token = crate::utils::crypto_secure_token();
     let mut peer = WebSocketPeer::new(addr, Uuid::nil(), auth_token.clone(), outgoing);
 
     // Handle hanshake message
