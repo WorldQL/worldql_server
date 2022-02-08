@@ -73,7 +73,10 @@ async fn handle_connection(
             let incoming = IncomingMessage::deserialize_binary(data.into());
 
             let reply: Status<HandshakeReply> = match incoming {
-                Err(_) => ERR_INVALID_MESSAGE.clone().into(),
+                Err(error) => {
+                    debug!("invalid websocket message: \"{}\"", error);
+                    ERR_INVALID_MESSAGE.clone().into()
+                },
 
                 Ok(msg) => {
                     // Overwrite peer UUID with incoming UUID
