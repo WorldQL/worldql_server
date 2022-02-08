@@ -6,7 +6,7 @@ use uuid::Uuid;
 pub use self::area_subscribe_request::AreaSubscribeRequest;
 pub use self::area_unsubscribe_request::AreaUnsubscribeRequest;
 pub use self::global_message_request::GlobalMessageRequest;
-pub use self::handshake_request::{HandshakeOptions, HandshakeRequest};
+pub use self::handshake_request::HandshakeRequest;
 pub use self::heartbeat_request::HeartbeatRequest;
 pub use self::local_message_request::LocalMessageRequest;
 pub use self::record_clear_request::RecordClearRequest;
