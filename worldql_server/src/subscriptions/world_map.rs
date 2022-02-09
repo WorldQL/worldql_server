@@ -29,9 +29,9 @@ impl WorldMap {
     /// Gets a mutable [`AreaMap`] for the given world name.
     #[inline]
     pub fn get_mut(&mut self, world_name: &str) -> &mut AreaMap {
-        self.map.entry(world_name.to_string()).or_insert_with(|| {
+        self.map.entry(world_name.to_owned()).or_insert_with(|| {
             debug!("creating new world: {}", world_name);
-            AreaMap::new(self.cube_size, world_name.to_string())
+            AreaMap::new(self.cube_size, world_name.to_owned())
         })
     }
 
