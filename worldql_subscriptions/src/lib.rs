@@ -34,7 +34,9 @@
     missing_docs
 )]
 
+mod area;
 mod clamp;
 mod manager;
 
+pub use area::Area;
 pub use manager::SubscriptionManager;
