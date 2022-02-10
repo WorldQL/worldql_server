@@ -6,6 +6,7 @@ use crate::Area;
 /// Manager for World and Area subscriptions
 #[derive(Debug, Default)]
 pub struct SubscriptionManager {
+    area_size: u16,
     map: AHashMap<String, WorldManager>,
     empty_set: PeerSet,
 }
@@ -22,11 +23,22 @@ impl SubscriptionManager {
     /// Create a new [`SubscriptionManager`]
     #[inline]
     #[must_use]
-    pub fn new() -> Self {
+    pub fn new(area_size: u16) -> Self {
         let map = AHashMap::new();
         let empty_set = AHashSet::new();
 
-        Self { map, empty_set }
+        Self {
+            area_size,
+            map,
+            empty_set,
+        }
+    }
+
+    /// Returns the configured area size for this manager
+    #[inline]
+    #[must_use]
+    pub fn area_size(&self) -> u16 {
+        self.area_size
     }
 
     /// Returns `true` if the peer is subscribed to the given world, or any area within that world
@@ -57,21 +69,27 @@ impl SubscriptionManager {
     }
 
     /// Returns an iterator of peers that are subscribed to the given area
-    pub fn get_subscribed_to_area(&self, world: &str, area: Area) -> impl Iterator<Item = Uuid> + '_ {
+    pub fn get_subscribed_to_area(
+        &self,
+        world: &str,
+        area: Area,
+    ) -> impl Iterator<Item = Uuid> + '_ {
         match self.map.get(world) {
             None => self.empty_set.iter().copied(),
-            Some(manager) => {
-                match manager.area_subscriptions.get(&area) {
-                    None => self.empty_set.iter().copied(),
-                    Some(peers) => peers.iter().copied(),
-                }
+            Some(manager) => match manager.area_subscriptions.get(&area) {
+                None => self.empty_set.iter().copied(),
+                Some(peers) => peers.iter().copied(),
             },
         }
     }
 
     /// Subscribe to a world
     pub fn subscribe_to_world(&mut self, peer: Uuid, world: impl Into<String>) {
-        let manager = self.map.entry(world.into()).or_insert_with(Default::default);
+        let manager = self
+            .map
+            .entry(world.into())
+            .or_insert_with(Default::default);
+
         manager.world_subscriptions.insert(peer);
     }
 
@@ -79,7 +97,11 @@ impl SubscriptionManager {
     ///
     /// Will also unsubscribe from all areas within the world
     pub fn unsubscribe_from_world(&mut self, peer: Uuid, world: &str) {
-        let manager = self.map.entry(world.into()).or_insert_with(Default::default);
+        let manager = self
+            .map
+            .entry(world.into())
+            .or_insert_with(Default::default);
+
         manager.world_subscriptions.remove(&peer);
 
         for peers in manager.area_subscriptions.values_mut() {
@@ -91,10 +113,18 @@ impl SubscriptionManager {
     ///
     /// Will also implicitly subscribe to the world
     pub fn subscribe_to_area(&mut self, peer: Uuid, world: impl Into<String>, area: Area) {
-        let manager = self.map.entry(world.into()).or_insert_with(Default::default);
+        let manager = self
+            .map
+            .entry(world.into())
+            .or_insert_with(Default::default);
+
         manager.world_subscriptions.insert(peer);
 
-        let peers = manager.area_subscriptions.entry(area).or_insert_with(Default::default);
+        let peers = manager
+            .area_subscriptions
+            .entry(area)
+            .or_insert_with(Default::default);
+
         peers.insert(peer);
     }
 
@@ -103,8 +133,15 @@ impl SubscriptionManager {
     /// Will not implicitly remove world subscriptions,
     /// use [`SubscriptionManager::unsubscribe_from_world`] to explicitly unsubscribe
     pub fn unsubscribe_from_area(&mut self, peer: Uuid, world: &str, area: Area) {
-        let manager = self.map.entry(world.into()).or_insert_with(Default::default);
-        let peers = manager.area_subscriptions.entry(area).or_insert_with(Default::default);
+        let manager = self
+            .map
+            .entry(world.into())
+            .or_insert_with(Default::default);
+
+        let peers = manager
+            .area_subscriptions
+            .entry(area)
+            .or_insert_with(Default::default);
 
         peers.remove(&peer);
     }
