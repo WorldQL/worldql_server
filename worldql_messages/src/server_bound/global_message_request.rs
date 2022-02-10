@@ -18,26 +18,17 @@ pub struct GlobalMessageRequest {
 
     /// Data to be broadcast
     pub data: Bytes,
-
-    /// Whether or not to send a reply acknowledging the request
-    pub ack: bool,
 }
 
 impl GlobalMessageRequest {
     /// Create a new [`GlobalMessageRequest`]
     #[inline]
     #[must_use]
-    pub fn new(
-        world_name: impl Into<String>,
-        replication: Replication,
-        data: Bytes,
-        ack: bool,
-    ) -> Self {
+    pub fn new(world_name: impl Into<String>, replication: Replication, data: Bytes) -> Self {
         Self {
             world_name: world_name.into(),
             replication,
             data,
-            ack,
         }
     }
 }

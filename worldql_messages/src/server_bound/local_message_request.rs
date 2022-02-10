@@ -23,9 +23,6 @@ pub struct LocalMessageRequest {
 
     /// Data to be broadcast
     pub data: Bytes,
-
-    /// Whether or not to send a reply acknowledging the request
-    pub ack: bool,
 }
 
 impl LocalMessageRequest {
@@ -37,14 +34,12 @@ impl LocalMessageRequest {
         position: Vector3,
         replication: Replication,
         data: Bytes,
-        ack: bool,
     ) -> Self {
         Self {
             world_name: world_name.into(),
             position,
             replication,
             data,
-            ack,
         }
     }
 }
