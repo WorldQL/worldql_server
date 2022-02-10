@@ -63,6 +63,7 @@ async fn handle_message(
 ) -> Result<()> {
     // TODO: Verify message UUID / Token pair is valid
 
+    let peer = incoming.sender;
     match &incoming.payload {
         // Ignore handshakes, they should not be resent
         ServerMessagePayload::Handshake(_) => {
@@ -70,7 +71,9 @@ async fn handle_message(
         }
 
         // Instantly handle heartbeats
-        ServerMessagePayload::Heartbeat(request) => handle_heartbeat(request, peer_map).await?,
+        ServerMessagePayload::Heartbeat(request) => {
+            handle_heartbeat(peer, request, peer_map).await?
+        }
 
         // Handle subscription and realtime messages
         ServerMessagePayload::GlobalMessage(_)
@@ -110,13 +113,14 @@ async fn handle_subscriptions(
 
             // Handle incoming messages
             Ok(incoming) = msg_rx.recv_async() => {
+                let peer = incoming.sender;
                 match incoming.payload {
-                    ServerMessagePayload::LocalMessage(request) => handle_local_message(request, &mut world_map).await?,
-                    ServerMessagePayload::GlobalMessage(request) => handle_global_message(request, &mut world_map).await?,
-                    ServerMessagePayload::WorldSubscribe(request) => handle_world_subscribe(request, &mut world_map).await?,
-                    ServerMessagePayload::WorldUnsubscribe(request) => handle_world_unsubscribe(request, &mut world_map).await?,
-                    ServerMessagePayload::AreaSubscribe(request) => handle_area_subscribe(request, &mut world_map).await?,
-                    ServerMessagePayload::AreaUnsubscribe(request) => handle_area_unsubscribe(request, &mut world_map).await?,
+                    ServerMessagePayload::LocalMessage(request) => handle_local_message(peer, request, &mut world_map).await?,
+                    ServerMessagePayload::GlobalMessage(request) => handle_global_message(peer, request, &mut world_map).await?,
+                    ServerMessagePayload::WorldSubscribe(request) => handle_world_subscribe(peer, request, &mut world_map).await?,
+                    ServerMessagePayload::WorldUnsubscribe(request) => handle_world_unsubscribe(peer, request, &mut world_map).await?,
+                    ServerMessagePayload::AreaSubscribe(request) => handle_area_subscribe(peer, request, &mut world_map).await?,
+                    ServerMessagePayload::AreaUnsubscribe(request) => handle_area_unsubscribe(peer, request, &mut world_map).await?,
 
                     _ => panic!("invalid message type"),
                 }

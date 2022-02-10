@@ -1,6 +1,11 @@
 use color_eyre::Result;
+use uuid::Uuid;
 use worldql_messages::server_bound::RecordDeleteRequest;
 
-pub(super) async fn handle_record_delete(request: RecordDeleteRequest) -> Result<()> {
+use crate::trace_packet;
+
+pub(super) async fn handle_record_delete(peer: Uuid, request: RecordDeleteRequest) -> Result<()> {
+    trace_packet!("{:?}", &request);
+
     todo!()
 }
