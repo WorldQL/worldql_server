@@ -6,7 +6,9 @@ use futures_util::StreamExt;
 use tokio::net::{TcpListener, TcpStream};
 use tracing::{debug, info};
 use uuid::Uuid;
-use worldql_messages::client_bound::{ClientMessageReply, HandshakeReply, Status};
+use worldql_messages::client_bound::{
+    ClientMessageReply, HandshakeReply, Status, SystemMessageEvent,
+};
 use worldql_messages::serialization::SerializeBinary;
 use worldql_messages::server_bound::{ServerMessage, ServerMessagePayload};
 
@@ -107,6 +109,9 @@ async fn handle_connection(
 
             // Return (disconnect) if the reply was an error
             if is_error {
+                let system_message = SystemMessageEvent::new_disconnect("handshake failed");
+                peer.send_message(&system_message.into()).await?;
+
                 return Ok(());
             }
         }
