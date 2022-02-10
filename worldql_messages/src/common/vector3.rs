@@ -68,6 +68,13 @@ impl Vector3 {
     pub fn z(&self) -> f64 {
         self.z
     }
+
+    /// Returns a tuple of XYZ coordinates, useful for destructuring
+    #[inline]
+    #[must_use]
+    pub fn coords(&self) -> (f64, f64, f64) {
+        (self.x, self.y, self.z)
+    }
 }
 
 // region: Conversion
