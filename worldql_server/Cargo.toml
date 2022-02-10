@@ -32,6 +32,7 @@ tracing = "0.1.29"
 tracing-subscriber = { version = "0.3.5", features = ["env-filter"] }
 uuid = { version = "0.8.2", features = ["v4"] }
 worldql_messages = { path = "../worldql_messages", default-features = false, features = ["msgpack"] }
+worldql_subscriptions = { path = "../worldql_subscriptions" }
 
 [features]
 default = ["websocket"]

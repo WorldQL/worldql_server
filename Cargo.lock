@@ -1849,6 +1849,7 @@ dependencies = [
  "tracing-subscriber",
  "uuid",
  "worldql_messages",
+ "worldql_subscriptions",
 ]
 
 [[package]]
