@@ -1,5 +1,5 @@
 use color_eyre::Result;
-use tracing::warn;
+use tracing::debug;
 use uuid::Uuid;
 use worldql_messages::client_bound::{AreaSubscribeReply, ClientMessageReply, Status};
 use worldql_messages::server_bound::AreaSubscribeRequest;
@@ -42,7 +42,7 @@ fn process_message(
         Ok(world_name) => world_name,
 
         Err(error) => {
-            warn!(
+            debug!(
                 "peer {} sent invalid world name: {} ({})",
                 &peer, &request.world_name, error
             );
