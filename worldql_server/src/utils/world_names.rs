@@ -91,7 +91,7 @@ pub enum SanitizeError {
     #[error("is global world")]
     IsGlobalWorld,
 
-    #[error("world name must be 1 or more characters long")]
+    #[error("must be 1 or more characters long")]
     ZeroLength,
 
     #[error("must start with a-z or A-Z")]
@@ -100,7 +100,7 @@ pub enum SanitizeError {
     #[error("contains invalid characters")]
     InvalidChars,
 
-    #[error("world name is too long")]
+    #[error("is too long")]
     TooLong,
 }
 
