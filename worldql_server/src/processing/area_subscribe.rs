@@ -11,18 +11,18 @@ use crate::transport::ThreadPeerMap;
 use crate::utils::{sanitize_world_name, GLOBAL_WORLD};
 
 pub(super) async fn handle_area_subscribe(
-    peer: Uuid,
+    sender: Uuid,
     peer_map: &mut ThreadPeerMap,
     request: AreaSubscribeRequest,
     manager: &mut SubscriptionManager,
 ) -> Result<()> {
     trace_packet!("{:?}", &request);
 
-    let reply = process_message(peer, request, manager);
+    let reply = process_message(sender, request, manager);
     let reply = ClientMessageReply::AreaSubscribe(reply);
 
     let mut map = peer_map.write().await;
-    if let Some(peer) = map.get_mut(&peer) {
+    if let Some(peer) = map.get_mut(&sender) {
         peer.send_message(&reply.into()).await?;
     }
 
@@ -30,7 +30,7 @@ pub(super) async fn handle_area_subscribe(
 }
 
 fn process_message(
-    peer: Uuid,
+    sender: Uuid,
     request: AreaSubscribeRequest,
     manager: &mut SubscriptionManager,
 ) -> Status<AreaSubscribeReply> {
@@ -44,7 +44,7 @@ fn process_message(
         Err(error) => {
             debug!(
                 "peer {} sent invalid world name: {} ({})",
-                &peer, &request.world_name, error
+                &sender, &request.world_name, error
             );
 
             let message = format!("invalid world name: {}", error);
@@ -57,7 +57,7 @@ fn process_message(
     let (x, y, z) = request.position.coords();
     let area = Area::new_clamped(x, y, z, manager.area_size());
 
-    let updated = manager.subscribe_to_area(peer, world_name, area);
+    let updated = manager.subscribe_to_area(sender, world_name, area);
     let reply = AreaSubscribeReply::new(updated);
 
     Status::Ok(reply)

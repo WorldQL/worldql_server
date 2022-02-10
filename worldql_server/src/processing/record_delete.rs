@@ -4,7 +4,7 @@ use worldql_messages::server_bound::RecordDeleteRequest;
 
 use crate::trace_packet;
 
-pub(super) async fn handle_record_delete(peer: Uuid, request: RecordDeleteRequest) -> Result<()> {
+pub(super) async fn handle_record_delete(sender: Uuid, request: RecordDeleteRequest) -> Result<()> {
     trace_packet!("{:?}", &request);
 
     todo!()

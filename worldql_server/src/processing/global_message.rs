@@ -6,7 +6,7 @@ use crate::subscriptions::WorldMap;
 use crate::trace_packet;
 
 pub(super) async fn handle_global_message(
-    peer: Uuid,
+    sender: Uuid,
     request: GlobalMessageRequest,
     world_map: &mut WorldMap,
 ) -> Result<()> {

@@ -11,18 +11,18 @@ use crate::transport::ThreadPeerMap;
 use crate::utils::{sanitize_world_name, GLOBAL_WORLD};
 
 pub(super) async fn handle_world_unsubscribe(
-    peer: Uuid,
+    sender: Uuid,
     peer_map: &mut ThreadPeerMap,
     request: WorldUnsubscribeRequest,
     manager: &mut SubscriptionManager,
 ) -> Result<()> {
     trace_packet!("{:?}", &request);
 
-    let reply = process_message(peer, request, manager);
+    let reply = process_message(sender, request, manager);
     let reply = ClientMessageReply::WorldUnsubscribe(reply);
 
     let mut map = peer_map.write().await;
-    if let Some(peer) = map.get_mut(&peer) {
+    if let Some(peer) = map.get_mut(&sender) {
         peer.send_message(&reply.into()).await?;
     }
 
@@ -30,7 +30,7 @@ pub(super) async fn handle_world_unsubscribe(
 }
 
 fn process_message(
-    peer: Uuid,
+    sender: Uuid,
     request: WorldUnsubscribeRequest,
     manager: &mut SubscriptionManager,
 ) -> Status<WorldUnsubscribeReply> {
@@ -44,7 +44,7 @@ fn process_message(
         Err(error) => {
             debug!(
                 "peer {} sent invalid world name: {} ({})",
-                &peer, &request.world_name, error
+                &sender, &request.world_name, error
             );
 
             let message = format!("invalid world name: {}", error);
@@ -54,7 +54,7 @@ fn process_message(
         }
     };
 
-    let updated = manager.subscribe_to_world(peer, world_name);
+    let updated = manager.subscribe_to_world(sender, world_name);
     let reply = WorldUnsubscribeReply::new(updated);
 
     Status::Ok(reply)

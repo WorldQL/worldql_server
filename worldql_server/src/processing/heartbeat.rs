@@ -6,7 +6,7 @@ use crate::trace_packet;
 use crate::transport::ThreadPeerMap;
 
 pub(super) async fn handle_heartbeat(
-    peer: Uuid,
+    sender: Uuid,
     request: &HeartbeatRequest,
     peer_map: &ThreadPeerMap,
 ) -> Result<()> {
