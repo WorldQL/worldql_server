@@ -49,16 +49,22 @@ impl Vector3 {
     }
 
     /// Returns the X component of the vector
+    #[inline]
+    #[must_use]
     pub fn x(&self) -> f64 {
         self.x
     }
 
     /// Returns the Y component of the vector
+    #[inline]
+    #[must_use]
     pub fn y(&self) -> f64 {
         self.y
     }
 
     /// Returns the Z component of the vector
+    #[inline]
+    #[must_use]
     pub fn z(&self) -> f64 {
         self.z
     }
