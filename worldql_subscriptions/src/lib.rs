@@ -34,6 +34,7 @@
     missing_docs
 )]
 
+mod clamp;
 mod manager;
 
 pub use manager::SubscriptionManager;
