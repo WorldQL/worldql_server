@@ -122,8 +122,8 @@ async fn handle_subscriptions(
             Ok(incoming) = msg_rx.recv_async() => {
                 let peer = incoming.sender;
                 match incoming.payload {
-                    ServerMessagePayload::LocalMessage(request) => handle_local_message(peer, request, &mut manager).await?,
-                    ServerMessagePayload::GlobalMessage(request) => handle_global_message(peer, request, &mut manager).await?,
+                    ServerMessagePayload::LocalMessage(request) => handle_local_message(peer, &mut peer_map, request, &mut manager).await?,
+                    ServerMessagePayload::GlobalMessage(request) => handle_global_message(peer, &mut peer_map, request, &mut manager).await?,
                     ServerMessagePayload::WorldSubscribe(request) => handle_world_subscribe(peer, &mut peer_map, request, &mut manager).await?,
                     ServerMessagePayload::WorldUnsubscribe(request) => handle_world_unsubscribe(peer, &mut peer_map, request, &mut manager).await?,
                     ServerMessagePayload::AreaSubscribe(request) => handle_area_subscribe(peer, &mut peer_map, request, &mut manager).await?,
