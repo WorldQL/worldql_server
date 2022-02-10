@@ -1,8 +1,9 @@
 [workspace]
 
 members = [
-  "worldql_server",
   "worldql_messages",
+  "worldql_server",
+  "worldql_subscriptions",
 ]
 
 [profile.release.package.worldql_server]
@@ -10,5 +11,9 @@ opt-level = 3
 codegen-units = 1
 
 [profile.release.package.worldql_messages]
+opt-level = 3
+codegen-units = 1
+
+[profile.release.package.worldql_subscriptions]
 opt-level = 3
 codegen-units = 1
