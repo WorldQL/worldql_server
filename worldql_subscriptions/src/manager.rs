@@ -84,35 +84,46 @@ impl SubscriptionManager {
     }
 
     /// Subscribe to a world
-    pub fn subscribe_to_world(&mut self, peer: Uuid, world: impl Into<String>) {
+    ///
+    /// Returns `true` if the subscription was not already present
+    #[must_use]
+    pub fn subscribe_to_world(&mut self, peer: Uuid, world: impl Into<String>) -> bool {
         let manager = self
             .map
             .entry(world.into())
             .or_insert_with(Default::default);
 
-        manager.world_subscriptions.insert(peer);
+        manager.world_subscriptions.insert(peer)
     }
 
     /// Unsubscribe from a world
     ///
     /// Will also unsubscribe from all areas within the world
-    pub fn unsubscribe_from_world(&mut self, peer: Uuid, world: &str) {
+    ///
+    /// Returns `true` if the subscription was present before removal
+    #[must_use]
+    pub fn unsubscribe_from_world(&mut self, peer: Uuid, world: &str) -> bool {
         let manager = self
             .map
             .entry(world.into())
             .or_insert_with(Default::default);
 
-        manager.world_subscriptions.remove(&peer);
+        let modified = manager.world_subscriptions.remove(&peer);
 
         for peers in manager.area_subscriptions.values_mut() {
             peers.remove(&peer);
         }
+
+        modified
     }
 
     /// Subscribe to an area within a world
     ///
     /// Will also implicitly subscribe to the world
-    pub fn subscribe_to_area(&mut self, peer: Uuid, world: impl Into<String>, area: Area) {
+    ///
+    /// Returns `true` if the subscription was not already present
+    #[must_use]
+    pub fn subscribe_to_area(&mut self, peer: Uuid, world: impl Into<String>, area: Area) -> bool {
         let manager = self
             .map
             .entry(world.into())
@@ -125,14 +136,17 @@ impl SubscriptionManager {
             .entry(area)
             .or_insert_with(Default::default);
 
-        peers.insert(peer);
+        peers.insert(peer)
     }
 
     /// Unsubscribe from an area within a world
     ///
     /// Will not implicitly remove world subscriptions,
     /// use [`SubscriptionManager::unsubscribe_from_world`] to explicitly unsubscribe
-    pub fn unsubscribe_from_area(&mut self, peer: Uuid, world: &str, area: Area) {
+    ///
+    /// Returns `true` if the subscription was present before removal
+    #[must_use]
+    pub fn unsubscribe_from_area(&mut self, peer: Uuid, world: &str, area: Area) -> bool {
         let manager = self
             .map
             .entry(world.into())
@@ -143,7 +157,7 @@ impl SubscriptionManager {
             .entry(area)
             .or_insert_with(Default::default);
 
-        peers.remove(&peer);
+        peers.remove(&peer)
     }
 
     /// Completely remove a peer by unsubscribing them from all areas and worlds
