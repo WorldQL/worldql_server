@@ -60,6 +60,27 @@ impl SubscriptionManager {
         })
     }
 
+    /// Returns the number of peers that are subscribed to the given world
+    #[must_use]
+    pub fn world_subscription_count(&self, world: &str) -> usize {
+        match self.map.get(world) {
+            None => 0,
+            Some(manager) => manager.world_subscriptions.len(),
+        }
+    }
+
+    /// Returns the number of peers that are subscribed to the given area
+    #[must_use]
+    pub fn area_subscription_count(&self, world: &str, area: Area) -> usize {
+        match self.map.get(world) {
+            None => 0,
+            Some(manager) => match manager.area_subscriptions.get(&area) {
+                None => 0,
+                Some(peers) => peers.len(),
+            },
+        }
+    }
+
     /// Returns an iterator of peers that are subscribed to the given world
     pub fn get_subscribed_to_world(&self, world: &str) -> impl Iterator<Item = Uuid> + '_ {
         match self.map.get(world) {
