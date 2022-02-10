@@ -1854,6 +1854,9 @@ dependencies = [
 [[package]]
 name = "worldql_subscriptions"
 version = "0.1.0"
+dependencies = [
+ "uuid",
+]
 
 [[package]]
 name = "zeromq-src"
