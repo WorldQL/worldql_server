@@ -25,7 +25,7 @@ mod status;
 mod world_subscribe_reply;
 mod world_unsubscribe_reply;
 
-/// Responses to [`crate::incoming::IncomingMessage`] requests
+/// Responses to [`ServerMessage`](crate::server_bound::ServerMessage) requests
 #[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(tag = "reply", rename_all = "snake_case")]
 pub enum ClientMessageReply {

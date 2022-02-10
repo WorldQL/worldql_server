@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-/// Replies to [`AreaUnsubscribeRequest`](crate::incoming::AreaUnsubscribeRequest)
+/// Replies to [`AreaUnsubscribeRequest`](crate::server_bound::AreaUnsubscribeRequest)
 #[derive(Debug, Clone, Copy, Deserialize, Serialize)]
 pub struct AreaUnsubscribeReply {
     /// Whether or not the subscription was updated

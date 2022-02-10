@@ -45,7 +45,7 @@ pub struct ServerMessage {
 }
 
 impl ServerMessage {
-    /// Create a new [`IncomingMessage`]
+    /// Create a new [`ServerMessage`]
     pub fn new(sender: Uuid, token: impl Into<String>, payload: ServerMessagePayload) -> Self {
         Self {
             sender,
@@ -111,15 +111,15 @@ impl_into_super!(RecordSet, Request, ServerMessagePayload);
 impl_into_super!(RecordDelete, Request, ServerMessagePayload);
 impl_into_super!(RecordClear, Request, ServerMessagePayload);
 
-// region: IntoIncomingMessage Trait
-/// Convert to an [`IncomingMessage`]
-pub trait IntoIncomingMessage {
+// region: IntoServerMessage Trait
+/// Convert to an [`ServerMessage`]
+pub trait IntoServerMessage {
     /// Perform the conversion
     #[must_use]
     fn into_incoming_message(self, sender: Uuid, token: impl Into<String>) -> ServerMessage;
 }
 
-impl<T: Into<ServerMessagePayload>> IntoIncomingMessage for T {
+impl<T: Into<ServerMessagePayload>> IntoServerMessage for T {
     #[inline]
     fn into_incoming_message(self, sender: Uuid, token: impl Into<String>) -> ServerMessage {
         ServerMessage {
