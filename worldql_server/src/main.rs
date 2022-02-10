@@ -55,6 +55,7 @@ use crate::transport::{PeerMap, ThreadPeerMap};
 
 mod args;
 // mod database;
+mod errors;
 mod processing;
 mod transport;
 mod utils;

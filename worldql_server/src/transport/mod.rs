@@ -1,4 +1,3 @@
-mod errors;
 mod peer;
 mod peer_map;
 

@@ -12,7 +12,7 @@ use worldql_messages::client_bound::{
 use worldql_messages::serialization::SerializeBinary;
 use worldql_messages::server_bound::{ServerMessage, ServerMessagePayload};
 
-use crate::transport::errors::{ERR_DUPLICATE_UUID, ERR_HANDSHAKE_REQUIRED, ERR_INVALID_MESSAGE};
+use crate::errors::{ERR_DUPLICATE_UUID, ERR_HANDSHAKE_REQUIRED, ERR_INVALID_MESSAGE};
 use crate::transport::websocket::WebSocketPeer;
 use crate::transport::{Peer, ThreadPeerMap};
 
