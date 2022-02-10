@@ -119,8 +119,8 @@ async fn handle_subscriptions(
                     ServerMessagePayload::GlobalMessage(request) => handle_global_message(peer, request, &mut world_map).await?,
                     ServerMessagePayload::WorldSubscribe(request) => handle_world_subscribe(peer, request, &mut world_map).await?,
                     ServerMessagePayload::WorldUnsubscribe(request) => handle_world_unsubscribe(peer, request, &mut world_map).await?,
-                    ServerMessagePayload::AreaSubscribe(request) => handle_area_subscribe(peer, request, &mut world_map).await?,
-                    ServerMessagePayload::AreaUnsubscribe(request) => handle_area_unsubscribe(peer, request, &mut world_map).await?,
+                    ServerMessagePayload::AreaSubscribe(request) => handle_area_subscribe(peer, request, &mut world_map)?,
+                    ServerMessagePayload::AreaUnsubscribe(request) => handle_area_unsubscribe(peer, request, &mut world_map)?,
 
                     _ => panic!("invalid message type"),
                 }
