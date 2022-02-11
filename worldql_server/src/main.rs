@@ -77,14 +77,14 @@ async fn main() -> Result<()> {
 
     let filter = match args.verbose {
         #[cfg(debug_assertions)]
-        0 | 1 | 2 => format!("{}=debug", env!("CARGO_PKG_NAME")),
+        0 | 1 | 2 => format!("{}=debug", env!("TRACING_PREFIX")),
 
         #[cfg(not(debug_assertions))]
-        0 => format!("{}=info", env!("CARGO_PKG_NAME")),
+        0 => format!("{}=info", env!("TRACING_PREFIX")),
         #[cfg(not(debug_assertions))]
-        1 | 2 => format!("{}=debug", env!("CARGO_PKG_NAME")),
+        1 | 2 => format!("{}=debug", env!("TRACING_PREFIX")),
 
-        3 => format!("{}=trace", env!("CARGO_PKG_NAME")),
+        3 => format!("{}=trace", env!("TRACING_PREFIX")),
         _ => "trace".into(),
     };
 

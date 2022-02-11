@@ -2,6 +2,12 @@ use std::error::Error;
 use std::process::Command;
 
 fn main() {
+    let package_name = env!("CARGO_PKG_NAME");
+    let mut split = package_name.split('_');
+
+    let prefix = split.next().unwrap();
+    println!("cargo:rustc-env=TRACING_PREFIX={}_", prefix);
+
     if let Ok(hash) = commit_hash() {
         println!("cargo:rustc-env=GIT_HASH={}", hash);
 
