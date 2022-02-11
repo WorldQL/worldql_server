@@ -9,7 +9,10 @@ use crate::client_bound::Error;
 #[serde(tag = "message", rename_all = "snake_case")]
 pub enum SystemMessageEvent {
     /// Indicates that an unknown error occurred, outside of any request / reply pairs
-    UnknownError(Error),
+    UnknownError {
+        /// Error being thrown
+        error: Error,
+    },
 
     /// Indicates the connection is about to be terminated
     Disconnect {
@@ -23,7 +26,7 @@ impl SystemMessageEvent {
     #[inline]
     #[must_use]
     pub fn new_unknown_error(error: Error) -> Self {
-        Self::UnknownError(error)
+        Self::UnknownError { error }
     }
 
     /// Create a new [`SystemMessageEvent`] with the reason set to [`Disconnect`](SystemMessageEvent::Disconnect)
@@ -39,7 +42,7 @@ impl SystemMessageEvent {
 impl From<Error> for SystemMessageEvent {
     #[inline]
     fn from(error: Error) -> Self {
-        Self::UnknownError(error)
+        Self::UnknownError { error }
     }
 }
 
