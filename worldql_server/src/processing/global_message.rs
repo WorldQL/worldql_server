@@ -28,15 +28,18 @@ pub(super) async fn handle_global_message(
 
         let _ = match request.replication {
             Replication::ExceptSelf => {
+                // TODO: Handle errors
                 let _ = map.broadcast_except(event, sender).await;
             }
 
             Replication::IncludingSelf => {
+                // TODO: Handle errors
                 let _ = map.broadcast_all(event).await;
             }
 
             Replication::OnlySelf => {
                 if let Some(peer) = map.get_mut(&sender) {
+                    // TODO: Handle errors
                     let _ = peer.send_message(&event.into()).await;
                 } else {
                     debug!("peer {} missing, cannot send global message event", &sender);
@@ -59,6 +62,7 @@ pub(super) async fn handle_global_message(
 
                 let mut map = peer_map.write().await;
                 if let Some(peer) = map.get_mut(&sender) {
+                    // TODO: Handle errors
                     let _ = peer.send_message(&error.into()).await;
                 } else {
                     debug!("peer {} missing, cannot send global message event", &sender);
@@ -82,6 +86,7 @@ pub(super) async fn handle_global_message(
                     .filter(|uuid| *uuid != sender);
 
                 let mut map = peer_map.write().await;
+                // TODO: Handle errors
                 let _ = map.broadcast_to(event, peers).await;
             }
 
@@ -90,6 +95,7 @@ pub(super) async fn handle_global_message(
                 let peers = manager.get_subscribed_to_world(&world_name);
 
                 let mut map = peer_map.write().await;
+                // TODO: Handle errors
                 let _ = map.broadcast_to(event, peers).await;
             }
 
@@ -100,6 +106,7 @@ pub(super) async fn handle_global_message(
                     .filter(|uuid| *uuid == sender);
 
                 let mut map = peer_map.write().await;
+                // TODO: Handle errors
                 let _ = map.broadcast_to(event, peers).await;
             }
         }
