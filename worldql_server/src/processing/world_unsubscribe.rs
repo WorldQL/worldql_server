@@ -55,7 +55,7 @@ fn process_message(
         }
     };
 
-    let updated = manager.subscribe_to_world(sender, world_name);
+    let updated = manager.unsubscribe_from_world(sender, &world_name);
     let reply = WorldUnsubscribeReply::new(updated);
 
     Status::Ok(reply)

@@ -58,7 +58,7 @@ fn process_message(
     let (x, y, z) = request.position.coords();
     let area = Area::new_clamped(x, y, z, manager.area_size());
 
-    let updated = manager.subscribe_to_area(sender, world_name, area);
+    let updated = manager.unsubscribe_from_area(sender, &world_name, area);
     let reply = AreaUnsubscribeReply::new(updated);
 
     Status::Ok(reply)
