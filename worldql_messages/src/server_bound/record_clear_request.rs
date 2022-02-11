@@ -11,6 +11,7 @@ pub struct RecordClearRequest {
     /// Optional position, if set will only clear records in that region
     ///
     /// Will be transformed into a region defined by the server config
+    #[serde(skip_serializing_if = "Option::is_none")]
     position: Option<Vector3>,
 }
 

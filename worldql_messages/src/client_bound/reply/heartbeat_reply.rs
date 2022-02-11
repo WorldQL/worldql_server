@@ -6,6 +6,7 @@ use crate::server_bound::HeartbeatRequest;
 #[derive(Debug, Clone, Default, Deserialize, Serialize)]
 pub struct HeartbeatReply {
     /// Copied from the request to ensure data integrity
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub no_once: Option<String>,
 }
 

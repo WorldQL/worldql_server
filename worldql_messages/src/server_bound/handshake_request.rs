@@ -6,6 +6,7 @@ pub struct HandshakeRequest {
     /// Optional server auth token
     ///
     /// Used if the WorldQL server requires authentication
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub server_auth: Option<String>,
 }
 

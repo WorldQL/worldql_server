@@ -7,6 +7,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Clone, Default, Deserialize, Serialize)]
 pub struct HeartbeatRequest {
     /// Will be echoed back to the sender to ensure data integrity
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub no_once: Option<String>,
 }
 
