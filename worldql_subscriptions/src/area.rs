@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use crate::clamp::coord_clamp;
 
 // region: Area
@@ -70,6 +72,12 @@ impl Area {
     #[must_use]
     pub fn z(&self) -> i64 {
         self.z
+    }
+}
+
+impl Display for Area {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{{ x = {}, y = {}, z = {} }}", self.x, self.y, self.z)
     }
 }
 // endregion
