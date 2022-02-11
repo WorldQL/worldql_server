@@ -26,6 +26,13 @@ pub trait Peer {
     #[must_use]
     fn token(&self) -> &str;
 
+    /// Returns `true` if the token matches this peer's auth token
+    #[must_use]
+    #[inline]
+    fn verify_token(&self, token: &str) -> bool {
+        token == self.token()
+    }
+
     /// Update the last heartbeat time for this connection
     ///
     /// Might be a no-op

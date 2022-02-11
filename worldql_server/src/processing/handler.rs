@@ -67,7 +67,23 @@ async fn handle_message(
     peer_map: &ThreadPeerMap,
     incoming: ServerMessage,
 ) -> Result<()> {
-    // TODO: Verify message UUID / Token pair is valid
+    // Verify message UUID / token pair is valid
+    {
+        let map = peer_map.read().await;
+        if let Some(peer) = map.get(&incoming.sender) {
+            let authed = peer.verify_token(&incoming.token);
+            if !authed {
+                warn!(
+                    "Peer {} sent a message with an invalid auth token",
+                    &incoming.sender
+                );
+                return Ok(());
+            }
+        } else {
+            warn!("Peer {} sent a message, but is unknown", &incoming.sender);
+            return Ok(());
+        }
+    }
 
     let peer = incoming.sender;
     match incoming.payload {
