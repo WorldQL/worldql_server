@@ -42,7 +42,10 @@ pub(super) async fn handle_global_message(
                     // TODO: Handle errors
                     let _ = peer.send_message(&event.into()).await;
                 } else {
-                    debug!("peer {} missing, cannot send global message event", &sender);
+                    debug!(
+                        "peer {} missing, cannot send global message error event",
+                        &sender
+                    );
                 }
             }
         };
@@ -65,7 +68,10 @@ pub(super) async fn handle_global_message(
                     // TODO: Handle errors
                     let _ = peer.send_message(&error.into()).await;
                 } else {
-                    debug!("peer {} missing, cannot send global message event", &sender);
+                    debug!(
+                        "peer {} missing, cannot send global message error event",
+                        &sender
+                    );
                 }
 
                 return Ok(());
