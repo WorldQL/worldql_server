@@ -1,4 +1,3 @@
-use std::fmt::Display;
 use std::net::SocketAddr;
 use std::time::{Duration, Instant};
 
@@ -54,12 +53,6 @@ impl PartialEq for dyn Peer {
     #[inline]
     fn eq(&self, other: &Self) -> bool {
         self.uuid() == other.uuid()
-    }
-}
-
-impl Display for dyn Peer {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        todo!()
     }
 }
 
