@@ -1864,6 +1864,7 @@ name = "worldql_subscriptions"
 version = "0.1.0"
 dependencies = [
  "ahash",
+ "tracing",
  "uuid",
 ]
 

@@ -6,4 +6,5 @@ rust-version = "1.56"
 
 [dependencies]
 ahash = "0.7.6"
+tracing = "0.1.30"
 uuid = { version = "0.8.2", features = ["v4"] }

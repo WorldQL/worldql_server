@@ -1,4 +1,5 @@
 use ahash::{AHashMap, AHashSet};
+use tracing::trace;
 use uuid::Uuid;
 
 use crate::Area;
@@ -109,11 +110,13 @@ impl SubscriptionManager {
     /// Returns `true` if the subscription was not already present
     #[must_use]
     pub fn subscribe_to_world(&mut self, peer: Uuid, world: impl Into<String>) -> bool {
+        let world = world.into();
         let manager = self
             .map
-            .entry(world.into())
+            .entry(world.clone())
             .or_insert_with(Default::default);
 
+        trace!("peer {} subscribed to world: {}", &peer, &world);
         manager.world_subscriptions.insert(peer)
     }
 
@@ -129,6 +132,7 @@ impl SubscriptionManager {
             .entry(world.into())
             .or_insert_with(Default::default);
 
+        trace!("peer {} unsubscribed from world: {}", &peer, &world);
         let modified = manager.world_subscriptions.remove(&peer);
 
         for peers in manager.area_subscriptions.values_mut() {
@@ -145,9 +149,10 @@ impl SubscriptionManager {
     /// Returns `true` if the subscription was not already present
     #[must_use]
     pub fn subscribe_to_area(&mut self, peer: Uuid, world: impl Into<String>, area: Area) -> bool {
+        let world = world.into();
         let manager = self
             .map
-            .entry(world.into())
+            .entry(world.clone())
             .or_insert_with(Default::default);
 
         manager.world_subscriptions.insert(peer);
@@ -156,6 +161,13 @@ impl SubscriptionManager {
             .area_subscriptions
             .entry(area)
             .or_insert_with(Default::default);
+
+        trace!(
+            "peer {} subscribed to area {} in world: {}",
+            &peer,
+            &area,
+            &world
+        );
 
         peers.insert(peer)
     }
@@ -178,6 +190,13 @@ impl SubscriptionManager {
             .entry(area)
             .or_insert_with(Default::default);
 
+        trace!(
+            "peer {} unsubscribed from area {} in world: {}",
+            &peer,
+            &area,
+            &world
+        );
+
         peers.remove(&peer)
     }
 
@@ -190,5 +209,7 @@ impl SubscriptionManager {
                 peers.remove(&peer);
             }
         }
+
+        trace!("peer {} unsubscribed from all worlds and areas", &peer);
     }
 }
