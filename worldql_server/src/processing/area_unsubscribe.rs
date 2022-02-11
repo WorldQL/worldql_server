@@ -23,7 +23,8 @@ pub(super) async fn handle_area_unsubscribe(
 
     let mut map = peer_map.write().await;
     if let Some(peer) = map.get_mut(&sender) {
-        peer.send_message(&reply.into()).await?;
+        // TODO: Handle errors
+        let _ = peer.send_message(&reply.into()).await;
     }
 
     Ok(())
