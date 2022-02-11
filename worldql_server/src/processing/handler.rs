@@ -163,5 +163,6 @@ async fn handle_subscriptions(
 async fn handle_database(msg_rx: Receiver<ServerMessage>) -> Result<()> {
     loop {
         // TODO
+        tokio::time::sleep(std::time::Duration::from_secs(5)).await;
     }
 }
