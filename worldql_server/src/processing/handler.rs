@@ -70,7 +70,7 @@ async fn handle_message(
     // TODO: Verify message UUID / Token pair is valid
 
     let peer = incoming.sender;
-    match &incoming.payload {
+    match incoming.payload {
         // Ignore handshakes, they should not be resent
         ServerMessagePayload::Handshake(_) => {
             warn!("received handshake from already authenticated peer")
