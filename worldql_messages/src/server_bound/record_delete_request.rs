@@ -5,7 +5,8 @@ use crate::common::PartialRecord;
 /// Delete record(s)
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct RecordDeleteRequest {
-    records: Vec<PartialRecord>,
+    /// Records to be deleted
+    pub records: Vec<PartialRecord>,
 }
 
 impl RecordDeleteRequest {

@@ -7,7 +7,8 @@ use crate::common::Record;
 /// Records that already exist in their region will be updated
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct RecordSetRequest {
-    records: Vec<Record>,
+    /// Records to be created or updated
+    pub records: Vec<Record>,
 }
 
 impl RecordSetRequest {
