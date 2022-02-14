@@ -128,6 +128,11 @@ async fn main() -> Result<()> {
     }
 
     if let Some(token) = &args.auth_token {
+        if token.is_empty() {
+            error!("Server Auth Token cannot be an empty string!");
+            std::process::exit(1);
+        }
+
         let obscured = "*".repeat(token.len());
         info!("Server Auth Token set to {}", obscured);
 
