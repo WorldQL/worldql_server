@@ -1,12 +1,11 @@
 use std::fmt::Display;
 
-use derive_getters::Getters;
 use worldql_messages::common::Vector3;
 
 use super::DatabaseClient;
 
 // region: WorldRegion Struct
-#[derive(Debug, Getters, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub(super) struct WorldRegion {
     world_name: String,
     x: i64,
@@ -16,7 +15,7 @@ pub(super) struct WorldRegion {
 
 impl WorldRegion {
     pub(super) fn new(
-        world_name: &str,
+        world_name: impl Into<String>,
         vector: &Vector3,
         region_x_size: u16,
         region_y_size: u16,
@@ -35,6 +34,31 @@ impl WorldRegion {
     }
 
     #[inline]
+    #[must_use]
+    pub fn world_name(&self) -> &str {
+        &self.world_name
+    }
+
+    #[inline]
+    #[must_use]
+    pub fn x(&self) -> i64 {
+        self.x
+    }
+
+    #[inline]
+    #[must_use]
+    pub fn y(&self) -> i64 {
+        self.y
+    }
+
+    #[inline]
+    #[must_use]
+    pub fn z(&self) -> i64 {
+        self.z
+    }
+
+    #[inline]
+    #[must_use]
     pub(super) fn x_bounds(&self, table_size: i64) -> (i64, i64) {
         let min_x = clamp_table_size(self.x, table_size);
         let max_x = min_x + table_size;
@@ -43,6 +67,7 @@ impl WorldRegion {
     }
 
     #[inline]
+    #[must_use]
     pub(super) fn y_bounds(&self, table_size: i64) -> (i64, i64) {
         let min_y = clamp_table_size(self.y, table_size);
         let max_y = min_y + table_size;
@@ -51,6 +76,7 @@ impl WorldRegion {
     }
 
     #[inline]
+    #[must_use]
     pub(super) fn z_bounds(&self, table_size: i64) -> (i64, i64) {
         let min_z = clamp_table_size(self.z, table_size);
         let max_z = min_z + table_size;
@@ -60,6 +86,7 @@ impl WorldRegion {
 }
 
 impl Display for WorldRegion {
+    #[inline]
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
@@ -74,7 +101,11 @@ impl Display for WorldRegion {
 impl DatabaseClient {
     /// Shorthand function to create a new [`WorldRegion`]
     #[inline]
-    pub(super) fn world_region(&self, world_name: &str, vector: &Vector3) -> WorldRegion {
+    pub(super) fn world_region(
+        &self,
+        world_name: impl Into<String>,
+        vector: &Vector3,
+    ) -> WorldRegion {
         WorldRegion::new(
             world_name,
             vector,

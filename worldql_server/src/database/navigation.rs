@@ -39,7 +39,7 @@ impl DatabaseClient {
             .client
             .query(
                 QUERY_LOOKUP_TABLE_SUFFIX,
-                &[region.world_name(), region.x(), region.y(), region.z()],
+                &[&region.world_name(), &region.x(), &region.y(), &region.z()],
             )
             .await?;
 
@@ -77,7 +77,7 @@ impl DatabaseClient {
                             &max_y,
                             &min_z,
                             &max_z,
-                            region.world_name(),
+                            &region.world_name(),
                         ],
                     )
                     .await?;
@@ -113,7 +113,7 @@ impl DatabaseClient {
             .client
             .query(
                 QUERY_LOOKUP_REGION_ID,
-                &[region.world_name(), region.x(), region.y(), region.z()],
+                &[&region.world_name(), &region.x(), &region.y(), &region.z()],
             )
             .await?;
 
@@ -130,9 +130,9 @@ impl DatabaseClient {
             None => {
                 trace!("region_id for {} not found in db, creating", region);
 
-                let min_x = *region.x();
-                let min_y = *region.y();
-                let min_z = *region.z();
+                let min_x = region.x();
+                let min_y = region.y();
+                let min_z = region.z();
 
                 let max_x = min_x + i64::from(self.region_x_size());
                 let max_y = min_y + i64::from(self.region_y_size());
@@ -150,7 +150,7 @@ impl DatabaseClient {
                             &max_y,
                             &min_z,
                             &max_z,
-                            region.world_name(),
+                            &region.world_name(),
                         ],
                     )
                     .await?;
