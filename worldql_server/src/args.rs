@@ -20,6 +20,12 @@ static VERSION: Lazy<String> = Lazy::new(|| {
 #[clap(version = &VERSION[..], global_setting = AppSettings::DeriveDisplayOrder)]
 pub struct Args {
     // region: Global Flags
+    /// Server Authentication Token
+    ///
+    /// If set, clients will be required to pass this token in handshakes to authenticate
+    #[clap(short = 'a', long, env = "WQL_SERVER_AUTH_TOKEN")]
+    pub auth_token: Option<String>,
+
     /// PostgreSQL connection string
     #[clap(short = 'p', long = "psql", env = "WQL_POSTGRES_CONNECTION_STRING")]
     pub psql_conn: String,
