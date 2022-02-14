@@ -44,6 +44,15 @@ macro_rules! impl_into_status {
                     Self::Error(error)
                 }
             }
+
+            #[automatically_derived]
+            impl From<$crate::client_bound::Status<[< $variant $suffix >]>> for $crate::client_bound::ClientMessageReply {
+                #[inline]
+                #[must_use]
+                fn from(status: $crate::client_bound::Status<[< $variant $suffix >]>) -> Self {
+                    $crate::client_bound::ClientMessageReply::$variant(status)
+                }
+            }
         }
     };
 }
