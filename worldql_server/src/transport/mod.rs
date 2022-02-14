@@ -1,3 +1,4 @@
+mod auth;
 mod peer;
 mod peer_map;
 

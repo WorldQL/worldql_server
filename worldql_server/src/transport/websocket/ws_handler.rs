@@ -10,12 +10,10 @@ use worldql_messages::client_bound::{
     ClientMessageReply, HandshakeReply, Status, SystemMessageEvent,
 };
 use worldql_messages::serialization::SerializeBinary;
-use worldql_messages::server_bound::{HandshakeRequest, ServerMessage, ServerMessagePayload};
+use worldql_messages::server_bound::{ServerMessage, ServerMessagePayload};
 
-use crate::errors::{
-    ERR_AUTH_FAILED_INCORRECT, ERR_AUTH_FAILED_NO_TOKEN, ERR_DUPLICATE_UUID,
-    ERR_HANDSHAKE_REQUIRED, ERR_INVALID_MESSAGE,
-};
+use crate::errors::{ERR_DUPLICATE_UUID, ERR_HANDSHAKE_REQUIRED, ERR_INVALID_MESSAGE};
+use crate::transport::auth::authenticate_handshake;
 use crate::transport::websocket::WebSocketPeer;
 use crate::transport::{Peer, ThreadPeerMap};
 
@@ -95,25 +93,9 @@ async fn handle_connection(
                         ERR_DUPLICATE_UUID.clone().into()
                     } else {
                         match msg.payload {
-                            ServerMessagePayload::Handshake(HandshakeRequest { server_auth }) => {
+                            ServerMessagePayload::Handshake(request) => {
                                 // Authenticate client if required
-                                let auth_error = match (server_token, server_auth) {
-                                    // Server auth disabled, ignore
-                                    (None, _) => None,
-
-                                    // Server auth enabled, client gave no token
-                                    (Some(_), None) => Some(ERR_AUTH_FAILED_NO_TOKEN.clone()),
-
-                                    // Server auth enabled, client gave a token
-                                    (Some(server_token), Some(token)) => {
-                                        // Check token matches
-                                        if server_token == token {
-                                            None
-                                        } else {
-                                            Some(ERR_AUTH_FAILED_INCORRECT.clone())
-                                        }
-                                    }
-                                };
+                                let auth_error = authenticate_handshake(server_token, request);
 
                                 match auth_error {
                                     Some(error) => error.into(),
