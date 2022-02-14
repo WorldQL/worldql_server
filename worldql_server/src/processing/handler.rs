@@ -89,7 +89,10 @@ async fn handle_message(
     match incoming.payload {
         // Ignore handshakes, they should not be resent
         ServerMessagePayload::Handshake(_) => {
-            warn!("received handshake from already authenticated peer")
+            warn!(
+                "Received Handshake Request from already authenticated Peer: {}",
+                &incoming.sender
+            );
         }
 
         // Instantly handle heartbeats
