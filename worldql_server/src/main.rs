@@ -45,12 +45,8 @@ use tracing::{debug, error, info, warn};
 use crate::args::Args;
 use crate::database::DatabaseClient;
 use crate::processing::start_processing_thread;
-#[cfg(feature = "http")]
-use crate::transport::start_http_server;
 #[cfg(feature = "websocket")]
 use crate::transport::websocket::start_websocket_server;
-#[cfg(feature = "zeromq")]
-use crate::transport::{start_zeromq_incoming, start_zeromq_outgoing};
 use crate::transport::{PeerMap, ThreadPeerMap};
 
 mod args;
@@ -60,13 +56,9 @@ mod processing;
 mod transport;
 mod utils;
 
-// Fail to compile ZeroMQ module on non unix-based systems
-#[cfg(all(feature = "zeromq", not(unix)))]
-compile_error!("the `zeromq` feature is only supported on unix-based systems");
-
 // Fail to compile if no full transport features are enabled
-#[cfg(not(any(feature = "websocket", feature = "zeromq")))]
-compile_error!("at least one of `websocket` or `zeromq` features must be enabled!");
+#[cfg(not(any(feature = "websocket")))]
+compile_error!("at least one of `websocket` features must be enabled!");
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -105,19 +97,6 @@ async fn main() -> Result<()> {
             }
 
             used_ports.insert(args.ws_port);
-        }
-
-        #[cfg(feature = "zeromq")]
-        {
-            let server_inserted = used_ports.insert(args.zmq_server_port);
-            if !server_inserted || !portpicker::is_free_tcp(args.zmq_server_port) {
-                error!(
-                    "ZeroMQ Server port {} is already in use!",
-                    args.zmq_server_port
-                );
-
-                std::process::exit(1);
-            }
         }
     }
 
@@ -202,34 +181,6 @@ async fn main() -> Result<()> {
         ));
 
         handles.push(ws_handle);
-    }
-
-    #[cfg(feature = "zeromq")]
-    {
-        let ctx = tmq::Context::new();
-        let (zmq_msg_tx, zmq_msg_rx) = flume::unbounded();
-        let (zmq_handshake_tx, zmq_handshake_rx) = flume::unbounded();
-
-        let zmq_incoming_handle = tokio::spawn(start_zeromq_incoming(
-            peer_map.clone(),
-            msg_tx,
-            zmq_handshake_tx,
-            args.zmq_server_host,
-            args.zmq_server_port,
-            ctx.clone(),
-        ));
-
-        let zmq_outgoing_handle = tokio::spawn(start_zeromq_outgoing(
-            peer_map.clone(),
-            zmq_msg_tx,
-            zmq_msg_rx,
-            zmq_handshake_rx,
-            ctx,
-            args.zmq_timeout_secs,
-        ));
-
-        handles.push(zmq_incoming_handle);
-        handles.push(zmq_outgoing_handle);
     }
 
     let proc_handle = tokio::spawn(start_processing_thread(

@@ -24,7 +24,6 @@ rand = "0.8.4"
 scopeguard = "1.1.0"
 serde = { version = "1.0.136", optional = true, features = ["derive"] }
 thiserror = "1.0.30"
-tmq = { version = "0.3.0", optional = true, features = ["zmq-vendored"] }
 tokio = { version = "1.16.1", features = ["full"] }
 tokio-postgres = { version = "0.7.5", features = ["with-uuid-0_8", "with-chrono-0_4"] }
 tokio-tungstenite = { version = "0.16.1", optional = true }
@@ -38,5 +37,4 @@ worldql_subscriptions = { path = "../worldql_subscriptions" }
 default = ["websocket"]
 http = ["axum", "serde"]
 websocket = ["tokio-tungstenite"]
-zeromq = ["tmq"]
 trace_packets = []

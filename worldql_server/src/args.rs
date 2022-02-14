@@ -101,30 +101,6 @@ pub struct Args {
     pub ws_port: u16,
     // endregion
 
-    // // region: ZeroMQ
-    // // ZeroMQ server host
-    // #[cfg(feature = "zeromq")]
-    // #[clap(
-    //     short = 'Z',
-    //     long,
-    //     default_value = "0.0.0.0",
-    //     env = "WQL_ZMQ_SERVER_HOST"
-    // )]
-    // pub zmq_server_host: IpAddr,
-
-    // /// ZeroMQ server port
-    // #[cfg(feature = "zeromq")]
-    // #[clap(short = 'z', long, default_value = "5555", env = "WQL_ZMQ_SERVER_PORT")]
-    // pub zmq_server_port: u16,
-
-    // /// ZeroMQ connection timeout (seconds)
-    // ///
-    // /// It is not recommended to set this to a very large number, values less than 10 are invalid
-    // #[cfg(feature = "zeromq")]
-    // #[clap(short = 'T', long, default_value = "25", env = "WQL_ZMQ_TIMEOUT_SECS", parse(try_from_str = parse_zmq_timeout_secs))]
-    // pub zmq_timeout_secs: u8,
-    // // endregion
-
     // region: Other Flags
     /// Verbosity level
     ///
@@ -172,18 +148,6 @@ fn parse_non_zero_sized(src: &str) -> Result<usize, ParseError> {
     }
 
     Ok(size)
-}
-
-#[cfg(feature = "zeromq")]
-fn parse_zmq_timeout_secs(src: &str) -> Result<u8, ParseError> {
-    let min = 10;
-
-    let secs = src.parse::<u8>()?;
-    if secs < min {
-        return Err(ParseError::GreaterThan(min));
-    }
-
-    Ok(secs)
 }
 // endregion
 
