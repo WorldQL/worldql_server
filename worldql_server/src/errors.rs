@@ -24,6 +24,10 @@ error!(ERR_INVALID_MESSAGE, 0x00_001, "invalid message");
 error!(ERR_HANDSHAKE_REQUIRED, 0x00_002, "first message must be a handshake");
 #[rustfmt::skip]
 error!(ERR_DUPLICATE_UUID, 0x00_003, "uuid already in use");
+#[rustfmt::skip]
+error!(ERR_AUTH_FAILED_NO_TOKEN, 0x00_004, "authentication failed, no auth token given");
+#[rustfmt::skip]
+error!(ERR_AUTH_FAILED_INCORRECT, 0x00_005, "authentication failed, incorrect token");
 // endregion
 
 // region: Subscription Management

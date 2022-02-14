@@ -10,15 +10,19 @@ use worldql_messages::client_bound::{
     ClientMessageReply, HandshakeReply, Status, SystemMessageEvent,
 };
 use worldql_messages::serialization::SerializeBinary;
-use worldql_messages::server_bound::{ServerMessage, ServerMessagePayload};
+use worldql_messages::server_bound::{HandshakeRequest, ServerMessage, ServerMessagePayload};
 
-use crate::errors::{ERR_DUPLICATE_UUID, ERR_HANDSHAKE_REQUIRED, ERR_INVALID_MESSAGE};
+use crate::errors::{
+    ERR_AUTH_FAILED_INCORRECT, ERR_AUTH_FAILED_NO_TOKEN, ERR_DUPLICATE_UUID,
+    ERR_HANDSHAKE_REQUIRED, ERR_INVALID_MESSAGE,
+};
 use crate::transport::websocket::WebSocketPeer;
 use crate::transport::{Peer, ThreadPeerMap};
 
 pub async fn start_websocket_server(
     peer_map: ThreadPeerMap,
     msg_tx: Sender<ServerMessage>,
+    server_token: Option<String>,
     ws_host: IpAddr,
     ws_port: u16,
 ) -> Result<()> {
@@ -33,6 +37,7 @@ pub async fn start_websocket_server(
         tokio::spawn(handle_connection(
             peer_map.clone(),
             msg_tx.clone(),
+            server_token.clone(),
             addr,
             stream,
         ));
@@ -44,6 +49,7 @@ pub async fn start_websocket_server(
 async fn handle_connection(
     peer_map: ThreadPeerMap,
     msg_tx: Sender<ServerMessage>,
+    server_token: Option<String>,
     addr: SocketAddr,
     stream: TcpStream,
 ) -> Result<()> {
@@ -56,8 +62,8 @@ async fn handle_connection(
 
     let (outgoing, mut incoming) = stream.split();
 
-    let auth_token = crate::utils::crypto_secure_token();
-    let mut peer = WebSocketPeer::new(addr, Uuid::nil(), auth_token.clone(), outgoing);
+    let client_token = crate::utils::crypto_secure_token();
+    let mut peer = WebSocketPeer::new(addr, Uuid::nil(), client_token.clone(), outgoing);
 
     // Handle hanshake message
     match incoming.next().await {
@@ -89,12 +95,33 @@ async fn handle_connection(
                         ERR_DUPLICATE_UUID.clone().into()
                     } else {
                         match msg.payload {
-                            ServerMessagePayload::Handshake(_) => {
-                                // TODO: Check server auth
-                                // TODO: Check options
+                            ServerMessagePayload::Handshake(HandshakeRequest { server_auth }) => {
+                                // Authenticate client if required
+                                let auth_error = match (server_token, server_auth) {
+                                    // Server auth disabled, ignore
+                                    (None, _) => None,
 
-                                let reply = HandshakeReply::new(auth_token);
-                                reply.into()
+                                    // Server auth enabled, client gave no token
+                                    (Some(_), None) => Some(ERR_AUTH_FAILED_NO_TOKEN.clone()),
+
+                                    // Server auth enabled, client gave a token
+                                    (Some(server_token), Some(token)) => {
+                                        // Check token matches
+                                        if server_token == token {
+                                            None
+                                        } else {
+                                            Some(ERR_AUTH_FAILED_INCORRECT.clone())
+                                        }
+                                    }
+                                };
+
+                                match auth_error {
+                                    Some(error) => error.into(),
+                                    None => {
+                                        let reply = HandshakeReply::new(client_token);
+                                        reply.into()
+                                    }
+                                }
                             }
 
                             _ => ERR_HANDSHAKE_REQUIRED.clone().into(),
