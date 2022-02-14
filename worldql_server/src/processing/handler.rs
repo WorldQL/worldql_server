@@ -10,12 +10,18 @@ use super::area_unsubscribe::handle_area_unsubscribe;
 use super::global_message::handle_global_message;
 use super::heartbeat::handle_heartbeat;
 use super::local_message::handle_local_message;
+use super::record_clear::handle_record_clear;
+use super::record_delete::handle_record_delete;
+use super::record_get::handle_record_get;
+use super::record_set::handle_record_set;
 use super::world_subscribe::handle_world_subscribe;
 use super::world_unsubscribe::handle_world_unsubscribe;
+use crate::database::DatabaseClient;
 use crate::transport::ThreadPeerMap;
 
 pub async fn start_processing_thread(
     peer_map: ThreadPeerMap,
+    db: DatabaseClient,
     msg_rx: Receiver<ServerMessage>,
     remove_rx: Receiver<Uuid>,
     cube_size: u16,
@@ -23,14 +29,13 @@ pub async fn start_processing_thread(
     let (sub_tx, sub_rx) = flume::unbounded();
     let (db_tx, db_rx) = flume::unbounded();
 
+    let mut db = tokio::spawn(handle_database(peer_map.clone(), db, db_rx));
     let mut sub = tokio::spawn(handle_subscriptions(
         peer_map.clone(),
         sub_rx,
         remove_rx,
         cube_size,
     ));
-
-    let mut db = tokio::spawn(handle_database(db_rx));
 
     loop {
         tokio::select! {
@@ -163,9 +168,33 @@ async fn handle_subscriptions(
     Ok(())
 }
 
-async fn handle_database(msg_rx: Receiver<ServerMessage>) -> Result<()> {
+async fn handle_database(
+    mut peer_map: ThreadPeerMap,
+    mut db: DatabaseClient,
+    msg_rx: Receiver<ServerMessage>,
+) -> Result<()> {
     loop {
-        // TODO
-        tokio::time::sleep(std::time::Duration::from_secs(5)).await;
+        let incoming = msg_rx.recv_async().await?;
+        let peer = incoming.sender;
+
+        match incoming.payload {
+            ServerMessagePayload::RecordGet(request) => {
+                handle_record_get(peer, &mut peer_map, request, &mut db).await?
+            }
+
+            ServerMessagePayload::RecordSet(request) => {
+                handle_record_set(peer, &mut peer_map, request, &mut db).await?
+            }
+
+            ServerMessagePayload::RecordDelete(request) => {
+                handle_record_delete(peer, &mut peer_map, request, &mut db).await?
+            }
+
+            ServerMessagePayload::RecordClear(request) => {
+                handle_record_clear(peer, &mut peer_map, request, &mut db).await?
+            }
+
+            _ => panic!("invalid message type"),
+        }
     }
 }
