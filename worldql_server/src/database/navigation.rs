@@ -1,12 +1,12 @@
 use tokio_postgres::Error;
 use tracing::trace;
+use worldql_messages::common::Vector3;
 
 use super::world_region::WorldRegion;
 use super::{
     DatabaseClient, QUERY_INSERT_REGION_ID, QUERY_INSERT_TABLE_SUFFIX, QUERY_LOOKUP_REGION_ID,
     QUERY_LOOKUP_TABLE_SUFFIX,
 };
-use crate::structures::Vector3;
 
 impl DatabaseClient {
     /// Lookup both `table_suffix` and `region_id` in a single function.

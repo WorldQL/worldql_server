@@ -1,9 +1,9 @@
 use std::fmt::Display;
 
 use derive_getters::Getters;
+use worldql_messages::common::Vector3;
 
 use super::DatabaseClient;
-use crate::structures::Vector3;
 
 // region: WorldRegion Struct
 #[derive(Debug, Getters, Clone, PartialEq, Eq, Hash)]
@@ -22,9 +22,9 @@ impl WorldRegion {
         region_y_size: u16,
         region_z_size: u16,
     ) -> Self {
-        let x = clamp_region_coord(*vector.x(), region_x_size);
-        let y = clamp_region_coord(*vector.y(), region_y_size);
-        let z = clamp_region_coord(*vector.z(), region_z_size);
+        let x = clamp_region_coord(vector.x(), region_x_size);
+        let y = clamp_region_coord(vector.y(), region_y_size);
+        let z = clamp_region_coord(vector.z(), region_z_size);
 
         Self {
             world_name: world_name.into(),

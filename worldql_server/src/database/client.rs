@@ -1,21 +1,10 @@
-use ahash::AHashMap;
-use chrono::prelude::*;
 use color_eyre::Result;
 use lru::LruCache;
-use thiserror::Error;
-use tokio_postgres::error::SqlState;
-use tokio_postgres::types::ToSql;
 use tokio_postgres::Client;
-use uuid::Uuid;
-use worldql_messages::common::{Record, Vector3};
+use worldql_messages::common::{PartialRecord, Record, Vector3};
+use worldql_messages::client_bound::Error;
 
 use super::world_region::WorldRegion;
-use super::{query_create_world_schema, query_delete_duplictes, query_delete_record};
-use crate::database::{
-    query_create_world, query_create_world_index, query_insert_record, query_insert_record_many,
-    query_select_records, query_select_records_after,
-};
-use crate::utils::{sanitize_world_name, SanitizeError};
 
 pub struct DatabaseClient {
     pub(super) client: Client,
@@ -27,8 +16,6 @@ pub struct DatabaseClient {
     region_z_size: u16,
     table_size: u32,
 }
-
-pub type DedupeData = (Uuid, NaiveDateTime, String, Vector3);
 
 impl DatabaseClient {
     pub fn new(
@@ -80,344 +67,36 @@ impl DatabaseClient {
     // endregion
 
     // region: Methods
-    /// Insert many [`Record`] structs into the database.
-    ///
-    /// Batches records that map to the same table into a single `INSERT` operation.
-    pub async fn insert_records(&mut self, records: Vec<Record>) -> Vec<DatabaseError> {
-        // Early return for no records
-        if records.is_empty() {
-            return vec![];
-        }
-
-        type HashKey = (String, i32);
-        type HashValue = Vec<(i32, Record)>;
-        let mut table_map: AHashMap<HashKey, HashValue> = AHashMap::new();
-
-        // Divide up records into table insertion operations
-        let len = records.len();
-        let mut errors = Vec::with_capacity(len);
-        for record in records {
-            // TODO: Handle records without position
-            let position = record.position.unwrap();
-            let world_name = match sanitize_world_name(&record.world_name) {
-                Ok(world_name) => world_name,
-                Err(error) => {
-                    errors.push(error.into());
-                    continue;
-                }
-            };
-
-            // Lookup navigation IDs for this record
-            let (table_suffix, region_id) = match self.lookup_ids(&world_name, &position).await {
-                Ok(result) => result,
-                Err(error) => {
-                    errors.push(error.into());
-                    continue;
-                }
-            };
-
-            // Get or create Vec for this table_suffix
-            let filtered_records = table_map
-                .entry((world_name, table_suffix))
-                .or_insert_with(|| Vec::with_capacity(len));
-
-            filtered_records.push((region_id, record));
-        }
-
-        for ((world_name, table_suffix), records) in table_map {
-            // Destructure and map records
-            let records = records
-                .into_iter()
-                .map(|(region_id, record)| {
-                    (
-                        region_id,
-                        record.position.unwrap(),
-                        record.uuid,
-                        record.data,
-                        record.flex.map(|b| b.to_vec()),
-                    )
-                })
-                .collect::<Vec<_>>();
-
-            // Construct params array
-            let count = records.len();
-            let params = {
-                let mut params: Vec<&(dyn ToSql + Sync)> = vec![];
-
-                for (region_id, position, uuid, data, flex) in &records {
-                    params.push(region_id);
-                    params.push(position.x());
-                    params.push(position.y());
-                    params.push(position.z());
-                    params.push(uuid);
-                    params.push(data);
-                    params.push(flex);
-                }
-
-                params
-            };
-
-            // Build a bulk insertion query and execute
-            let query = query_insert_record_many(&world_name, table_suffix, count);
-            let result = self.client.execute(&query, &params).await;
-
-            // Insertion completed without errors, exit early
-            if result.is_ok() {
-                continue;
-            }
-
-            // Handle SQL errors
-            let error = result.unwrap_err();
-            let db_error = error.as_db_error();
-
-            // If error isn't a database error, re-throw
-            if db_error.is_none() {
-                errors.push(DatabaseError::PostgresError(error));
-                continue;
-            }
-
-            // Check for undefined table error, if not then re-throw
-            let db_error = db_error.unwrap();
-            if *db_error.code() != SqlState::UNDEFINED_TABLE {
-                errors.push(DatabaseError::PostgresError(error));
-                continue;
-            }
-
-            // Create schema for world
-            let result = self
-                .client
-                .execute(&query_create_world_schema(&world_name), &[])
-                .await;
-
-            if let Err(error) = result {
-                errors.push(error.into());
-                continue;
-            }
-
-            // Create table for world region
-            let result = self
-                .client
-                .execute(&query_create_world(&world_name, table_suffix), &[])
-                .await;
-
-            if let Err(error) = result {
-                errors.push(error.into());
-                continue;
-            }
-
-            // Create index for new table
-            let result = self
-                .client
-                .execute(&query_create_world_index(&world_name, table_suffix), &[])
-                .await;
-
-            if let Err(error) = result {
-                errors.push(error.into());
-                continue;
-            }
-
-            // Retry insertion
-            let result = self.client.execute(&query, &params[..]).await;
-            if let Err(error) = result {
-                errors.push(error.into());
-                continue;
-            }
-        }
-
-        errors
-    }
-
-    /// Insert a single [`Record`] into the database.
-    #[deprecated = "use insert_records() instead"]
-    pub async fn insert_record(&mut self, record: &Record) -> Result<(), DatabaseError> {
-        // TODO: Handle records without position
-        let position = record.position.unwrap();
-        let world_name = sanitize_world_name(&record.world_name)?;
-
-        let (table_suffix, region_id) = self.lookup_ids(&world_name, &position).await?;
-        let query = query_insert_record(&world_name, table_suffix);
-
-        let result = self
-            .client
-            .execute(
-                &query,
-                &[
-                    &region_id,
-                    position.x(),
-                    position.y(),
-                    position.z(),
-                    &record.uuid,
-                    &record.data,
-                    &record.flex.as_ref().map(|b| b.to_vec()),
-                ],
-            )
-            .await;
-
-        // Insertion completed without errors, exit early
-        if result.is_ok() {
-            return Ok(());
-        }
-
-        // Handle SQL Error
-        let error = result.unwrap_err();
-        let db_error = error.as_db_error();
-
-        // If error isn't a database error, re-throw
-        if db_error.is_none() {
-            return Err(DatabaseError::PostgresError(error));
-        }
-
-        // Check for undefined table error, if not then re-throw
-        let db_error = db_error.unwrap();
-        if *db_error.code() != SqlState::UNDEFINED_TABLE {
-            return Err(DatabaseError::PostgresError(error));
-        }
-
-        // Create schema for world
-        self.client
-            .execute(&query_create_world_schema(&world_name), &[])
-            .await?;
-
-        // Create table for world region
-        self.client
-            .execute(&query_create_world(&world_name, table_suffix), &[])
-            .await?;
-
-        // Create index for new table
-        self.client
-            .execute(&query_create_world_index(&world_name, table_suffix), &[])
-            .await?;
-
-        // Retry insertion
-        self.client
-            .execute(
-                &query,
-                &[
-                    &region_id,
-                    position.x(),
-                    position.y(),
-                    position.z(),
-                    &record.uuid,
-                    &record.data,
-                    &record.flex.as_ref().map(|b| b.to_vec()),
-                ],
-            )
-            .await?;
-
-        Ok(())
-    }
-
-    /// Returns a [`Vec`] containing all records found within the region represented
-    /// by `point_inside_region`
-    pub async fn get_records_in_region(
-        &mut self,
+    pub async fn get_records_by_area(
         world_name: &str,
-        point_inside_region: Vector3,
-        after: Option<NaiveDateTime>,
-    ) -> Result<Vec<(NaiveDateTime, Record)>> {
-        let (table_suffix, region_id) = self.lookup_ids(world_name, &point_inside_region).await?;
-
-        let result = match after {
-            // Send all results
-            None => {
-                let query = query_select_records(world_name, table_suffix);
-                self.client.query(&query, &[&region_id]).await
-            }
-
-            // Send only results after time
-            Some(after) => {
-                let query = query_select_records_after(world_name, table_suffix);
-                self.client.query(&query, &[&region_id, &after]).await
-            }
-        };
-
-        // Check for undefined table error and early return no records
-        if let Err(error) = result {
-            match error.as_db_error() {
-                None => return Err(error.into()),
-                Some(db_error) => {
-                    // Early return
-                    if *db_error.code() == SqlState::UNDEFINED_TABLE {
-                        return Ok(vec![]);
-                    }
-
-                    // Different error, re-throw
-                    return Err(error.into());
-                }
-            }
-        }
-
-        let records = result
-            .unwrap()
-            .into_iter()
-            .map(|row| {
-                let timestamp: NaiveDateTime = row.get("last_modified");
-                let record = Record::from_postgres_row(row, world_name);
-
-                (timestamp, record)
-            })
-            .collect::<Vec<_>>();
-
-        Ok(records)
+        position: Vector3,
+    ) -> Result<Vec<Record>, Error> {
+        todo!()
     }
 
-    /// Delete many [`Record`] structs at once.
-    pub async fn delete_records(&mut self, records: Vec<Record>) -> Vec<DatabaseError> {
-        let mut errors = vec![];
-
-        for record in records {
-            // TODO: Handle records without position
-            let position = record.position.unwrap();
-            let world_name = match sanitize_world_name(&record.world_name) {
-                Ok(world_name) => world_name,
-                Err(error) => {
-                    errors.push(error.into());
-                    continue;
-                }
-            };
-
-            let (table_suffix, region_id) = match self.lookup_ids(&world_name, &position).await {
-                Ok(result) => result,
-                Err(error) => {
-                    errors.push(error.into());
-                    continue;
-                }
-            };
-
-            let query = query_delete_record(&world_name, table_suffix);
-            let result = self
-                .client
-                .execute(&query, &[&region_id, &record.uuid])
-                .await;
-
-            if let Err(error) = result {
-                errors.push(error.into())
-            }
-        }
-
-        errors
+    pub async fn get_records_by_id(
+        records: Vec<PartialRecord>,
+    ) -> Result<Vec<Record>, Error> {
+        todo!()
     }
 
-    /// Delete duplicate records based on [`Uuid`] and last modified [`NaiveDateTime`]
-    pub async fn dedupe_records(&mut self, ops: Vec<DedupeData>) -> Result<(), DatabaseError> {
-        // TODO: Run concurrently
-        for (uuid, timestamp, world_name, position) in ops {
-            let (table_suffix, _) = self.lookup_ids(&world_name, &position).await?;
-            let query = query_delete_duplictes(&world_name, table_suffix);
+    pub async fn set_records(records: Vec<Record>) -> Result<(u32, u32), Error> {
+        todo!()
+    }
 
-            self.client.execute(&query, &[&uuid, &timestamp]).await?;
-        }
+    pub async fn delete_records(records: Vec<PartialRecord>) -> Result<u32, Error> {
+        todo!()
+    }
 
-        Ok(())
+    pub async fn clear_records_in_world(world_name: &str) -> Result<u32, Error> {
+        todo!()
+    }
+
+    pub async fn clear_records_in_area(
+        world_name: &str,
+        position: Vector3,
+    ) -> Result<u32, Error> {
+        todo!()
     }
     // endregion
-}
-
-#[derive(Debug, Error)]
-pub enum DatabaseError {
-    #[error("world name error: {0}")]
-    InvalidWorldName(#[from] SanitizeError),
-
-    #[error(transparent)]
-    PostgresError(#[from] tokio_postgres::Error),
 }
