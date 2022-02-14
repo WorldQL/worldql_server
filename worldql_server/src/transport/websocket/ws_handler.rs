@@ -4,7 +4,7 @@ use color_eyre::Result;
 use flume::Sender;
 use futures_util::StreamExt;
 use tokio::net::{TcpListener, TcpStream};
-use tracing::{debug, info};
+use tracing::{debug, info, warn};
 use uuid::Uuid;
 use worldql_messages::client_bound::{
     ClientMessageReply, HandshakeReply, Status, SystemMessageEvent,
@@ -98,7 +98,11 @@ async fn handle_connection(
                                 let auth_error = authenticate_handshake(server_token, request);
 
                                 match auth_error {
-                                    Some(error) => error.into(),
+                                    Some(error) => {
+                                        warn!("[{}] WebSocket Peer tried to connect with incorrect authentication details", &addr);
+                                        error.into()
+                                    }
+
                                     None => {
                                         let reply = HandshakeReply::new(client_token);
                                         reply.into()
