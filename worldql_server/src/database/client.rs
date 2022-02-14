@@ -1,3 +1,4 @@
+use ahash::RandomState;
 use color_eyre::Result;
 use lru::LruCache;
 use tokio_postgres::Client;
@@ -8,8 +9,8 @@ use super::world_region::WorldRegion;
 
 pub struct DatabaseClient {
     pub(super) client: Client,
-    pub(super) table_cache: LruCache<WorldRegion, i32>,
-    pub(super) region_cache: LruCache<WorldRegion, i32>,
+    pub(super) table_cache: LruCache<WorldRegion, i32, RandomState>,
+    pub(super) region_cache: LruCache<WorldRegion, i32, RandomState>,
 
     region_x_size: u16,
     region_y_size: u16,
