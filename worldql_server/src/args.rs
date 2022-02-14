@@ -143,7 +143,6 @@ enum ParseError {
 
     // #[error("must be greater than {0}")]
     // GreaterThan(u8),
-
     #[error(transparent)]
     ParseIntError(#[from] ParseIntError),
 }
