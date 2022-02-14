@@ -1,8 +1,8 @@
 use color_eyre::Result;
 use lru::LruCache;
 use tokio_postgres::Client;
-use worldql_messages::common::{PartialRecord, Record, Vector3};
 use worldql_messages::client_bound::Error;
+use worldql_messages::common::{PartialRecord, Record, Vector3};
 
 use super::world_region::WorldRegion;
 
@@ -68,6 +68,7 @@ impl DatabaseClient {
 
     // region: Methods
     pub async fn get_records_by_area(
+        &mut self,
         world_name: &str,
         position: Vector3,
     ) -> Result<Vec<Record>, Error> {
@@ -75,24 +76,26 @@ impl DatabaseClient {
     }
 
     pub async fn get_records_by_id(
+        &mut self,
         records: Vec<PartialRecord>,
     ) -> Result<Vec<Record>, Error> {
         todo!()
     }
 
-    pub async fn set_records(records: Vec<Record>) -> Result<(u32, u32), Error> {
+    pub async fn set_records(&mut self, records: Vec<Record>) -> Result<(u32, u32), Error> {
         todo!()
     }
 
-    pub async fn delete_records(records: Vec<PartialRecord>) -> Result<u32, Error> {
+    pub async fn delete_records(&mut self, records: Vec<PartialRecord>) -> Result<u32, Error> {
         todo!()
     }
 
-    pub async fn clear_records_in_world(world_name: &str) -> Result<u32, Error> {
+    pub async fn clear_records_in_world(&mut self, world_name: &str) -> Result<u32, Error> {
         todo!()
     }
 
     pub async fn clear_records_in_area(
+        &mut self,
         world_name: &str,
         position: Vector3,
     ) -> Result<u32, Error> {
