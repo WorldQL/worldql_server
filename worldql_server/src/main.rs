@@ -127,6 +127,15 @@ async fn main() -> Result<()> {
         std::process::exit(1);
     }
 
+    if let Some(token) = &args.auth_token {
+        let obscured = "*".repeat(token.len());
+        info!("Server Auth Token set to {}", obscured);
+
+        if token.len() < 10 {
+            warn!("Auth Token is less than 10 characters, consider using a more secure token")
+        }
+    }
+
     // let psql_result = tokio_postgres::connect(&args.psql_conn, NoTls).await;
     // if let Err(err) = psql_result {
     //     error!("PostgreSQL Error: {}", err);
