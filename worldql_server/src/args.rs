@@ -61,22 +61,22 @@ pub struct Args {
     pub db_cache_size: usize,
     // endregion
 
-    // region: HTTP
-    /// HTTP server host
-    #[cfg(feature = "http")]
-    #[clap(short = 'H', long, default_value = "0.0.0.0", env = "WQL_HTTP_HOST")]
-    pub http_host: IpAddr,
+    // // region: HTTP
+    // /// HTTP server host
+    // #[cfg(feature = "http")]
+    // #[clap(short = 'H', long, default_value = "0.0.0.0", env = "WQL_HTTP_HOST")]
+    // pub http_host: IpAddr,
 
-    /// HTTP server port
-    #[cfg(feature = "http")]
-    #[clap(short = 'h', long, default_value = "8081", env = "WQL_HTTP_PORT")]
-    pub http_port: u16,
+    // /// HTTP server port
+    // #[cfg(feature = "http")]
+    // #[clap(short = 'h', long, default_value = "8081", env = "WQL_HTTP_PORT")]
+    // pub http_port: u16,
 
-    /// HTTP server port
-    #[cfg(feature = "http")]
-    #[clap(long, env = "WQL_HTTP_AUTH_TOKEN")]
-    pub http_auth_token: Option<String>,
-    // endregion
+    // /// HTTP server port
+    // #[cfg(feature = "http")]
+    // #[clap(long, env = "WQL_HTTP_AUTH_TOKEN")]
+    // pub http_auth_token: Option<String>,
+    // // endregion
 
     // region: WebSocket
     /// WebSocket server host
@@ -95,29 +95,29 @@ pub struct Args {
     pub ws_port: u16,
     // endregion
 
-    // region: ZeroMQ
-    // ZeroMQ server host
-    #[cfg(feature = "zeromq")]
-    #[clap(
-        short = 'Z',
-        long,
-        default_value = "0.0.0.0",
-        env = "WQL_ZMQ_SERVER_HOST"
-    )]
-    pub zmq_server_host: IpAddr,
+    // // region: ZeroMQ
+    // // ZeroMQ server host
+    // #[cfg(feature = "zeromq")]
+    // #[clap(
+    //     short = 'Z',
+    //     long,
+    //     default_value = "0.0.0.0",
+    //     env = "WQL_ZMQ_SERVER_HOST"
+    // )]
+    // pub zmq_server_host: IpAddr,
 
-    /// ZeroMQ server port
-    #[cfg(feature = "zeromq")]
-    #[clap(short = 'z', long, default_value = "5555", env = "WQL_ZMQ_SERVER_PORT")]
-    pub zmq_server_port: u16,
+    // /// ZeroMQ server port
+    // #[cfg(feature = "zeromq")]
+    // #[clap(short = 'z', long, default_value = "5555", env = "WQL_ZMQ_SERVER_PORT")]
+    // pub zmq_server_port: u16,
 
-    /// ZeroMQ connection timeout (seconds)
-    ///
-    /// It is not recommended to set this to a very large number, values less than 10 are invalid
-    #[cfg(feature = "zeromq")]
-    #[clap(short = 'T', long, default_value = "25", env = "WQL_ZMQ_TIMEOUT_SECS", parse(try_from_str = parse_zmq_timeout_secs))]
-    pub zmq_timeout_secs: u8,
-    // endregion
+    // /// ZeroMQ connection timeout (seconds)
+    // ///
+    // /// It is not recommended to set this to a very large number, values less than 10 are invalid
+    // #[cfg(feature = "zeromq")]
+    // #[clap(short = 'T', long, default_value = "25", env = "WQL_ZMQ_TIMEOUT_SECS", parse(try_from_str = parse_zmq_timeout_secs))]
+    // pub zmq_timeout_secs: u8,
+    // // endregion
 
     // region: Other Flags
     /// Verbosity level
@@ -135,8 +135,8 @@ enum ParseError {
     #[error("must be greater than 0")]
     NonZero,
 
-    #[error("must be greater than {0}")]
-    GreaterThan(u8),
+    // #[error("must be greater than {0}")]
+    // GreaterThan(u8),
 
     #[error(transparent)]
     ParseIntError(#[from] ParseIntError),
