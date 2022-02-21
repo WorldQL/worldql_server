@@ -18,9 +18,10 @@ pub(super) async fn handle_record_get(
     let reply: ClientMessageReply = match request {
         RecordGetRequest::Area {
             world_name,
-            position,
+            pos_1,
+            pos_2,
         } => {
-            let status = match db.get_records_by_area(&world_name, position).await {
+            let status = match db.get_records_by_area(&world_name, pos_1, pos_2).await {
                 Err(error) => error.into(),
 
                 Ok(records) => {

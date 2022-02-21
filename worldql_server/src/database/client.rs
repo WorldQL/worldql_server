@@ -18,7 +18,8 @@ impl DatabaseClient {
     pub async fn get_records_by_area(
         &mut self,
         world_name: &str,
-        position: Vector3,
+        pos_1: Vector3,
+        pos_2: Vector3,
     ) -> Result<Vec<Record>, Error> {
         todo!()
     }
