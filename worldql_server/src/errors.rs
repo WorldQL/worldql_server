@@ -30,17 +30,19 @@ error!(ERR_AUTH_FAILED_NO_TOKEN, 0x00_004, "authentication failed, no auth token
 error!(ERR_AUTH_FAILED_INCORRECT, 0x00_005, "authentication failed, incorrect token");
 // endregion
 
+// region: Generic Processing
+error_func!(err_invalid_world_name, 0x01_001);
+// endregion
+
 // region: Subscription Management
 #[rustfmt::skip]
-error!(ERR_WORLD_SUB_GLOBAL_WORLD, 0x01_001, "cannot subscribe to the global world");
+error!(ERR_WORLD_SUB_GLOBAL_WORLD, 0x02_001, "cannot subscribe to the global world");
 #[rustfmt::skip]
-error!(ERR_WORLD_UNSUB_GLOBAL_WORLD, 0x01_002, "cannot unsubscribe from the global world");
+error!(ERR_WORLD_UNSUB_GLOBAL_WORLD, 0x02_002, "cannot unsubscribe from the global world");
 #[rustfmt::skip]
-error!(ERR_AREA_SUB_GLOBAL_WORLD, 0x01_003, "cannot subscribe to an area inside the global world");
+error!(ERR_AREA_SUB_GLOBAL_WORLD, 0x02_003, "cannot subscribe to an area inside the global world");
 #[rustfmt::skip]
-error!(ERR_AREA_UNSUB_GLOBAL_WORLD, 0x01_004, "cannot unsubscribe from an area inside the global world");
-
-error_func!(err_invalid_world_name, 0x01_005);
+error!(ERR_AREA_UNSUB_GLOBAL_WORLD, 0x02_004, "cannot unsubscribe from an area inside the global world");
 // endregion
 
 // region: Global and Local Messages
