@@ -22,7 +22,7 @@ pub(super) struct SqlRecord {
     x: f64,
     y: f64,
     z: f64,
-    data: Option<Bytes>,
+    data: Option<Vec<u8>>,
 }
 
 // region: Conversion
@@ -36,6 +36,8 @@ impl From<Record> for SqlRecord {
         } = record;
 
         let [x, y, z]: [f64; 3] = position.into();
+        let data = data.map(|bytes| bytes.to_vec());
+
         Self {
             uuid,
             world_name,
@@ -59,6 +61,8 @@ impl From<SqlRecord> for Record {
         } = record;
 
         let position = Vector3::new(x, y, z);
+        let data = data.map(|vec| Bytes::from(vec));
+
         Self {
             uuid,
             world_name,
