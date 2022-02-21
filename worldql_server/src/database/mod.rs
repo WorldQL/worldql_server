@@ -1,4 +1,5 @@
 mod client;
+mod error;
 mod init;
 mod sql_record;
 

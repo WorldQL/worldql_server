@@ -51,3 +51,7 @@ error!(ERR_AREA_UNSUB_GLOBAL_WORLD, 0x02_004, "cannot unsubscribe from an area i
 #[rustfmt::skip]
 error!(ERR_LOCAL_MESSAGE_GLOBAL_WORLD, 0x02_001, "cannot send local messages to the global world");
 // endregion
+
+// region: Database Operations
+error_func!(err_generic_database_error, 0x03_001);
+// endregion
