@@ -78,6 +78,7 @@ impl Vector3 {
 }
 
 // region: Conversion
+// region: Array
 impl From<[f64; 3]> for Vector3 {
     #[inline]
     fn from([x, y, z]: [f64; 3]) -> Self {
@@ -98,6 +99,30 @@ impl From<&Vector3> for [f64; 3] {
         [vector.x, vector.y, vector.z]
     }
 }
+// endregion
+
+// region: Tuple
+impl From<(f64, f64, f64)> for Vector3 {
+    #[inline]
+    fn from((x, y, z): (f64, f64, f64)) -> Self {
+        Self { x, y, z }
+    }
+}
+
+impl From<Vector3> for (f64, f64, f64) {
+    #[inline]
+    fn from(vector: Vector3) -> Self {
+        (vector.x, vector.y, vector.z)
+    }
+}
+
+impl From<&Vector3> for (f64, f64, f64) {
+    #[inline]
+    fn from(vector: &Vector3) -> Self {
+        (vector.x, vector.y, vector.z)
+    }
+}
+// endregion
 // endregion
 
 // region: (De)serialization
