@@ -11,10 +11,11 @@ pub enum RecordGetRequest {
         /// World containing the records
         world_name: String,
 
-        /// Position to lookup records by
-        ///
-        /// Will be transformed into a region defined by the server config
-        position: Vector3,
+        /// First corner of area to lookup in
+        pos_1: Vector3,
+
+        /// Second corner of area to lookup in
+        pos_2: Vector3,
     },
 
     /// Lookup records with known UUIDs
@@ -28,10 +29,11 @@ impl RecordGetRequest {
     /// Create a new [`RecordGetRequest`] to lookup by area
     #[inline]
     #[must_use]
-    pub fn new_by_area(world_name: impl Into<String>, position: Vector3) -> Self {
+    pub fn new_by_area(world_name: impl Into<String>, pos_1: impl Into<Vector3>, pos_2: impl Into<Vector3>) -> Self {
         Self::Area {
             world_name: world_name.into(),
-            position,
+            pos_1: pos_1.into(),
+            pos_2: pos_2.into(),
         }
     }
 
