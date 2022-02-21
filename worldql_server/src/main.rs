@@ -34,10 +34,12 @@
 
 use std::collections::HashSet;
 use std::sync::Arc;
+use std::time::Duration;
 
 use clap::Parser;
 use color_eyre::Result;
 use dotenv::dotenv;
+use sqlx::postgres::PgPoolOptions;
 use tokio::sync::RwLock;
 use tracing::{debug, error, info, warn};
 
@@ -119,40 +121,34 @@ async fn main() -> Result<()> {
         }
     }
 
-    let db = DatabaseClient::new();
-    info!("Connected to PostgreSQL");
+    debug!("connecting to postgresql...");
+    let pool = PgPoolOptions::new()
+        .max_connections(args.psql_max_connections.into())
+        .connect_timeout(Duration::from_secs(args.psql_timeout_secs.into()))
+        .connect(&args.psql_conn)
+        .await;
 
-    // let psql_result = tokio_postgres::connect(&args.psql_conn, NoTls).await;
-    // if let Err(err) = psql_result {
-    //     error!("PostgreSQL Error: {}", err);
-    //     std::process::exit(1);
-    // }
+    let db = match pool {
+        Ok(pool) => {
+            info!("Connected to PostgreSQL");
+            DatabaseClient::new(pool)
+        }
 
-    // let (client, psql_conn) = psql_result.unwrap();
-    // tokio::spawn(async move {
-    //     debug!("spawned postgres read thread");
-    //     if let Err(e) = psql_conn.await {
-    //         error!("PostgreSQL Connection Error: {}", e);
-    //     }
-    // });
+        Err(error) => {
+            error!("Failed to connect to PostgreSQL: {}", error);
+            std::process::exit(1);
+        }
+    };
 
-    //
-    // let db = DatabaseClient::new(
-    //     client,
-    //     args.db_region_x_size,
-    //     args.db_region_y_size,
-    //     args.db_region_z_size,
-    //     args.db_table_size,
-    //     args.db_cache_size,
-    // );
+    match db.init().await {
+        Ok(_) => debug!("database initialized successfully"),
+        Err(error) => {
+            error!("Failed to create database tables!");
+            error!("{}", error);
 
-    // // Init database
-    // if let Err(error) = db.init_database().await {
-    //     error!("Failed to create database tables!");
-    //     error!("{}", error);
-
-    //     std::process::exit(1);
-    // };
+            std::process::exit(1);
+        }
+    }
 
     let (msg_tx, msg_rx) = flume::unbounded();
     let (remove_tx, remove_rx) = flume::unbounded();

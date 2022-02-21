@@ -4,7 +4,7 @@ use uuid::Uuid;
 use worldql_messages::common::{Record, Vector3};
 
 #[derive(Iden)]
-enum RecordIden {
+pub(super) enum RecordIden {
     #[iden(rename = "records")]
     Table,
     Uuid,
@@ -16,7 +16,7 @@ enum RecordIden {
 }
 
 #[derive(Debug, sqlx::FromRow)]
-struct SqlRecord {
+pub(super) struct SqlRecord {
     uuid: Uuid,
     world_name: String,
     x: f64,

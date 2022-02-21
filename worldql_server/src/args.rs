@@ -1,5 +1,6 @@
 use std::net::IpAddr;
 use std::num::ParseIntError;
+use std::time::Duration;
 
 use clap::{AppSettings, Parser};
 use once_cell::sync::Lazy;
@@ -30,41 +31,23 @@ pub struct Args {
     #[clap(short = 'p', long = "psql", env = "WQL_POSTGRES_CONNECTION_STRING")]
     pub psql_conn: String,
 
+    /// PostgreSQL maxiumum connections in pool
+    ///
+    /// A value of 0 is invalid
+    #[clap(long, env = "WQL_POSTGRES_MAX_CONNECTIONS", default_value = "5", parse(try_from_str = parse_non_zero_8))]
+    pub psql_max_connections: u8,
+
+    /// PostgreSQL connection timeout (seconds)
+    ///
+    /// A value of 0 is invalid
+    #[clap(long, env = "WQL_POSTGRES_TIMEOUT_SECS", default_value = "5", parse(try_from_str = parse_non_zero_16))]
+    pub psql_timeout_secs: u16,
+
     /// Side length of subscription region cubes
     ///
     /// A value of 0 is invalid
     #[clap(long, default_value = "16", env = "WQL_SUBSCRIPTION_REGION_CUBE_SIZE", parse(try_from_str = parse_non_zero_16))]
     pub sub_region_size: u16,
-
-    /// TODO: Add arg docs
-    ///
-    /// A value of 0 is invalid
-    #[clap(long, default_value = "16", env = "WQL_DB_REGION_X_SIZE", parse(try_from_str = parse_non_zero_16))]
-    pub db_region_x_size: u16,
-
-    /// TODO: Add arg docs
-    ///
-    /// A value of 0 is invalid
-    #[clap(long, default_value = "256", env = "WQL_DB_REGION_Y_SIZE", parse(try_from_str = parse_non_zero_16))]
-    pub db_region_y_size: u16,
-
-    /// TODO: Add arg docs
-    ///
-    /// A value of 0 is invalid
-    #[clap(long, default_value = "16", env = "WQL_DB_REGION_Z_SIZE", parse(try_from_str = parse_non_zero_16))]
-    pub db_region_z_size: u16,
-
-    /// TODO: Add arg docs
-    ///
-    /// A value of 0 is invalid
-    #[clap(long, default_value = "1024", env = "WQL_DB_TABLE_SIZE", parse(try_from_str = parse_non_zero_32))]
-    pub db_table_size: u32,
-
-    /// Maximum number of cached database lookups
-    ///
-    /// Set to 0 to disable cache eviction
-    #[clap(long, default_value = "1024", env = "WQL_DB_CACHE_SIZE", parse(try_from_str = parse_non_zero_sized))]
-    pub db_cache_size: usize,
     // endregion
 
     // // region: HTTP
@@ -123,6 +106,15 @@ enum ParseError {
     ParseIntError(#[from] ParseIntError),
 }
 
+fn parse_non_zero_8(src: &str) -> Result<u8, ParseError> {
+    let size = src.parse::<u8>()?;
+    if size == 0 {
+        return Err(ParseError::NonZero);
+    }
+
+    Ok(size)
+}
+
 fn parse_non_zero_16(src: &str) -> Result<u16, ParseError> {
     let size = src.parse::<u16>()?;
     if size == 0 {
@@ -132,23 +124,23 @@ fn parse_non_zero_16(src: &str) -> Result<u16, ParseError> {
     Ok(size)
 }
 
-fn parse_non_zero_32(src: &str) -> Result<u32, ParseError> {
-    let size = src.parse::<u32>()?;
-    if size == 0 {
-        return Err(ParseError::NonZero);
-    }
+// fn parse_non_zero_32(src: &str) -> Result<u32, ParseError> {
+//     let size = src.parse::<u32>()?;
+//     if size == 0 {
+//         return Err(ParseError::NonZero);
+//     }
 
-    Ok(size)
-}
+//     Ok(size)
+// }
 
-fn parse_non_zero_sized(src: &str) -> Result<usize, ParseError> {
-    let size = src.parse::<usize>()?;
-    if size == 0 {
-        return Err(ParseError::NonZero);
-    }
+// fn parse_non_zero_sized(src: &str) -> Result<usize, ParseError> {
+//     let size = src.parse::<usize>()?;
+//     if size == 0 {
+//         return Err(ParseError::NonZero);
+//     }
 
-    Ok(size)
-}
+//     Ok(size)
+// }
 // endregion
 
 // region: Whole Arg Validator
@@ -157,37 +149,6 @@ impl Args {
     pub fn validate(&self) -> bool {
         if self.sub_region_size < 10 {
             warn!("Subscription region sizes less than 10 might impact lookup performance")
-        }
-
-        // TODO: Better error messages
-        let mod_x = self.db_table_size % u32::from(self.db_region_x_size);
-        if mod_x != 0 {
-            error!(
-                "--db-table-size ({}) must be divisible by --db-region-x-size ({})",
-                self.db_table_size, self.db_region_x_size
-            );
-
-            return false;
-        }
-
-        let mod_y = self.db_table_size % u32::from(self.db_region_y_size);
-        if mod_y != 0 {
-            error!(
-                "--db-table-size ({}) must be divisible by --db-region-y-size ({})",
-                self.db_table_size, self.db_region_y_size
-            );
-
-            return false;
-        }
-
-        let mod_z = self.db_table_size % u32::from(self.db_region_z_size);
-        if mod_z != 0 {
-            error!(
-                "--db-table-size ({}) must be divisible by --db-region-z-size ({})",
-                self.db_table_size, self.db_region_z_size
-            );
-
-            return false;
         }
 
         true

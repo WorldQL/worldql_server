@@ -1,14 +1,17 @@
 use color_eyre::Result;
+use sqlx::{Pool, Postgres};
 use worldql_messages::client_bound::Error;
 use worldql_messages::common::{PartialRecord, Record, Vector3};
 
-pub struct DatabaseClient {}
+pub struct DatabaseClient {
+    pub(super) pool: Pool<Postgres>,
+}
 
 impl DatabaseClient {
     #[inline]
     #[must_use]
-    pub fn new() -> Self {
-        Self {}
+    pub fn new(pool: Pool<Postgres>) -> Self {
+        Self { pool }
     }
 
     // region: Methods
