@@ -11,6 +11,8 @@ macro_rules! error {
 
 macro_rules! error_func {
     ($name: ident, $code:expr) => {
+        #[inline]
+        #[must_use]
         pub fn $name(message: impl Into<String>) -> Error {
             Error::new($code, message)
         }
