@@ -29,7 +29,11 @@ impl RecordGetRequest {
     /// Create a new [`RecordGetRequest`] to lookup by area
     #[inline]
     #[must_use]
-    pub fn new_by_area(world_name: impl Into<String>, pos_1: impl Into<Vector3>, pos_2: impl Into<Vector3>) -> Self {
+    pub fn new_by_area(
+        world_name: impl Into<String>,
+        pos_1: impl Into<Vector3>,
+        pos_2: impl Into<Vector3>,
+    ) -> Self {
         Self::Area {
             world_name: world_name.into(),
             pos_1: pos_1.into(),

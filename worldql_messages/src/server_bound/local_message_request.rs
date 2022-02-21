@@ -31,13 +31,13 @@ impl LocalMessageRequest {
     #[must_use]
     pub fn new(
         world_name: impl Into<String>,
-        position: Vector3,
+        position: impl Into<Vector3>,
         replication: Replication,
         data: Bytes,
     ) -> Self {
         Self {
             world_name: world_name.into(),
-            position,
+            position: position.into(),
             replication,
             data,
         }

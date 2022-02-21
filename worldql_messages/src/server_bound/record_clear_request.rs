@@ -29,10 +29,13 @@ impl RecordClearRequest {
     /// Create a new [`RecordClearRequest`] to clear all records in an area of a world
     #[inline]
     #[must_use]
-    pub fn new_clear_world_area(world_name: impl Into<String>, position: Vector3) -> Self {
+    pub fn new_clear_world_area(
+        world_name: impl Into<String>,
+        position: impl Into<Vector3>,
+    ) -> Self {
         Self {
             world_name: world_name.into(),
-            position: Some(position),
+            position: Some(position.into()),
         }
     }
 }

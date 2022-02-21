@@ -18,10 +18,10 @@ impl AreaUnsubscribeRequest {
     /// Create a new [`AreaUnsubscribeRequest`]
     #[inline]
     #[must_use]
-    pub fn new(world_name: impl Into<String>, position: Vector3) -> Self {
+    pub fn new(world_name: impl Into<String>, position: impl Into<Vector3>) -> Self {
         Self {
             world_name: world_name.into(),
-            position,
+            position: position.into(),
         }
     }
 }

@@ -28,13 +28,13 @@ impl LocalMessageEvent {
     pub fn new(
         sender: Uuid,
         world_name: impl Into<String>,
-        position: Vector3,
+        position: impl Into<Vector3>,
         data: Bytes,
     ) -> Self {
         Self {
             sender,
             world_name: world_name.into(),
-            position,
+            position: position.into(),
             data,
         }
     }
