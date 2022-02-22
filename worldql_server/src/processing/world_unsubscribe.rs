@@ -39,23 +39,19 @@ fn process_message(
         return ERR_WORLD_UNSUB_GLOBAL_WORLD.clone().into();
     }
 
-    let world_name = match sanitize_world_name(&request.world_name) {
-        Ok(world_name) => world_name,
+    if let Some(error) = sanitize_world_name(&request.world_name) {
+        debug!(
+            "peer {} sent invalid world name: {} ({})",
+            &sender, &request.world_name, error
+        );
 
-        Err(error) => {
-            debug!(
-                "peer {} sent invalid world name: {} ({})",
-                &sender, &request.world_name, error
-            );
+        let message = format!("invalid world name: {}", error);
+        let error = err_invalid_world_name(message);
 
-            let message = format!("invalid world name: {}", error);
-            let error = err_invalid_world_name(message);
+        return error.into();
+    }
 
-            return error.into();
-        }
-    };
-
-    let updated = manager.unsubscribe_from_world(sender, &world_name);
+    let updated = manager.unsubscribe_from_world(sender, &request.world_name);
     let reply = WorldUnsubscribeReply::new(updated);
 
     Status::Ok(reply)

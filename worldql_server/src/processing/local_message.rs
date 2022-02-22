@@ -38,38 +38,34 @@ pub(super) async fn handle_local_message(
         return Ok(());
     }
 
-    let world_name = match sanitize_world_name(&request.world_name) {
-        Ok(world_name) => world_name,
+    if let Some(error) = sanitize_world_name(&request.world_name) {
+        debug!(
+            "peer {} sent invalid world name: {} ({})",
+            &sender, &request.world_name, error
+        );
 
-        Err(error) => {
+        let message = format!("invalid world name: {}", error);
+        let error = err_invalid_world_name(message);
+
+        let mut map = peer_map.write().await;
+        if let Some(peer) = map.get_mut(&sender) {
+            // TODO: Handle errors
+            let _ = peer.send_message(&error.into()).await;
+        } else {
             debug!(
-                "peer {} sent invalid world name: {} ({})",
-                &sender, &request.world_name, error
+                "peer {} missing, cannot send local message error event",
+                &sender
             );
-
-            let message = format!("invalid world name: {}", error);
-            let error = err_invalid_world_name(message);
-
-            let mut map = peer_map.write().await;
-            if let Some(peer) = map.get_mut(&sender) {
-                // TODO: Handle errors
-                let _ = peer.send_message(&error.into()).await;
-            } else {
-                debug!(
-                    "peer {} missing, cannot send local message error event",
-                    &sender
-                );
-            }
-
-            return Ok(());
         }
-    };
+
+        return Ok(());
+    }
 
     let (x, y, z) = request.position.coords();
     let area = Area::new_clamped(x, y, z, manager.area_size());
 
     // Early exit if no peers are subscribed
-    let sub_count = manager.area_subscription_count(&world_name, area);
+    let sub_count = manager.area_subscription_count(&request.world_name, area);
     if sub_count == 0 {
         return Ok(());
     }
@@ -78,7 +74,7 @@ pub(super) async fn handle_local_message(
         Replication::ExceptSelf => {
             // Filer out self
             let peers = manager
-                .get_subscribed_to_area(&world_name, area)
+                .get_subscribed_to_area(&request.world_name, area)
                 .filter(|uuid| *uuid != sender);
 
             let mut map = peer_map.write().await;
@@ -88,7 +84,7 @@ pub(super) async fn handle_local_message(
 
         Replication::IncludingSelf => {
             // Don't filter
-            let peers = manager.get_subscribed_to_area(&world_name, area);
+            let peers = manager.get_subscribed_to_area(&request.world_name, area);
 
             let mut map = peer_map.write().await;
             // TODO: Handle errors
@@ -98,7 +94,7 @@ pub(super) async fn handle_local_message(
         Replication::OnlySelf => {
             // Filter out not self
             let peers = manager
-                .get_subscribed_to_area(&world_name, area)
+                .get_subscribed_to_area(&request.world_name, area)
                 .filter(|uuid| *uuid == sender);
 
             let mut map = peer_map.write().await;

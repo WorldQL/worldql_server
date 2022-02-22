@@ -39,26 +39,22 @@ fn process_message(
         return ERR_AREA_SUB_GLOBAL_WORLD.clone().into();
     }
 
-    let world_name = match sanitize_world_name(&request.world_name) {
-        Ok(world_name) => world_name,
+    if let Some(error) = sanitize_world_name(&request.world_name) {
+        debug!(
+            "peer {} sent invalid world name: {} ({})",
+            &sender, &request.world_name, error
+        );
 
-        Err(error) => {
-            debug!(
-                "peer {} sent invalid world name: {} ({})",
-                &sender, &request.world_name, error
-            );
+        let message = format!("invalid world name: {}", error);
+        let error = err_invalid_world_name(message);
 
-            let message = format!("invalid world name: {}", error);
-            let error = err_invalid_world_name(message);
-
-            return error.into();
-        }
-    };
+        return error.into();
+    }
 
     let (x, y, z) = request.position.coords();
     let area = Area::new_clamped(x, y, z, manager.area_size());
 
-    let updated = manager.subscribe_to_area(sender, world_name, area);
+    let updated = manager.subscribe_to_area(sender, request.world_name, area);
     let reply = AreaSubscribeReply::new(updated);
 
     Status::Ok(reply)

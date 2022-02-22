@@ -51,35 +51,31 @@ pub(super) async fn handle_global_message(
         };
     } else {
         // Broadcast to those subscribed
-        let world_name = match sanitize_world_name(&request.world_name) {
-            Ok(world_name) => world_name,
+        if let Some(error) = sanitize_world_name(&request.world_name) {
+            debug!(
+                "peer {} sent invalid world name: {} ({})",
+                &sender, &request.world_name, error
+            );
 
-            Err(error) => {
+            let message = format!("invalid world name: {}", error);
+            let error = err_invalid_world_name(message);
+
+            let mut map = peer_map.write().await;
+            if let Some(peer) = map.get_mut(&sender) {
+                // TODO: Handle errors
+                let _ = peer.send_message(&error.into()).await;
+            } else {
                 debug!(
-                    "peer {} sent invalid world name: {} ({})",
-                    &sender, &request.world_name, error
+                    "peer {} missing, cannot send global message error event",
+                    &sender
                 );
-
-                let message = format!("invalid world name: {}", error);
-                let error = err_invalid_world_name(message);
-
-                let mut map = peer_map.write().await;
-                if let Some(peer) = map.get_mut(&sender) {
-                    // TODO: Handle errors
-                    let _ = peer.send_message(&error.into()).await;
-                } else {
-                    debug!(
-                        "peer {} missing, cannot send global message error event",
-                        &sender
-                    );
-                }
-
-                return Ok(());
             }
-        };
+
+            return Ok(());
+        }
 
         // Early exit if no peers are subscribed
-        let sub_count = manager.world_subscription_count(&world_name);
+        let sub_count = manager.world_subscription_count(&request.world_name);
         if sub_count == 0 {
             return Ok(());
         }
@@ -88,7 +84,7 @@ pub(super) async fn handle_global_message(
             Replication::ExceptSelf => {
                 // Filer out self
                 let peers = manager
-                    .get_subscribed_to_world(&world_name)
+                    .get_subscribed_to_world(&request.world_name)
                     .filter(|uuid| *uuid != sender);
 
                 let mut map = peer_map.write().await;
@@ -98,7 +94,7 @@ pub(super) async fn handle_global_message(
 
             Replication::IncludingSelf => {
                 // Don't filter
-                let peers = manager.get_subscribed_to_world(&world_name);
+                let peers = manager.get_subscribed_to_world(&request.world_name);
 
                 let mut map = peer_map.write().await;
                 // TODO: Handle errors
@@ -108,7 +104,7 @@ pub(super) async fn handle_global_message(
             Replication::OnlySelf => {
                 // Filter out not self
                 let peers = manager
-                    .get_subscribed_to_world(&world_name)
+                    .get_subscribed_to_world(&request.world_name)
                     .filter(|uuid| *uuid == sender);
 
                 let mut map = peer_map.write().await;
