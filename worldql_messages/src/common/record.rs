@@ -75,11 +75,15 @@ impl Record {
     /// ```
     #[inline]
     #[must_use]
-    pub fn from_partial(partial: PartialRecord, data: Option<Bytes>) -> Self {
+    pub fn from_partial(
+        partial: PartialRecord,
+        position: impl Into<Vector3>,
+        data: Option<Bytes>,
+    ) -> Self {
         Self {
             uuid: partial.uuid,
             world_name: partial.world_name,
-            position: partial.position,
+            position: position.into(),
             data,
         }
     }
@@ -97,9 +101,6 @@ pub struct PartialRecord {
 
     /// World to store this record in
     pub world_name: String,
-
-    /// Position of this record
-    pub position: Vector3,
 }
 
 impl PartialRecord {
@@ -120,11 +121,10 @@ impl PartialRecord {
     /// ```
     #[inline]
     #[must_use]
-    pub fn new(uuid: Uuid, world_name: impl Into<String>, position: Vector3) -> Self {
+    pub fn new(uuid: Uuid, world_name: impl Into<String>) -> Self {
         Self {
             uuid,
             world_name: world_name.into(),
-            position,
         }
     }
 }
@@ -134,7 +134,6 @@ impl From<Record> for PartialRecord {
         Self {
             uuid: record.uuid,
             world_name: record.world_name,
-            position: record.position,
         }
     }
 }
