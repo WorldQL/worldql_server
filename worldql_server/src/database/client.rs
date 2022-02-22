@@ -1,8 +1,9 @@
 use std::convert::Into;
+use std::ops::Deref;
 
 use color_eyre::Result;
 use sea_query::{ColumnRef, Cond, Expr, PostgresQueryBuilder, Query};
-use sea_query_driver_postgres::bind_query_as;
+use sea_query_driver_postgres::{bind_query, bind_query_as};
 use sqlx::{Pool, Postgres};
 use worldql_messages::client_bound::Error;
 use worldql_messages::common::{PartialRecord, Record, Vector3};
@@ -100,7 +101,87 @@ impl DatabaseClient {
     }
 
     pub async fn set_records(&self, records: Vec<Record>) -> Result<(u32, u32), Error> {
-        todo!()
+        // Delete
+        let deleted = {
+            let (sql, values) = {
+                let mut builder = Query::delete();
+                builder.from_table(RecordIden::Table);
+
+                let mut cond = Cond::any();
+                for record in &records {
+                    let Record {
+                        uuid,
+                        world_name,
+                        position: _,
+                        data: _,
+                    } = record;
+
+                    cond = cond.add(
+                        Expr::col(RecordIden::Uuid)
+                            .eq(*uuid)
+                            .and(Expr::col(RecordIden::WorldName).eq(world_name.deref())),
+                    );
+                }
+
+                builder.cond_where(cond);
+                builder.build(PostgresQueryBuilder)
+            };
+
+            bind_query(sqlx::query(&sql), &values)
+                .execute(&self.pool)
+                .await
+                .or_client_err()?
+                .rows_affected()
+        };
+
+        let inserted = {
+            let (sql, values) = {
+                let mut builder = Query::insert();
+                builder.into_table(RecordIden::Table);
+                builder.columns(vec![
+                    RecordIden::Uuid,
+                    RecordIden::WorldName,
+                    RecordIden::X,
+                    RecordIden::Y,
+                    RecordIden::Z,
+                    RecordIden::Data,
+                ]);
+
+                let records = records.into_iter().map(Into::into);
+                for record in records {
+                    let SqlRecord {
+                        uuid,
+                        world_name,
+                        x,
+                        y,
+                        z,
+                        data,
+                    } = record;
+
+                    builder.values_panic(vec![
+                        uuid.into(),
+                        world_name.into(),
+                        x.into(),
+                        y.into(),
+                        z.into(),
+                        data.into(),
+                    ]);
+                }
+
+                builder.build(PostgresQueryBuilder)
+            };
+
+            bind_query(sqlx::query(&sql), &values)
+                .execute(&self.pool)
+                .await
+                .or_client_err()?
+                .rows_affected()
+        };
+
+        let created = (inserted - deleted) as u32;
+        let updated = deleted as u32;
+
+        Ok((created, updated))
     }
 
     pub async fn delete_records(&self, records: Vec<PartialRecord>) -> Result<u32, Error> {

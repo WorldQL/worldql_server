@@ -17,12 +17,12 @@ pub(super) enum RecordIden {
 
 #[derive(Debug, sqlx::FromRow)]
 pub(super) struct SqlRecord {
-    uuid: Uuid,
-    world_name: String,
-    x: f64,
-    y: f64,
-    z: f64,
-    data: Option<Vec<u8>>,
+    pub uuid: Uuid,
+    pub world_name: String,
+    pub x: f64,
+    pub y: f64,
+    pub z: f64,
+    pub data: Option<Vec<u8>>,
 }
 
 // region: Conversion
