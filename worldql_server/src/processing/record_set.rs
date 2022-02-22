@@ -11,7 +11,7 @@ pub(super) async fn handle_record_set(
     sender: Uuid,
     peer_map: &mut ThreadPeerMap,
     request: RecordSetRequest,
-    db: &mut DatabaseClient,
+    db: &DatabaseClient,
 ) -> Result<()> {
     trace_packet!("{:?}", &request);
 

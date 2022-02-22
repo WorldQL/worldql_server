@@ -30,7 +30,11 @@ pub(super) async fn handle_record_get(
     Ok(())
 }
 
-async fn process_message(sender: Uuid, request: RecordGetRequest, db: &DatabaseClient) -> Status<RecordGetReply> {
+async fn process_message(
+    sender: Uuid,
+    request: RecordGetRequest,
+    db: &DatabaseClient,
+) -> Status<RecordGetReply> {
     match request {
         RecordGetRequest::ByArea {
             world_name,
@@ -59,15 +63,13 @@ async fn process_message(sender: Uuid, request: RecordGetRequest, db: &DatabaseC
             }
         }
 
-        RecordGetRequest::ByUuid { records } => {
-            match db.get_records_by_id(records).await {
-                Err(error) => error.into(),
+        RecordGetRequest::ByUuid { records } => match db.get_records_by_id(records).await {
+            Err(error) => error.into(),
 
-                Ok(records) => {
-                    let reply = RecordGetReply::new(records);
-                    Status::Ok(reply)
-                }
+            Ok(records) => {
+                let reply = RecordGetReply::new(records);
+                Status::Ok(reply)
             }
-        }
+        },
     }
 }

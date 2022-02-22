@@ -170,7 +170,7 @@ async fn handle_subscriptions(
 
 async fn handle_database(
     mut peer_map: ThreadPeerMap,
-    mut db: DatabaseClient,
+    db: DatabaseClient,
     msg_rx: Receiver<ServerMessage>,
 ) -> Result<()> {
     loop {
@@ -179,19 +179,19 @@ async fn handle_database(
 
         match incoming.payload {
             ServerMessagePayload::RecordGet(request) => {
-                handle_record_get(peer, &mut peer_map, request, &mut db).await?
+                handle_record_get(peer, &mut peer_map, request, &db).await?
             }
 
             ServerMessagePayload::RecordSet(request) => {
-                handle_record_set(peer, &mut peer_map, request, &mut db).await?
+                handle_record_set(peer, &mut peer_map, request, &db).await?
             }
 
             ServerMessagePayload::RecordDelete(request) => {
-                handle_record_delete(peer, &mut peer_map, request, &mut db).await?
+                handle_record_delete(peer, &mut peer_map, request, &db).await?
             }
 
             ServerMessagePayload::RecordClear(request) => {
-                handle_record_clear(peer, &mut peer_map, request, &mut db).await?
+                handle_record_clear(peer, &mut peer_map, request, &db).await?
             }
 
             _ => panic!("invalid message type"),

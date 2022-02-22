@@ -11,7 +11,7 @@ pub(super) async fn handle_record_delete(
     sender: Uuid,
     peer_map: &mut ThreadPeerMap,
     request: RecordDeleteRequest,
-    db: &mut DatabaseClient,
+    db: &DatabaseClient,
 ) -> Result<()> {
     trace_packet!("{:?}", &request);
 

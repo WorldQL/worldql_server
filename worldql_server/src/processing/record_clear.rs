@@ -11,7 +11,7 @@ pub(super) async fn handle_record_clear(
     sender: Uuid,
     peer_map: &mut ThreadPeerMap,
     request: RecordClearRequest,
-    db: &mut DatabaseClient,
+    db: &DatabaseClient,
 ) -> Result<()> {
     trace_packet!("{:?}", &request);
 
