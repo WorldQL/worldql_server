@@ -68,18 +68,6 @@ impl PeerMap {
     pub fn get_mut(&mut self, uuid: &Uuid) -> Option<&mut BoxedPeer> {
         self.map.get_mut(uuid)
     }
-
-    /// Returns the number of connected Peers.
-    #[inline]
-    pub fn size(&self) -> usize {
-        self.map.len()
-    }
-
-    /// Returns an iterator of [`Uuid`] items for each contained [`Peer`].
-    #[inline]
-    pub fn peers_iter(&self) -> impl Iterator<Item = Uuid> + '_ {
-        self.map.keys().copied()
-    }
     // endregion
 
     // region: Map Modifiers

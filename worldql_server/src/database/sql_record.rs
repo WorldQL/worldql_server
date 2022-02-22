@@ -61,7 +61,7 @@ impl From<SqlRecord> for Record {
         } = record;
 
         let position = Vector3::new(x, y, z);
-        let data = data.map(|vec| Bytes::from(vec));
+        let data = data.map(Bytes::from);
 
         Self {
             uuid,

@@ -1,6 +1,5 @@
 use std::net::IpAddr;
 use std::num::ParseIntError;
-use std::time::Duration;
 
 use clap::{AppSettings, Parser};
 use once_cell::sync::Lazy;
