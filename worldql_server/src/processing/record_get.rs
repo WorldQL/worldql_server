@@ -16,7 +16,7 @@ pub(super) async fn handle_record_get(
     trace_packet!("{:?}", &request);
 
     let reply: ClientMessageReply = match request {
-        RecordGetRequest::Area {
+        RecordGetRequest::ByArea {
             world_name,
             pos_1,
             pos_2,
@@ -33,7 +33,7 @@ pub(super) async fn handle_record_get(
             status.into()
         }
 
-        RecordGetRequest::Uuid { records } => {
+        RecordGetRequest::ByUuid { records } => {
             let status = match db.get_records_by_id(records).await {
                 Err(error) => error.into(),
 

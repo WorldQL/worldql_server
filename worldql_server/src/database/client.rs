@@ -88,7 +88,8 @@ impl DatabaseClient {
     pub async fn clear_records_in_area(
         &self,
         world_name: &str,
-        position: Vector3,
+        pos_1: Vector3,
+        pos_2: Vector3,
     ) -> Result<u32, Error> {
         todo!()
     }

@@ -15,9 +15,8 @@ pub(super) async fn handle_record_clear(
 ) -> Result<()> {
     trace_packet!("{:?}", &request);
 
-    let world_name = request.world_name;
-    let reply: ClientMessageReply = match request.position {
-        None => {
+    let reply: ClientMessageReply = match request {
+        RecordClearRequest::ByWorld { world_name } => {
             let status = match db.clear_records_in_world(&world_name).await {
                 Err(error) => error.into(),
 
@@ -30,8 +29,12 @@ pub(super) async fn handle_record_clear(
             status.into()
         }
 
-        Some(position) => {
-            let status = match db.clear_records_in_area(&world_name, position).await {
+        RecordClearRequest::ByArea {
+            world_name,
+            pos_1,
+            pos_2,
+        } => {
+            let status = match db.clear_records_in_area(&world_name, pos_1, pos_2).await {
                 Err(error) => error.into(),
 
                 Ok(affected) => {
