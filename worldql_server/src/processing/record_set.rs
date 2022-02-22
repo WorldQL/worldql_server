@@ -15,22 +15,29 @@ pub(super) async fn handle_record_set(
 ) -> Result<()> {
     trace_packet!("{:?}", &request);
 
-    let status = match db.set_records(request.records).await {
+    let reply = process_message(sender, request, db).await;
+    let reply = ClientMessageReply::RecordSet(reply);
+
+    let mut map = peer_map.write().await;
+    if let Some(peer) = map.get_mut(&sender) {
+        // TODO: Handle errors
+        let _ = peer.send_message(&reply.into()).await;
+    }
+
+    Ok(())
+}
+
+async fn process_message(
+    sender: Uuid,
+    request: RecordSetRequest,
+    db: &DatabaseClient,
+) -> Status<RecordSetReply> {
+    match db.set_records(request.records).await {
         Err(error) => error.into(),
 
         Ok((created, updated)) => {
             let reply = RecordSetReply::new(created, updated);
             Status::Ok(reply)
         }
-    };
-
-    let mut map = peer_map.write().await;
-    if let Some(peer) = map.get_mut(&sender) {
-        let reply: ClientMessageReply = status.into();
-
-        // TODO: Handle errors
-        let _ = peer.send_message(&reply.into()).await;
     }
-
-    Ok(())
 }

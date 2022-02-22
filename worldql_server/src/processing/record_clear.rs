@@ -15,7 +15,24 @@ pub(super) async fn handle_record_clear(
 ) -> Result<()> {
     trace_packet!("{:?}", &request);
 
-    let reply: ClientMessageReply = match request {
+    let reply = process_message(sender, request, db).await;
+    let reply = ClientMessageReply::RecordClear(reply);
+
+    let mut map = peer_map.write().await;
+    if let Some(peer) = map.get_mut(&sender) {
+        // TODO: Handle errors
+        let _ = peer.send_message(&reply.into()).await;
+    }
+
+    Ok(())
+}
+
+async fn process_message(
+    sender: Uuid,
+    request: RecordClearRequest,
+    db: &DatabaseClient,
+) -> Status<RecordClearReply> {
+    match request {
         RecordClearRequest::ByWorld { world_name } => {
             let status = match db.clear_records_in_world(&world_name).await {
                 Err(error) => error.into(),
@@ -45,13 +62,5 @@ pub(super) async fn handle_record_clear(
 
             status.into()
         }
-    };
-
-    let mut map = peer_map.write().await;
-    if let Some(peer) = map.get_mut(&sender) {
-        // TODO: Handle errors
-        let _ = peer.send_message(&reply.into()).await;
     }
-
-    Ok(())
 }
