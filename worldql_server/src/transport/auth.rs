@@ -1,7 +1,7 @@
 use worldql_messages::client_bound::Error;
 use worldql_messages::server_bound::HandshakeRequest;
 
-use crate::errors::ERR_AUTH_FAILED_NO_TOKEN;
+use crate::errors::{ERR_AUTH_FAILED_INCORRECT, ERR_AUTH_FAILED_NO_TOKEN};
 
 #[must_use]
 pub(super) fn authenticate_handshake(
@@ -23,7 +23,7 @@ pub(super) fn authenticate_handshake(
             if server_token == token {
                 None
             } else {
-                Some(ERR_AUTH_FAILED_NO_TOKEN.clone())
+                Some(ERR_AUTH_FAILED_INCORRECT.clone())
             }
         }
     }
