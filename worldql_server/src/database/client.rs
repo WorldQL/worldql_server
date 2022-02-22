@@ -185,11 +185,45 @@ impl DatabaseClient {
     }
 
     pub async fn delete_records(&self, records: Vec<PartialRecord>) -> Result<u32, Error> {
-        todo!()
+        let (sql, values) = {
+            let mut builder = Query::delete();
+            builder.from_table(RecordIden::Table);
+
+            let mut cond = Cond::any();
+            for PartialRecord { uuid, world_name } in records {
+                cond = cond.add(
+                    Expr::col(RecordIden::Uuid)
+                        .eq(uuid)
+                        .and(Expr::col(RecordIden::WorldName).eq(world_name)),
+                );
+            }
+
+            builder.cond_where(cond);
+            builder.build(PostgresQueryBuilder)
+        };
+
+        let rows = bind_query(sqlx::query(&sql), &values)
+            .execute(&self.pool)
+            .await
+            .or_client_err()?
+            .rows_affected();
+
+        Ok(rows as u32)
     }
 
     pub async fn clear_records_in_world(&self, world_name: &str) -> Result<u32, Error> {
-        todo!()
+        let (sql, values) = Query::delete()
+            .from_table(RecordIden::Table)
+            .cond_where(Expr::col(RecordIden::WorldName).eq(world_name))
+            .build(PostgresQueryBuilder);
+
+        let rows = bind_query(sqlx::query(&sql), &values)
+            .execute(&self.pool)
+            .await
+            .or_client_err()?
+            .rows_affected();
+
+        Ok(rows as u32)
     }
 
     pub async fn clear_records_in_area(
@@ -198,7 +232,38 @@ impl DatabaseClient {
         pos_1: Vector3,
         pos_2: Vector3,
     ) -> Result<u32, Error> {
-        todo!()
+        let [x_1, y_1, z_1]: [f64; 3] = pos_1.into();
+        let [x_2, y_2, z_2]: [f64; 3] = pos_2.into();
+
+        let x_min = f64::min(x_1, x_2);
+        let y_min = f64::min(y_1, y_2);
+        let z_min = f64::min(z_1, z_2);
+
+        let x_max = f64::max(x_1, x_2);
+        let y_max = f64::max(y_1, y_2);
+        let z_max = f64::max(z_1, z_2);
+
+        let (sql, values) = Query::delete()
+            .from_table(RecordIden::Table)
+            .cond_where(
+                Cond::all()
+                    .add(Expr::col(RecordIden::WorldName).eq(world_name))
+                    .add(Expr::col(RecordIden::X).gte(x_min))
+                    .add(Expr::col(RecordIden::Y).gte(y_min))
+                    .add(Expr::col(RecordIden::Z).gte(z_min))
+                    .add(Expr::col(RecordIden::X).lt(x_max))
+                    .add(Expr::col(RecordIden::Y).lt(y_max))
+                    .add(Expr::col(RecordIden::Z).lt(z_max)),
+            )
+            .build(PostgresQueryBuilder);
+
+        let rows = bind_query(sqlx::query(&sql), &values)
+            .execute(&self.pool)
+            .await
+            .or_client_err()?
+            .rows_affected();
+
+        Ok(rows as u32)
     }
     // endregion
 }
