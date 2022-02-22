@@ -11,7 +11,7 @@ axum = { version = "0.4.5", optional = true, features = ["headers"] }
 base64 = "0.13.0"
 bytes = "1.1.0"
 chrono = "0.4.19"
-clap = { version = "3.1.0", features = ["derive", "env"] }
+clap = { version = "3.1.1", features = ["derive", "env"] }
 color-eyre = "0.6.0"
 dotenv = "0.15.0"
 flume = "0.10.11"
@@ -26,7 +26,7 @@ serde = { version = "1.0.136", optional = true, features = ["derive"] }
 sqlx = { version = "0.5.11", features = ["postgres", "runtime-tokio-rustls", "uuid", "tls"] }
 thiserror = "1.0.30"
 tokio = { version = "1.17.0", features = ["full"] }
-tokio-tungstenite = { version = "0.17.0", optional = true }
+tokio-tungstenite = { version = "0.17.1", optional = true }
 tracing = "0.1.31"
 tracing-subscriber = { version = "0.3.9", features = ["env-filter"] }
 uuid = { version = "0.8.2", features = ["v4"] }
