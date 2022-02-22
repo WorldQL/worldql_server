@@ -9,8 +9,6 @@ If you want to build from source, for example if building for a platform not sup
 final binary and you should get greater performance. To build in release mode use `cargo build --release`, and the resulting binary will end up in the `target/release` directory.
 
 ## Setup Instructions
-> **:warning: This project can only be built on unix-based systems due to the ZeroMQ library we're using only supporting epoll.** See [this issue](https://github.com/cetra3/tmq/issues/17) for more information.
-
 These instructions assume you are using a Debian-based Linux (or WSL) distro, such as Ubuntu. If using WSL, make sure you are using WSL2, as WSL1 has compatibility issues and may not work as expected.
 
 First, install dependency packages for the Rust toolchains.
@@ -31,7 +29,11 @@ To build and run in a single command, you can use `cargo run`. To pass WorldQL C
 
 ```bash
 # Example using cargo run
-$ cargo run -- --psql "hostname=localhost user=user password=secret"
+$ cargo run -- --psql "postgres://username:password@localhost/database_name"
+
+# Example using cargo build
+$ cargo build --release
+$ ./target/release/worldql_server --psql "postgres://username:password@localhost/database_name"
 ```
 
 WorldQL is configured either using environment variables or CLI flags. Run with `--help` to list flags and their associated environment variables. Note that CLI flags will always take priority.
