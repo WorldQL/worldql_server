@@ -7,19 +7,19 @@ use crate::common::{PartialRecord, Vector3};
 #[serde(tag = "lookup", rename_all = "snake_case")]
 pub enum RecordGetRequest {
     /// Lookup records by area
-    Area {
+    ByArea {
         /// World containing the records
         world_name: String,
 
-        /// First corner of area to lookup in
+        /// First corner of area to lookup
         pos_1: Vector3,
 
-        /// Second corner of area to lookup in
+        /// Second corner of area to lookup
         pos_2: Vector3,
     },
 
     /// Lookup records with known UUIDs
-    Uuid {
+    ByUuid {
         /// List of partial records containing information to lookup by
         records: Vec<PartialRecord>,
     },
@@ -34,7 +34,7 @@ impl RecordGetRequest {
         pos_1: impl Into<Vector3>,
         pos_2: impl Into<Vector3>,
     ) -> Self {
-        Self::Area {
+        Self::ByArea {
             world_name: world_name.into(),
             pos_1: pos_1.into(),
             pos_2: pos_2.into(),
@@ -45,6 +45,6 @@ impl RecordGetRequest {
     #[inline]
     #[must_use]
     pub fn new_by_id(records: Vec<PartialRecord>) -> Self {
-        Self::Uuid { records }
+        Self::ByUuid { records }
     }
 }
