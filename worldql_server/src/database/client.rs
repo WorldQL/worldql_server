@@ -1,7 +1,7 @@
 use std::convert::Into;
 
 use color_eyre::Result;
-use sea_query::{ColumnRef, Expr, PostgresQueryBuilder};
+use sea_query::{ColumnRef, Cond, Expr, PostgresQueryBuilder, Query};
 use sea_query_driver_postgres::bind_query_as;
 use sqlx::{Pool, Postgres};
 use worldql_messages::client_bound::Error;
@@ -41,7 +41,7 @@ impl DatabaseClient {
         let y_max = f64::max(y_1, y_2);
         let z_max = f64::max(z_1, z_2);
 
-        let (sql, values) = sea_query::Query::select()
+        let (sql, values) = Query::select()
             .column(ColumnRef::Asterisk)
             .from(RecordIden::Table)
             .and_where(Expr::col(RecordIden::WorldName).eq(world_name))
@@ -70,7 +70,33 @@ impl DatabaseClient {
         &self,
         records: Vec<PartialRecord>,
     ) -> Result<Vec<Record>, Error> {
-        todo!()
+        let (sql, values) = {
+            let mut builder = Query::select();
+            builder.column(ColumnRef::Asterisk);
+            builder.from(RecordIden::Table);
+
+            let mut cond = Cond::any();
+            for PartialRecord { uuid, world_name } in records {
+                cond = cond.add(
+                    Expr::col(RecordIden::Uuid)
+                        .eq(uuid)
+                        .and(Expr::col(RecordIden::WorldName).eq(world_name)),
+                );
+            }
+
+            builder.cond_where(cond);
+            builder.build(PostgresQueryBuilder)
+        };
+
+        let rows = bind_query_as(sqlx::query_as::<_, SqlRecord>(&sql), &values)
+            .fetch_all(&self.pool)
+            .await
+            .or_client_err()?
+            .into_iter()
+            .map(Into::into)
+            .collect();
+
+        Ok(rows)
     }
 
     pub async fn set_records(&self, records: Vec<Record>) -> Result<(u32, u32), Error> {
