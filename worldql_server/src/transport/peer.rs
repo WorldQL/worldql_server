@@ -42,7 +42,7 @@ pub trait Peer {
     /// Might be a no-op
     fn is_stale(&self, now: &Instant, max_duration: &Duration) -> bool;
 
-    /// Send an [`OutgoingMessage`] to this peer
+    /// Send a [`ClientMessage`] to this peer
     async fn send_message(&mut self, message: &ClientMessage) -> Result<(), SendError>;
 
     /// Send raw [`Bytes`] to this peer

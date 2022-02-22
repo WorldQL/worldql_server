@@ -110,12 +110,12 @@ impl PeerMap {
     // endregion
 
     // region: Broadcast Functions
-    /// Broadcast an [`OutgoingMessage`] to all peers in the map.
+    /// Broadcast a [`ClientMessageEvent`] to all peers in the map.
     pub async fn broadcast_all(&mut self, event: ClientMessageEvent) -> Result<(), SendError> {
         broadcast_to!(event, self.map.values_mut())
     }
 
-    /// Broadcast an [`OutgoingMessageEvent`] to all peers that correspond to the [`Uuid`] iterator.
+    /// Broadcast a [`ClientMessageEvent`] to all peers that correspond to the [`Uuid`] iterator.
     pub async fn broadcast_to(
         &mut self,
         event: ClientMessageEvent,
@@ -130,7 +130,7 @@ impl PeerMap {
         broadcast_to!(event, peers)
     }
 
-    /// Broadcast an [`OutgoingMessageEvent`] to every peer except one, usually the one who triggered the
+    /// Broadcast a [`ClientMessageEvent`] to every peer except one, usually the one who triggered the
     /// broadcast.
     pub async fn broadcast_except(
         &mut self,
