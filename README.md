@@ -10,7 +10,7 @@ If you want to build from source, for example if building for a platform not sup
 final binary and you should get greater performance. To build in release mode use `cargo build --release`, and the resulting binary will end up in the `target/release` directory.
 
 ## Setup Instructions
-> **:warning: This project can only be built on unix-based systems due to the ZeroMQ library we're using only supporting epoll.** See [this issue](https://github.com/cetra3/tmq/issues/17) for more information.
+> **:warning: This project cannot be built on Windows due to the ZeroMQ library only supporting UNIX-based operating systems.** See [this issue](https://github.com/cetra3/tmq/issues/17) for more information.
 
 These instructions assume you are using a Debian-based Linux (or WSL) distro, such as Ubuntu. If using WSL, make sure you are using WSL2, as WSL1 has compatibility issues and may not work as expected.
 
