@@ -61,3 +61,5 @@ rustup component add clippy
 ```
 
 Once both are installed, simply run `cargo +nightly fmt --verbose` to apply formatting and `cargo clippy` to lint. [GitHub Actions CI](https://github.com/WorldQL/worldql_server/actions/workflows/build.yml) runs both formatting and linting checks on pushes to `trunk` and for any pull requests to ensure standard formatting and catch lint failures.
+
+> ⚠️ New docs coming soon!
